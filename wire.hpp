@@ -3,6 +3,7 @@
 #define WIRE
 
 #include "pin.hpp"
+#include "utils.hpp"
 
 
 // Let's assume wires are one way.
@@ -10,18 +11,21 @@ class Wire
 {
 public:
 
+  Wire(Pin* i, Pin* o)
+  : input(i)
+  , output(o)
+  {}
+
   void simulate()
   {
-    output->state = input->state;
+    if (output != nullptr)
+    {
+      output->state = input->state;
+      output->simulate();
+    }
   }
 
 private:
-
-  explicit Wire(Pin* p1, Pin* p2)
-  : input(p1)
-  , output(p2)
-  {
-  }
 
   Pin* input;
   Pin* output;

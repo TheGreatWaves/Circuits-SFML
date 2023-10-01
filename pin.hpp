@@ -3,6 +3,7 @@
 #define PIN
 
 #include <vector>
+#include <memory>
 
 class Wire;
 class Gate;
@@ -16,9 +17,17 @@ enum class PinState
 struct Pin
 {
   PinState state;
-
+  std::shared_ptr<Wire> connection;
   // OPTIONAL: The pin may live on a gate, in which case we can simulate it.
   Gate* parent;
+
+  Pin(Gate* p = nullptr)
+  : state{ PinState::INACTIVE }
+  , parent(p)
+  {
+  }
+
+  void simulate();
 
   [[nodiscard]] PinState get_state()
   {
@@ -30,7 +39,18 @@ struct Pin
     return state == PinState::ACTIVE;
   }
 
-  std::vector<Wire> connections;
+  void reset()
+  {
+    state = PinState::INACTIVE;
+  }
+
+  void flip()
+  {
+    state = is_active() ? PinState::INACTIVE : PinState::ACTIVE;
+  }
+
 };
+
+
 
 #endif /* PIN */

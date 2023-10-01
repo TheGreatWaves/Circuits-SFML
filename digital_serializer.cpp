@@ -1,30 +1,10 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <sstream>
 
 #include "board.hpp"
 
-#define BLOCK "======"
-
-/**
- * Logging related functions.
- */
-template<typename ... Args> auto log(Args&& ... args)->void{(std::cout<<...<<std::forward<Args>(args));} 
-
-void desc(std::string_view name, std::string_view brief)
-{
-	std::cout << name << ": " << brief << '\n';
-}
-
-void newline()
-{
-	std::cout << '\n';
-}
-
-void info(std::string_view dump)
-{
-	std::cout << dump << '\n';
-}
 
 void greet()
 {
@@ -47,16 +27,15 @@ void create_component(std::string_view name)
 	instance->create_new(name);
 	instance->set_context(name);
 
-	log("New component created: ", name, ". Context switched.");
-	newline();
-	newline();
+	log("New component created: ", name, ". Context switched.\n");
 }
 
 void handle_input(std::string_view str)
 {
-	if (str.empty()) return;
 
-	switch (str.at(0))
+	std::string command = make_lower(str);
+
+	switch (command.at(0))
 	{
 		break; case 'H':
 					 case 'h':
@@ -64,16 +43,174 @@ void handle_input(std::string_view str)
 				desc("R                 ", "Simulate the current component.");
 				desc("C <component name>", "Create a new component.");
 				desc("L                 ", "List all components.");
+				desc("P                 ", "List all current components.");
 				desc("S <component name>", "Set the current component as current.");
 				desc("A <component_name>", "Add the specified component to current configuration.");
-				newline();
+				desc("T     <pin number>", "Toggle the pin specified.");
+				desc("I            <+/->", "Add/Delete input pin.");
+				desc("O            <+/->", "Add/Delete output pin.");
+				desc("D                 ", "Dump current component information.");	
+				desc("W     <src> <dest>", "Wire source pin and destination pin.");
+		}
+		break; case 'w':
+		{
+			auto board = Board::instance();
+			auto current = board->context().second;
+			std::stringstream ss {command};
+
+			if (current == nullptr)
+			{
+				log("Current context is empty, please select a configuration\n");
+				return;
+			}
+
+			std::string c;
+			std::size_t p1, p2;
+
+			ss >> c;
+			ss >> p1;
+			ss >> p2;
+
+			if (!current->wire_pins(p1, p2))
+			{
+				log("Failed to wire pin ", p1, " and ", p2, '\n');
+			}
+			else
+			{
+				log("Successfully wired", p1, " and ", p2, '\n');
+			}
+		}
+		break; case 'd':
+		{
+			auto board = Board::instance();
+			auto current = board->context().second;
+			if (current == nullptr)
+			{
+				log("Current context is empty, please select a configuration\n");
+				return;
+			}
+
+			current->info();
 		}
 		break; case 'R':
 					 case 'r':
 		{
 				auto board = Board::instance();
 				auto current = board->context().second;
+				if (current == nullptr)
+				{
+					log("Current context is empty, please select a configuration\n");
+					return;
+				}
+				log("=== Preparing ===\n");
+
+				current->reset();
+
+				newline();
 				current->simulate();
+
+				log("=== Output pins ===\n");
+
+				auto count = 0;
+				for (const auto& pin : current->output_pins)
+				{
+					log("pin[", count, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
+					count++;
+				}
+		}
+		break; case 'I':
+					 case 'i':
+					 case 'o':
+					 case 'O':
+		{
+				auto board = Board::instance();
+				auto current = board->context().second;
+				if (current == nullptr)
+				{
+					log("Current context is empty, please select a configuration\n");
+					return;
+				}
+
+				if (auto id = str.find(" "); id < str.size() - 1)
+				{
+					auto symbol = std::string(str.substr(id+1));
+
+					if (symbol == "+")
+					{
+
+						if (command[0] == 'i')
+						{
+							info("Input pin added.");
+							current->add_input_pin();
+						}
+						else 
+						{
+							info("Output pin added.");
+							current->add_output_pin();
+						}
+					}
+					else if (symbol == "-")
+					{
+						// TODO: Implement this later...
+					}
+
+				}				
+				else
+				{
+					info("Please specify action symbol.");
+				}
+		}
+		break; case 'T':
+					 case 't':
+		{
+				auto board = Board::instance();
+				auto current = board->context().second;
+				if (current == nullptr)
+				{
+					log("Current context is empty, please select a configuration\n");
+					return;
+				}
+
+			std::string delimiter = " ";
+
+			if (auto id = str.find(delimiter); id < str.size() - 1)
+			{
+				auto pin_id = static_cast<std::size_t>(std::stoi(std::string(str.substr(id+1))));
+
+				if (current->has_pin(pin_id) && current->toggle_pin(pin_id))
+				{
+					log("Toggled pin ", pin_id, " to ", (current->get_pin_state(pin_id) == PinState::ACTIVE ? "active" : "inactive"), ".\n");
+				}
+				else
+				{
+					info("Pin ID invalid.");
+				}
+			}
+			else
+			{
+				info("Please specify pin ID.");
+			}
+		}
+		break; case 'P':
+					 case 'p':
+		{
+				auto board = Board::instance();
+				auto current = board->context();
+				if (current.second == nullptr)
+				{
+					log("Current context is empty, please select a configuration\n");
+					return;
+				}
+
+				log(current.first);
+				newline();
+
+				for (auto& c : current.second->subgates)
+				{
+					log(c.second->name);
+					newline();
+				}
+
 		}
 		break; case 'C':
 					 case 'c':
@@ -88,7 +225,6 @@ void handle_input(std::string_view str)
 			else
 			{
 				info("Please provide a component name.");
-				newline();
 			}
 		}
 		break; case 'A':
@@ -100,13 +236,12 @@ void handle_input(std::string_view str)
 			if (current.second == nullptr)
 			{
 				log("Current context is empty, please select a configuration\n");
-				newline();
 				return;
 			}
 
 			if (auto id = str.find(" "); id < str.size() - 1)
 			{
-				std::string name = make_lower(std::string(str.substr(id+1)));
+				std::string name = std::string(str.substr(id+1));
 
 				if (auto component = board->get_component(name); component != nullptr)
 				{
@@ -123,7 +258,6 @@ void handle_input(std::string_view str)
 			{
 				info("Please provide a component name.\n");
 			}
-			newline();
 		}
 		break; case 'l':
 					 case 'L':
@@ -133,7 +267,6 @@ void handle_input(std::string_view str)
  				if (component_names.empty())
 				{
 					info("No component found.");
-					newline();
 					return;
 				}
  
@@ -141,7 +274,6 @@ void handle_input(std::string_view str)
 				{
 					log(n, '\n');
 				}
-				newline();
 		}
 		break; case 's':
 					 case 'S':
@@ -150,7 +282,7 @@ void handle_input(std::string_view str)
 
 			if (auto id = str.find(delimiter); id < str.size() - 1)
 			{
-				std::string name = make_lower(std::string(str.substr(id+1)));
+				std::string name = std::string(str.substr(id+1));
 
 				auto board = Board::instance();
 
@@ -175,12 +307,10 @@ void handle_input(std::string_view str)
 			{
 				info("Please provide a component name.");
 			}
-			newline();
 		}
 		break; default:
 		{
 				info("Invalid command.");
-				newline();
 		}
 	}
 }
@@ -188,13 +318,14 @@ void handle_input(std::string_view str)
 int main()
 {
 	Board board;
-
 	std::string line;
 
 	greet();
 
 	while(prompt() && std::getline(std::cin, line))
 	{
+		if (line.empty()) continue;
 		handle_input(line);
+		newline();
 	}
 }

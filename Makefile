@@ -1,5 +1,5 @@
-sim: digital_serializer.cpp
-	g++ -g -O2 $^ -o $@
+sim: digital_serializer.cpp pin.cpp
+	g++ -g $^ -o $@
 
 
 .PHONY: clean

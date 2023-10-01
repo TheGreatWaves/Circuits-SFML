@@ -13,8 +13,18 @@ class Board
 public:
   Board()
   {
-    components["and"] = std::make_unique<Gate>(2, 1, GateType::AND, "and");
-    components["not"] = std::make_unique<Gate>(1, 1, GateType::NOT, "not");
+    auto andc = std::make_unique<Gate>(2, 1, GateType::AND, "and");
+    auto andp = andc.get();
+    components["and"] = std::move(andc);
+    components["and"]->get_pin(0)->parent = andp;
+    components["and"]->get_pin(1)->parent = andp;
+
+    auto notc = std::make_unique<Gate>(1, 1, GateType::NOT, "not");
+    auto notp = notc.get();
+
+    components["not"] = std::move(notc);
+    components["not"]->get_pin(0)->parent = notp;
+
     singleton = this;
   }
 
