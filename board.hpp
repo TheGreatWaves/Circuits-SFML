@@ -3,6 +3,7 @@
 #define BOARD
 
 #include "digital_serializer.hpp"
+#include "utils.hpp"
 #include <memory>
 #include <map>
 
@@ -12,6 +13,8 @@ class Board
 public:
   Board()
   {
+    components["and"] = std::make_unique<Gate>(2, 1, GateType::AND);
+    components["not"] = std::make_unique<Gate>(1, 1, GateType::NOT);
     singleton = this;
   }
 
@@ -27,8 +30,7 @@ public:
 
   void create_new(std::string_view name)
   {
-    // Default is two input and one output.
-    components[std::string(name)] = std::make_unique<Gate>(2, 1);
+    components[make_lower(name)] = std::make_unique<Gate>();
   }
 
   void set_context(std::string_view name)
@@ -49,11 +51,21 @@ public:
     return current;
   }
 
+  Gate* get_component(std::string_view name)
+  {
+    if (found(name))
+    {
+      return components[std::string(name)].get();
+    }
+
+    return nullptr;
+  }
+
   std::vector<std::string_view> get_names()
   {
     std::vector<std::string_view> res;
 
-    for (auto& [k, _] : components)
+    for (const auto& [k, _] : components)
     {
       res.push_back(k);
     }
@@ -62,10 +74,8 @@ public:
   }
 
 private:
-
   static Board*                                singleton;
-
-  std::pair<std::string, Gate*>                                        current;
+  std::pair<std::string, Gate*>                current;
   std::map<std::string, std::unique_ptr<Gate>> components;
 };
 

@@ -86,7 +86,16 @@ void handle_input(std::string_view str)
 		break; case 'l':
 					 case 'L':
 		{
-				for (auto n : Board::instance()->get_names())
+				auto component_names = Board::instance()->get_names();
+
+ 				if (component_names.empty())
+				{
+					info("No component found.");
+					newline();
+					return;
+				}
+ 
+				for (auto n : component_names)
 				{
 					log(n, '\n');
 				}
@@ -99,25 +108,32 @@ void handle_input(std::string_view str)
 
 			if (auto id = str.find(delimiter); id < str.size() - 1)
 			{
-				std::string name = std::string(str.substr(id+1));
+				std::string name = make_lower(std::string(str.substr(id+1)));
 
-				if (Board::instance()->found(name))
+				auto board = Board::instance();
+
+				if (board->found(name))
 				{
-						Board::instance()->set_context(name);
-						log("Context switched, current: ", name, '\n');
-						newline();
+						if (board->get_component(name)->type != GateType::CUSTOM)
+						{
+							log("Gate type `", name, "` is built in, getting context is forbidden.\n");
+						}
+						else
+						{
+							board->set_context(name);
+							log("Context switched, current: ", name, '\n');
+						}
 				}
 				else
 				{
-					log("Component `", name, "` not found.");
-					newline();
+					log("Component `", name, "` not found.\n");
 				}
 			}
 			else
 			{
 				info("Please provide a component name.");
-				newline();
 			}
+			newline();
 		}
 		break; default:
 		{
