@@ -61,11 +61,19 @@ void handle_input(std::string_view str)
 		break; case 'H':
 					 case 'h':
 		{
-				desc("P                 ", "Simulate the current component.");
+				desc("R                 ", "Simulate the current component.");
 				desc("C <component name>", "Create a new component.");
-				desc("L                 ", "List all components");
-				desc("S <component name>", "Set the current component as current");
+				desc("L                 ", "List all components.");
+				desc("S <component name>", "Set the current component as current.");
+				desc("A <component_name>", "Add the specified component to current configuration.");
 				newline();
+		}
+		break; case 'R':
+					 case 'r':
+		{
+				auto board = Board::instance();
+				auto current = board->context().second;
+				current->simulate();
 		}
 		break; case 'C':
 					 case 'c':
@@ -82,6 +90,40 @@ void handle_input(std::string_view str)
 				info("Please provide a component name.");
 				newline();
 			}
+		}
+		break; case 'A':
+					 case 'a':
+		{
+			auto board = Board::instance();
+			auto current = board->context();
+
+			if (current.second == nullptr)
+			{
+				log("Current context is empty, please select a configuration\n");
+				newline();
+				return;
+			}
+
+			if (auto id = str.find(" "); id < str.size() - 1)
+			{
+				std::string name = make_lower(std::string(str.substr(id+1)));
+
+				if (auto component = board->get_component(name); component != nullptr)
+				{
+					auto id = current.second->add_subgate(component);
+
+					log("Component successfully added with ID ", id, "\n");
+				}
+				else
+				{
+					log("Component with given name `", name, "` not found!\n");
+				}
+			}
+			else
+			{
+				info("Please provide a component name.\n");
+			}
+			newline();
 		}
 		break; case 'l':
 					 case 'L':

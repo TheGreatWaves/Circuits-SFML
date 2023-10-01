@@ -13,8 +13,8 @@ class Board
 public:
   Board()
   {
-    components["and"] = std::make_unique<Gate>(2, 1, GateType::AND);
-    components["not"] = std::make_unique<Gate>(1, 1, GateType::NOT);
+    components["and"] = std::make_unique<Gate>(2, 1, GateType::AND, "and");
+    components["not"] = std::make_unique<Gate>(1, 1, GateType::NOT, "not");
     singleton = this;
   }
 
