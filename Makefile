@@ -1,4 +1,4 @@
-sim: digital_serializer.cpp pin.cpp
+sim: digital_serializer.cpp pin.cpp -lsfml-graphics -lsfml-window -lsfml-system
 	g++ -g $^ -o $@
 
 

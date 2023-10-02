@@ -1,9 +1,15 @@
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <sstream>
 
 #include "board.hpp"
+
+#include "application/application.hpp"
+
+#include <SFML/Graphics.hpp>
 
 void runFile(const std::string& filePath);
 
@@ -408,9 +414,9 @@ void runFile(const std::string& filePath)
 	}
 }
 
-int main()
+
+void run_cli()
 {
-	Board board;
 	std::string line;
 
 	greet();
@@ -421,4 +427,18 @@ int main()
 		handle_input(line);
 		newline();
 	}
+}
+
+void run_gui()
+{
+	const app::WindowContext ctx{ 800, 800, "GUI-WINDOW" };
+  app::Application app(ctx);
+  app.run();
+}
+
+Board board;
+
+int main()
+{
+	run_gui();
 }
