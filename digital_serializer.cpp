@@ -5,6 +5,7 @@
 
 #include "board.hpp"
 
+void runFile(const std::string& filePath);
 
 void greet()
 {
@@ -53,6 +54,26 @@ void handle_input(std::string_view str)
 				desc("W     <src> <dest>", "Wire source pin and destination pin.");
 				desc("W     <src> <dest>", "Wire source pin and destination pin.");
 				desc("E <component_name>", "Serialize the current component.");
+				desc("F    <source_file>", "Run file");
+				desc("Q <component_name>", "Show truth table of component.");
+		}
+		break; case 'q':
+		{
+			// TODO: get truth table
+		}
+		break; case 'f':
+		{
+			if (auto id = str.find(" "); id < str.size() - 1)
+			{
+				auto file = std::string(str.substr(id+1));
+				log("Running file...\n");
+				runFile(file);
+				log("Finished running file.\n");
+			}
+			else
+			{
+				log("Please specify a file.\n");
+			}
 		}
 		break; case 'e':
 		{
@@ -97,7 +118,7 @@ void handle_input(std::string_view str)
 			}
 			else
 			{
-				log("Successfully wired", p1, " and ", p2, '\n');
+				log("Successfully wired ", p1, " and ", p2, '\n');
 			}
 		}
 		break; case 'd':
@@ -338,6 +359,27 @@ void handle_input(std::string_view str)
 		{
 				info("Invalid command.");
 		}
+	}
+}
+
+void runFile(const std::string& filePath)
+{
+	try
+	{
+		std::ifstream ifs(filePath);
+		std::string line;
+
+		while(std::getline(ifs, line))
+		{
+			handle_input(line);
+		}
+
+		ifs.close();
+
+	}	
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what();
 	}
 }
 

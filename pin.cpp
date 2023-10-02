@@ -7,7 +7,7 @@ void Pin::simulate()
   /** 
    * Simulate connection.
    */
-  if (connection != nullptr)
+  for (auto connection : connections)
   {
     connection->simulate();
   }

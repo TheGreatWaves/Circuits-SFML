@@ -15,8 +15,7 @@
 // List of built in types.
 enum class GateType
 {
-  NOT,
-  AND,
+  NAND,
   CUSTOM
 };
 
@@ -52,27 +51,45 @@ struct Gate
   {
     std::size_t indicies = (2 << (input_pins.size() - 1));
 
-    log("Permutations: ", indicies, '\n');
-
     for (std::size_t i = 0; i < indicies; i++)
     {
       apply_input(input_pins.size(), i);
 
-      log(BLOCK, " Apply ", BLOCK, "\n");
-
       simulate();
+
+      for (std::size_t n = 0; n < input_pins.size(); n++)
+      {
+        log(n, ' ');
+      }
+
+      log("| ");
+
+      for (std::size_t n = 0; n < output_pins.size(); n++)
+      {
+        log(n, ' ');
+      }
+
+      newline();
+      for (std::size_t n = 0; n < (input_pins.size() + output_pins.size()); n++)
+      {
+        log("==");
+      }
+      log("=");
+      newline();
 
       for (std::size_t j = 0; j < input_pins.size(); j++)
       {
-        log(" input[", j, "] = ", (input_pins[j].state == PinState::ACTIVE) ? 1 : 0, '\n');
+        log((input_pins[j].state == PinState::ACTIVE) ? 1 : 0, ' ');
       }
+
+      log("| ");
 
       for (std::size_t j = 0; j < output_pins.size(); j++)
       {
-        log(" output[", j, "] = ", (output_pins[j].state == PinState::ACTIVE) ? 1 : 0, '\n');
+        log((output_pins[j].state == PinState::ACTIVE) ? 1 : 0, ' ');
       }
 
-      log("Value: ", serialize_output(), "\n");
+      newline();
 
       serialized_computation.push_back(serialize_output());
     }
@@ -112,7 +129,6 @@ struct Gate
 
     // Apply the serialized output to the output pins.
     apply_output(static_cast<int>(output_pins.size()), serialized_output);
-    
   }
 
   void apply_input(int count, std::size_t mask)
@@ -120,7 +136,6 @@ struct Gate
     std::size_t index = 0;
     while (count --> 0)
     {
-      std::cout << ((mask >> count) & 1);
       input_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
     }
 
@@ -143,8 +158,7 @@ struct Gate
   {
     switch (type)
     {
-    break; case GateType::NOT: handle_not();
-    break; case GateType::AND: handle_and();
+    break; case GateType::NAND: handle_nand();
     break; case GateType::CUSTOM: handle_custom_type();
     break; default: log("Invalid type...?\n");
     }
@@ -303,18 +317,13 @@ struct Gate
    * Built-in type handlers.
    * TODO: Maybe abstract this out later.
    */
-  void handle_and()
+  void handle_nand()
   {
-    output_pins[0].state = (input_pins[0].is_active() && input_pins[1].is_active())
+    output_pins[0].state = (!(input_pins[0].is_active() && input_pins[1].is_active()))
                          ? PinState::ACTIVE
                          : PinState::INACTIVE;
   }
-
-  void handle_not()
-  {
-    output_pins[0].state = (input_pins[0].is_active() ? PinState::INACTIVE : PinState::ACTIVE);
-  }
-
+  
   // Prints information about the current gate.
   void info()
   {
@@ -365,7 +374,6 @@ inline void Gate::handle_custom_type()
   /**
    * Loop through all input pins and propagate signal.
    */
-  log("Simulating custom chip type\n");
   for (auto& pins : input_pins)
   {
     pins.simulate();
@@ -375,7 +383,7 @@ inline void Gate::handle_custom_type()
 inline bool Gate::connect_pins(Pin* input, Pin* output)
 {
   if (input == nullptr || output == nullptr) return false;
-  input->connection = std::make_shared<Wire>(input, output);
+  input->connections.push_back(std::make_shared<Wire>(input, output));
   return true;
 }
 

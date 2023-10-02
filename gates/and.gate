@@ -1,0 +1,12 @@
+c and
+i +
+i +
+o +
+add nand
+add nand
+w 0 2
+w 1 3
+w 101 4
+w 101 5
+w 102 100
+e

@@ -17,7 +17,7 @@ enum class PinState
 struct Pin
 {
   PinState state;
-  std::shared_ptr<Wire> connection;
+  std::vector<std::shared_ptr<Wire>> connections;
   // OPTIONAL: The pin may live on a gate, in which case we can simulate it.
   Gate* parent;
 
