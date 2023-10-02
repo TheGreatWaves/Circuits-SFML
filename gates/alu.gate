@@ -1,0 +1,63 @@
+c alu
+i +
+i +
+i +
+i +
+i +
+i +
+i +
+i +
+i +
+o +
+o +
+o +
+o +
+o +
+o +
+o +
+a xor
+a xor
+a xor
+a xor
+a 4b_adder
+a not
+a not
+a not
+a not
+a and
+a and
+a and
+w 0 17
+w 1 18
+w 2 19
+w 3 20
+w 4 9
+w 5 11
+w 6 13
+w 7 15
+w 8 10
+w 8 12
+w 8 14
+w 8 16
+w 8 25
+w 107 21
+w 108 22
+w 109 23
+w 110 24
+w 111 100
+w 111 26
+w 112 101
+w 112 27
+w 113 102
+w 113 28
+w 114 103
+w 114 29
+w 115 104
+w 116 30
+w 117 31
+w 118 33
+w 119 35
+w 120 32
+w 121 34
+w 122 106
+e

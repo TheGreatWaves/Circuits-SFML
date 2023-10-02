@@ -1,0 +1,37 @@
+c 4b_adder
+i +
+i +
+i +
+i +
+i +
+i +
+i +
+i +
+i +
+o +
+o +
+o +
+o +
+o +
+a adder
+a adder
+a adder
+a adder
+w 0 18
+w 1 15
+w 2 12
+w 3 9
+w 4 19
+w 5 16
+w 6 13
+w 7 10
+w 8 11
+w 105 103
+w 106 14
+w 107 102
+w 108 17
+w 109 101
+w 110 20
+w 111 100
+w 112 104
+e

@@ -95,7 +95,7 @@ void handle_input(std::string_view str)
 			if (auto id = str.find(" "); id < str.size() - 1)
 			{
 				auto file = std::string(str.substr(id+1));
-				log("Running file...\n");
+				log("Running file ", file, "\n");
 				runFile(file);
 				log("Finished running file.\n");
 			}
