@@ -59,7 +59,35 @@ void handle_input(std::string_view str)
 		}
 		break; case 'q':
 		{
-			// TODO: get truth table
+			auto board = Board::instance();
+			
+			if (auto id = str.find(" "); id < str.size() - 1)
+			{
+				std::string name = std::string(str.substr(id+1));
+
+				if (auto component = board->get_component(name); component != nullptr)
+				{
+					component->print_truth_table();
+				}
+				else
+				{
+					log("Component with given name `", name, "` not found!\n");
+				}
+			}			
+			else
+			{
+				// Print the truth table of the current component
+				auto current = board->context().second;
+
+				if (current != nullptr)
+				{
+					current->print_truth_table();
+				}
+				else
+				{
+					log("Current context is empty, please select a configuration\n");
+				}
+			}
 		}
 		break; case 'f':
 		{
@@ -79,7 +107,6 @@ void handle_input(std::string_view str)
 		{
 			auto board = Board::instance();
 			auto current = board->context().second;
-
 			/**
 			 * Use the current context.
 			 */
@@ -88,10 +115,7 @@ void handle_input(std::string_view str)
 				log("Current context is empty, please select a configuration\n");
 				return;
 			}
-
 			current->serialize();
-
-			
 		}
 		break; case 'w':
 		{

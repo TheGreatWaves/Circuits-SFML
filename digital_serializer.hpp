@@ -47,54 +47,68 @@ struct Gate
   {
   }
 
-  void serialize()
+  void print_truth_table()
   {
+    if (!serialized)
+    {
+      log("Component not serialized, can't evaluate print table.\n");
+      return;
+    }
     std::size_t indicies = (2 << (input_pins.size() - 1));
 
+    for (std::size_t n = 0; n < input_pins.size(); n++)
+    {
+      log(n, ' ');
+    }
+
+    log("| ");
+
+    for (std::size_t n = 0; n < output_pins.size(); n++)
+    {
+      log(n, ' ');
+    }
+
+    newline();
+    for (std::size_t n = 0; n < (input_pins.size() + output_pins.size()); n++)
+    {
+      log("==");
+    }
+    log("=");
+    newline();
+
+    // Loop through all perms.
     for (std::size_t i = 0; i < indicies; i++)
     {
-      apply_input(input_pins.size(), i);
-
-      simulate();
-
-      for (std::size_t n = 0; n < input_pins.size(); n++)
-      {
-        log(n, ' ');
-      }
-
-      log("| ");
-
-      for (std::size_t n = 0; n < output_pins.size(); n++)
-      {
-        log(n, ' ');
-      }
-
-      newline();
-      for (std::size_t n = 0; n < (input_pins.size() + output_pins.size()); n++)
-      {
-        log("==");
-      }
-      log("=");
-      newline();
+      auto output = serialized_computation.at(i);
 
       for (std::size_t j = 0; j < input_pins.size(); j++)
       {
-        log((input_pins[j].state == PinState::ACTIVE) ? 1 : 0, ' ');
+        log(i >> (input_pins.size() - (1 + j)) & 1, ' ');
       }
 
       log("| ");
-
       for (std::size_t j = 0; j < output_pins.size(); j++)
       {
-        log((output_pins[j].state == PinState::ACTIVE) ? 1 : 0, ' ');
+        log(output >> (output_pins.size() - (1 + j)) & 1, ' ');
       }
-
       newline();
+    }
+  }
 
+  void serialize()
+  {
+    std::size_t indicies = (2 << (input_pins.size() - 1));
+    for (std::size_t i = 0; i < indicies; i++)
+    {
+      apply_input(input_pins.size(), i);
+      simulate();
       serialized_computation.push_back(serialize_output());
     }
-
     serialized = true;
+
+    log(BLOCK, " Serialized Truth Table ", BLOCK, '\n');
+
+    print_truth_table();
   }
 
   std::size_t serialize_output()
@@ -138,8 +152,6 @@ struct Gate
     {
       input_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
     }
-
-    newline();
   }
 
   void apply_output(int count, std::size_t mask)
@@ -150,8 +162,6 @@ struct Gate
       std::cout << ((mask >> count) & 1);
       output_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
     }
-
-    newline();
   }
 
   void simulate()
