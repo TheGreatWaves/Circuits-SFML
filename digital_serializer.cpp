@@ -33,6 +33,7 @@ void create_component(std::string_view name)
 
 void handle_input(std::string_view str)
 {
+	if (str.at(0) == '#') return;
 
 	std::string command = make_lower(str);
 

@@ -1,0 +1,12 @@
+# Requires: OR, NOT
+create nor
+i +
+i +
+o +
+add or
+add not
+w 0 2
+w 1 3
+w 101 4
+w 102 100
+e

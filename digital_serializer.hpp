@@ -159,7 +159,6 @@ struct Gate
     std::size_t index = 0;
     while (count --> 0)
     {
-      std::cout << ((mask >> count) & 1);
       output_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
     }
   }
