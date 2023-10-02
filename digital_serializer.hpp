@@ -23,24 +23,120 @@ enum class GateType
 // Built in chips.
 struct Gate
 {
-  std::vector<Pin>            input_pins;
-  std::vector<Pin>            output_pins;
-  std::size_t                 pin_count;
-  GateType                    type;
-  std::size_t                 subgate_count;
-  std::string                 name;
+  std::vector<Pin>                             input_pins;
+  std::vector<Pin>                             output_pins;
+  std::size_t                                  pin_count;
+  GateType                                     type;
+  std::size_t                                  subgate_count;
+  std::string                                  name;
   std::map<std::size_t, std::unique_ptr<Gate>> subgates;
+
+  bool                                         serialized;
+  std::vector<std::size_t>                     serialized_computation;
 
   explicit Gate(std::size_t ipc = 0,
                 std::size_t opc = 0,
                 GateType gate_type = GateType::CUSTOM,
-                const std::string& gate_name = ""
+                const std::string& gate_name = "",
+                bool is_serialized = false
     )
     : type{ gate_type }
     , input_pins(ipc, Pin(this))
     , output_pins(opc, Pin())
     , name{ gate_name }
+    , serialized{ is_serialized }
   {
+  }
+
+  void serialize()
+  {
+    std::size_t indicies = (2 << (input_pins.size() - 1));
+
+    log("Permutations: ", indicies, '\n');
+
+    for (std::size_t i = 0; i < indicies; i++)
+    {
+      apply_input(input_pins.size(), i);
+
+      log(BLOCK, " Apply ", BLOCK, "\n");
+
+      simulate();
+
+      for (std::size_t j = 0; j < input_pins.size(); j++)
+      {
+        log(" input[", j, "] = ", (input_pins[j].state == PinState::ACTIVE) ? 1 : 0, '\n');
+      }
+
+      for (std::size_t j = 0; j < output_pins.size(); j++)
+      {
+        log(" output[", j, "] = ", (output_pins[j].state == PinState::ACTIVE) ? 1 : 0, '\n');
+      }
+
+      log("Value: ", serialize_output(), "\n");
+
+      serialized_computation.push_back(serialize_output());
+    }
+
+    serialized = true;
+  }
+
+  std::size_t serialize_output()
+  {
+    std::size_t so = 0;
+    for (std::size_t j = 0; j < output_pins.size(); j++)
+    {
+      so <<= 1;
+      so |= (output_pins[j].is_active() ? 1 : 0);
+    }
+    return so;
+  }
+
+  std::size_t serialize_input()
+  {
+    std::size_t so = 0;
+    for (std::size_t j = 0; j < input_pins.size(); j++)
+    {
+      so <<= 1;
+      so |= (input_pins[j].is_active() ? 1 : 0);
+    }
+    return so;
+  }
+
+  void simulate_serialized()
+  {
+    // Get serialized entry of the input.
+    auto serialized_input = serialize_input();
+
+    // Retrieve the serialized output entry using the serialized input.
+    auto serialized_output = serialized_computation[serialized_input];
+
+    // Apply the serialized output to the output pins.
+    apply_output(static_cast<int>(output_pins.size()), serialized_output);
+    
+  }
+
+  void apply_input(int count, std::size_t mask)
+  {
+    std::size_t index = 0;
+    while (count --> 0)
+    {
+      std::cout << ((mask >> count) & 1);
+      input_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
+    }
+
+    newline();
+  }
+
+  void apply_output(int count, std::size_t mask)
+  {
+    std::size_t index = 0;
+    while (count --> 0)
+    {
+      std::cout << ((mask >> count) & 1);
+      output_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
+    }
+
+    newline();
   }
 
   void simulate()
@@ -187,7 +283,8 @@ struct Gate
 
   Gate duplicate()
   {
-    Gate g(input_pins.size(), output_pins.size(), this->type, this->name);
+    Gate g(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
+    g.serialized_computation = this->serialized_computation;
     return g;
   }
 
@@ -260,6 +357,11 @@ struct Gate
 
 inline void Gate::handle_custom_type()
 {
+  if (serialized)
+  {
+    simulate_serialized();
+    return;
+  }
   /**
    * Loop through all input pins and propagate signal.
    */

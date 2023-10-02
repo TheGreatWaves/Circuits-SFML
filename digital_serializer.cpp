@@ -41,16 +41,36 @@ void handle_input(std::string_view str)
 					 case 'h':
 		{
 				desc("R                 ", "Simulate the current component.");
-				desc("C <component name>", "Create a new component.");
+				desc("C <component_name>", "Create a new component.");
 				desc("L                 ", "List all components.");
 				desc("P                 ", "List all current components.");
-				desc("S <component name>", "Set the current component as current.");
+				desc("S <component_name>", "Set the current component as current.");
 				desc("A <component_name>", "Add the specified component to current configuration.");
-				desc("T     <pin number>", "Toggle the pin specified.");
+				desc("T     <pin_number>", "Toggle the pin specified.");
 				desc("I            <+/->", "Add/Delete input pin.");
 				desc("O            <+/->", "Add/Delete output pin.");
 				desc("D                 ", "Dump current component information.");	
 				desc("W     <src> <dest>", "Wire source pin and destination pin.");
+				desc("W     <src> <dest>", "Wire source pin and destination pin.");
+				desc("E <component_name>", "Serialize the current component.");
+		}
+		break; case 'e':
+		{
+			auto board = Board::instance();
+			auto current = board->context().second;
+
+			/**
+			 * Use the current context.
+			 */
+			if (current == nullptr)
+			{
+				log("Current context is empty, please select a configuration\n");
+				return;
+			}
+
+			current->serialize();
+
+			
 		}
 		break; case 'w':
 		{
@@ -245,9 +265,15 @@ void handle_input(std::string_view str)
 
 				if (auto component = board->get_component(name); component != nullptr)
 				{
-					auto id = current.second->add_subgate(component);
-
-					log("Component successfully added with ID ", id, "\n");
+					if (component->serialized)
+					{
+						auto id = current.second->add_subgate(component);
+						log("Component successfully added with ID ", id, "\n");
+					}
+					else
+					{
+						log("Component ", component->name, " is not yet serialized\n");
+					}
 				}
 				else
 				{
