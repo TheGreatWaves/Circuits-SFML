@@ -9,12 +9,20 @@
 
 #include <string_view>
 
+
+enum class Mode
+{
+ IDLE,
+ WIRING,
+};
+
 struct Context
 {
   /**
    * Data members.
    */
   std::string_view current_component_name;
+  Mode             edit_mode = Mode::IDLE;
 
   /**
    * Yes, I should throw an error if the constructor is called again, but I'm too lazy!

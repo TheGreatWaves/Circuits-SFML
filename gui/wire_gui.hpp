@@ -12,21 +12,6 @@
 
 #include "context.hpp"
 
-// Calculates the distance from point a to point b.
-inline sf::Vector2f difference(const sf::Vector2f a, const sf::Vector2f& b)
-{
-  return { b.x - a.x, b.y - a.y };
-}
-
-inline bool near(const sf::Vector2f a, const sf::Vector2f& b, float dx = 1.f, float dy = 1.f)
-{
-  auto diff = difference(a, b);
-  diff.x = (diff.x < 0.f) ? -diff.x : diff.x;
-  diff.y = (diff.y < 0.f) ? -diff.y : diff.y;
-  return (diff.x <= dx) && (diff.y <= dy);
-}
-
-
 inline float lerp(float a, float b, float f)
 {
     return a + f * (b - a);

@@ -1,9 +1,11 @@
 #pragma once
-#include <SFML/Graphics/Color.hpp>
 #ifndef PIN_GUI
 #define PIN_GUI
 
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics.hpp>
+
+#include "wire_gui.hpp"
 
 const sf::Color ON_COLOR = sf::Color(220,20,60);
 const sf::Color OFF_COLOR = sf::Color(88, 91, 112);
