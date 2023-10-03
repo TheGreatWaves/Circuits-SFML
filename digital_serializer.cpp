@@ -7,7 +7,6 @@
 
 #include "board.hpp"
 
-#include "application/application.hpp"
 
 #include <SFML/Graphics.hpp>
 
@@ -431,14 +430,11 @@ void run_cli()
 
 void run_gui()
 {
-	const app::WindowContext ctx{ 800, 800, "GUI-WINDOW" };
-  app::Application app(ctx);
-  app.run();
 }
 
 Board board;
 
 int main()
 {
-	run_gui();
+	run_cli();
 }
