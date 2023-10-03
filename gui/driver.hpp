@@ -12,6 +12,12 @@
 #include <SFML/System.hpp>
 
 /**
+ * Simulator related dependencies.
+ */
+#include "context.hpp"
+#include "board_gui.hpp"
+
+/**
  * The program class represents the GUI application.
  */
 class Program
@@ -66,11 +72,18 @@ private:
   const sf::Time TIME_PER_FRAME;
   sf::Time       m_time_since_last_update = sf::Time::Zero;
   sf::Clock      m_clock;
+
+  /**
+   * Simulator related members
+   */
+  Context       m_ctx;  // Retrievable via Context::instance() as well.
+  BoardGui      m_board;
 };
 
 inline Program::Program()
 : m_window(sf::VideoMode(800, 800), "Workspace")
 , TIME_PER_FRAME(sf::seconds(1.f/144.f))
+, m_board(static_cast<sf::Vector2f>(m_window.getSize()))
 {
 }
 
@@ -121,6 +134,13 @@ inline void Program::draw()
 {
   m_window.clear();
 
+  /**
+   * Call component's draw() function below.
+   */
+
+  // Draw the board
+  m_window.draw(m_board);
+
   m_window.display();
 }
 
@@ -133,6 +153,8 @@ inline void Program::handle_events()
     {
       m_window.close();
     }
+
+    m_board.handle_events(event);
   }
 }
 
