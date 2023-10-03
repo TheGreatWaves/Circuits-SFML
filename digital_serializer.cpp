@@ -1,11 +1,10 @@
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <sstream>
 
 #include "board.hpp"
+#include "gui/driver.hpp"
 
 
 #include <SFML/Graphics.hpp>
@@ -430,11 +429,13 @@ void run_cli()
 
 void run_gui()
 {
+	Program program;
+	program.run();
 }
 
 Board board;
 
 int main()
 {
-	run_cli();
+	run_gui();
 }
