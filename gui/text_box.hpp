@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 #ifndef TEXT_BOX
 #define TEXT_BOX
 
@@ -8,9 +7,31 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Graphics.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 #include "context.hpp"
+
+inline float get_text_max_height(const sf::Text& l_text) 
+{
+	auto charSize = l_text.getCharacterSize();
+	auto font = l_text.getFont();
+	auto string = l_text.getString().toAnsiString();
+	bool bold = (l_text.getStyle() & sf::Text::Bold);
+	float max = 0.f;
+	for (size_t i = 0; i < string.length(); ++i) 
+	{
+		sf::Uint32 character = string[i];
+		auto glyph = font->getGlyph(character, charSize, bold);
+		auto height = glyph.bounds.height;
+		if (height <= max) 
+		{ 
+			continue; 
+		}
+		max = height;
+	}
+	return max;
+}
 
 class TextBoxGui : public sf::Drawable
 {
@@ -28,9 +49,19 @@ public:
 		m_edit_mode = false;
 	}
 
+	void set_text_color(const sf::Color& color)
+	{
+		m_text->setFillColor(color);
+	}
+
 	void draw(sf::RenderTarget &target, sf::RenderStates states) const override
 	{
 		target.draw(*m_text, states);
+	}
+
+	void set_font_size(unsigned int size)
+	{
+		m_text->setCharacterSize(size);
 	}
 
 	void set_position(const sf::Vector2f pos)
@@ -49,6 +80,7 @@ public:
 
 		if (m_edit_mode)
 		{
+			Context::instance()->edit_mode = Mode::TEXT;
 			m_text->setFillColor(sf::Color(100, 100, 100));
 		}
 		else
@@ -81,13 +113,14 @@ public:
 			else if (event.key.code == sf::Keyboard::Return)
 			{
 				m_edit_mode = false;
+				m_updated = true;
+				Context::instance()->edit_mode = Mode::IDLE;
 			}
 		}
 
 		if (m_edited)
 		{
 			m_text->setString(m_input_text);
-			Context::instance()->current_component_name = m_input_text;
 			m_edited = false;
 		}
 
@@ -97,19 +130,38 @@ public:
 		}
 	}
 
+	const std::string& get_string()
+	{
+		return m_input_text;
+	}
+
 	float get_width()
 	{
 		return m_text->getGlobalBounds().width;
+	}
+
+	bool was_edited()
+	{
+		auto updated = m_updated;
+		m_updated = false;
+		return updated;
+	}
+	
+	float get_height()
+	{
+		return get_text_max_height(*m_text);
 	}
 
 private:
 	bool                      m_can_edit;
 	bool                      m_edit_mode;
 	bool                      m_edited;	
+	bool                      m_updated = false;
 	sf::Font                  m_font;
 	std::unique_ptr<sf::Text> m_text;
 	std::string               m_input_text;
 	std::string               m_default_str;
 };
+
 
 #endif /* TEXT_BOX */

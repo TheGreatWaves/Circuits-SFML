@@ -1,6 +1,4 @@
 #pragma once
-#include <SFML/Graphics/Color.hpp>
-#include <sys/syscall.h>
 #ifndef WIRE_GUI
 #define WIRE_GUI
 
@@ -10,6 +8,8 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <sys/syscall.h>
 
 #include "context.hpp"
 

@@ -9,11 +9,13 @@
 
 #include <string_view>
 
+#include <SFML/Graphics.hpp>
 
 enum class Mode
 {
  IDLE,
  WIRING,
+ TEXT,
 };
 
 // Forwarding wire class
@@ -27,6 +29,7 @@ struct Context
   std::string_view current_component_name;
   Mode             edit_mode = Mode::IDLE;
   WireGui*         active_wire = nullptr;
+  sf::RenderWindow* window = nullptr;
 
 
   /**

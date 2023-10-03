@@ -85,6 +85,9 @@ inline Program::Program()
 , TIME_PER_FRAME(sf::seconds(1.f/144.f))
 , m_board(static_cast<sf::Vector2f>(m_window.getSize()))
 {
+  // WARNING!
+  // Yes, frown at me. I deserve it.
+  Context::instance()->window = &m_window;
 }
 
 inline void Program::run()
