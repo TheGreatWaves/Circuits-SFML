@@ -9,7 +9,7 @@
 #include <vector>
 #include "pin_gui.hpp"
 
-class PinPortGui : public sf::Drawable
+class PinPortGui 
 {
 public:
 
@@ -23,6 +23,19 @@ public:
     m_interactable = interactable;
   }
 
+  PinGui* get_pin(const sf::Vector2f& pos)
+  {
+    for (auto& p : m_pins)
+    {
+      // Ugly and wasteful but it has to be done.
+      if (p.contains(pos))
+      {
+        return &p;
+      }
+    }
+    return nullptr;
+  }
+
   void set_size(const sf::RectangleShape& parent)
   {
     m_strip.setSize({10.f, parent.getSize().y});
@@ -30,6 +43,11 @@ public:
   
   void handle_events(const sf::Event& event)
 	{
+    if (Context::instance()->edit_mode == Mode::WIRING)
+    {
+      return;
+    }
+
     bool pressed_pin = false;
 
     sf::Vector2f mouse_pos = {static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)};
@@ -60,13 +78,13 @@ public:
     }
 	}
 
-  void draw(sf::RenderTarget &target, sf::RenderStates states) const override
+  void draw(sf::RenderTarget &target, sf::RenderStates states) 
   {
     target.draw(m_strip, states);
 
-    for (const auto& p : m_pins)
+    for (auto& p : m_pins)
     {
-      target.draw(p, states);
+      p.draw(target, states);
     }
   }
 

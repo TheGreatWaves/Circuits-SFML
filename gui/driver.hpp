@@ -128,6 +128,7 @@ inline void Program::fixed_time_updated()
 
 inline void Program::update(const sf::Time& dt)
 {
+  m_board.update(dt);
 }
 
 inline void Program::draw()

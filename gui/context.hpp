@@ -16,6 +16,9 @@ enum class Mode
  WIRING,
 };
 
+// Forwarding wire class
+class WireGui;
+
 struct Context
 {
   /**
@@ -23,6 +26,8 @@ struct Context
    */
   std::string_view current_component_name;
   Mode             edit_mode = Mode::IDLE;
+  WireGui*         active_wire = nullptr;
+
 
   /**
    * Yes, I should throw an error if the constructor is called again, but I'm too lazy!

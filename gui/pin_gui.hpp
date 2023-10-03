@@ -10,7 +10,7 @@
 const sf::Color ON_COLOR = sf::Color(220,20,60);
 const sf::Color OFF_COLOR = sf::Color(88, 91, 112);
 
-class PinGui : public sf::Drawable
+class PinGui 
 {
 private:
   
@@ -43,6 +43,10 @@ public:
       }
     }
 
+	}
+
+  void draw(sf::RenderTarget &target, sf::RenderStates states)
+  {
     if (on)
     {
       m_pin.setFillColor(ON_COLOR);
@@ -51,16 +55,17 @@ public:
     {
       m_pin.setFillColor(OFF_COLOR);
     }
-	}
-
-  void draw(sf::RenderTarget &target, sf::RenderStates states) const override
-  {
     target.draw(m_pin, states);
   }
 
   void set_position(const sf::Vector2f& pos)
   {
     m_pin.setPosition(pos);
+  }
+
+  [[ nodiscard ]] sf::Vector2f get_position() const
+  {
+    return m_pin.getPosition();
   }
 
   float get_radius() const
@@ -73,9 +78,25 @@ public:
     m_interactable = interactable;
   }
 
+
+  bool is_on() const 
+  {
+    return on;
+  }
+
+  void toggle_on() 
+  {
+    on = true;
+  }
+
+  void toggle_off() 
+  {
+    on = false;
+  }
+
 private:
   sf::CircleShape m_pin;
-  bool            on;
+  bool            on = false;
   bool            m_interactable;
 };
 
