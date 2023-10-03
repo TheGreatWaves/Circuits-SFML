@@ -23,13 +23,16 @@ public:
 		m_text = std::make_unique<sf::Text>("Unnamed", m_font);
 		m_text->setCharacterSize(30);
 		m_text->setFillColor(sf::Color::White);
-
-		m_text->move(20.f, 20.f);
 	}
 
 	void draw(sf::RenderTarget &target, sf::RenderStates states) const override
 	{
 		target.draw(*m_text, states);
+	}
+
+	void set_position(const sf::Vector2f pos)
+	{
+		m_text->setPosition(pos);
 	}
 
 	void handle_events(const sf::Event& event)
