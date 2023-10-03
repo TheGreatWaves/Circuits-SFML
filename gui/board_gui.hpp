@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "text_box.hpp"
+#include "pin_port_gui.hpp"
 
 class BoardGui : public sf::Drawable
 {
@@ -23,6 +24,16 @@ public:
     m_prototype.setPosition((m_background.getSize() - m_prototype.getSize()) / 2.f);
 
     m_text_box.set_position({m_prototype.getPosition().x, 20.f});
+
+    auto prototype_position = m_prototype.getPosition();
+
+    m_input_pin_port.set_size(m_prototype);
+    m_input_pin_port.set_position({prototype_position.x-(m_input_pin_port.get_size().x / 2.f), prototype_position.y});
+    m_input_pin_port.set_interactability(true);
+
+    m_output_pin_port.set_interactability(false);
+    m_output_pin_port.set_size(m_prototype);
+    m_output_pin_port.set_position({prototype_position.x + m_prototype.getSize().x - (m_output_pin_port.get_size().x / 2.f), prototype_position.y});
   }
 
   void draw(sf::RenderTarget &target, sf::RenderStates states) const override
@@ -30,17 +41,26 @@ public:
     target.draw(m_background, states);
     target.draw(m_prototype, states);
     target.draw(m_text_box, states);
+
+    target.draw(m_input_pin_port, states);
+    target.draw(m_output_pin_port, states);
   }
 
   void handle_events(const sf::Event& event)
 	{
     m_text_box.handle_events(event);
+    m_input_pin_port.handle_events(event);
+    m_output_pin_port.handle_events(event);
 	}
 
 private:
   sf::RectangleShape m_background;
   sf::RectangleShape m_prototype;
   TextBoxGui         m_text_box;
+
+  // Temp, let's have one pin
+  PinPortGui m_input_pin_port;
+  PinPortGui m_output_pin_port;
 };
 
 #endif /* BOARD_GUI */

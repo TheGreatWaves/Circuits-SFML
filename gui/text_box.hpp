@@ -23,6 +23,7 @@ public:
 		m_text = std::make_unique<sf::Text>("Unnamed", m_font);
 		m_text->setCharacterSize(30);
 		m_text->setFillColor(sf::Color::White);
+		m_edit_mode = false;
 	}
 
 	void draw(sf::RenderTarget &target, sf::RenderStates states) const override
