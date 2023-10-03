@@ -139,7 +139,7 @@ inline void Program::draw()
    */
 
   // Draw the board
-  m_window.draw(m_board);
+  m_board.draw(m_window, sf::RenderStates::Default);
 
   m_window.display();
 }

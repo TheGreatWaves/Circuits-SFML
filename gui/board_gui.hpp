@@ -8,8 +8,9 @@
 
 #include "text_box.hpp"
 #include "pin_port_gui.hpp"
+#include "wire_gui.hpp"
 
-class BoardGui : public sf::Drawable
+class BoardGui 
 {
 public:
   BoardGui(const sf::Vector2f& size)
@@ -36,7 +37,7 @@ public:
     m_output_pin_port.set_position({prototype_position.x + m_prototype.getSize().x - (m_output_pin_port.get_size().x / 2.f), prototype_position.y});
   }
 
-  void draw(sf::RenderTarget &target, sf::RenderStates states) const override
+  void draw(sf::RenderTarget &target, sf::RenderStates states)
   {
     target.draw(m_background, states);
     target.draw(m_prototype, states);
@@ -44,6 +45,8 @@ public:
 
     target.draw(m_input_pin_port, states);
     target.draw(m_output_pin_port, states);
+
+    m_wire.draw(target, states);
   }
 
   void handle_events(const sf::Event& event)
@@ -51,6 +54,7 @@ public:
     m_text_box.handle_events(event);
     m_input_pin_port.handle_events(event);
     m_output_pin_port.handle_events(event);
+    m_wire.handle_events(event);
 	}
 
 private:
@@ -61,6 +65,8 @@ private:
   // Temp, let's have one pin
   PinPortGui m_input_pin_port;
   PinPortGui m_output_pin_port;
+  WireGui m_wire;
+
 };
 
 #endif /* BOARD_GUI */
