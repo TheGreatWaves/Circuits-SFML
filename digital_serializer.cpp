@@ -9,7 +9,7 @@
 
 #include <SFML/Graphics.hpp>
 
-void runFile(const std::string& filePath);
+bool runFile(const std::string& filePath);
 
 void greet()
 {
@@ -61,6 +61,29 @@ void handle_input(std::string_view str)
 				desc("E <component_name>", "Serialize the current component.");
 				desc("F    <source_file>", "Run file");
 				desc("Q <component_name>", "Show truth table of component.");
+				desc("N <component_name>", "Marks specified component as needed, auto import if available.");
+		}
+		break; case 'n':
+		{
+			auto board = Board::instance();
+			
+			if (auto id = str.find(" "); id < str.size() - 1)
+			{
+				std::string name = std::string(str.substr(id+1));
+
+				if (!board->found(name))
+				{
+					if (!runFile("gates/" + name + ".gate"))
+					{
+						log("Error: Needed component with given name `", name, "` not found!\n");
+						exit(1);
+					}
+				}
+			}			
+			else
+			{
+					log("Error: Please specify needed component\n");
+			}
 		}
 		break; case 'q':
 		{
@@ -144,10 +167,6 @@ void handle_input(std::string_view str)
 			if (!current->wire_pins(p1, p2))
 			{
 				log("Failed to wire pin ", p1, " and ", p2, '\n');
-			}
-			else
-			{
-				log("Successfully wired ", p1, " and ", p2, '\n');
 			}
 		}
 		break; case 'd':
@@ -318,7 +337,6 @@ void handle_input(std::string_view str)
 					if (component->serialized)
 					{
 						auto id = current.second->add_subgate(component);
-						log("Component successfully added with ID ", id, "\n");
 					}
 					else
 					{
@@ -391,7 +409,7 @@ void handle_input(std::string_view str)
 	}
 }
 
-void runFile(const std::string& filePath)
+bool runFile(const std::string& filePath)
 {
 	try
 	{
@@ -405,11 +423,15 @@ void runFile(const std::string& filePath)
 
 		ifs.close();
 
+		return true;
+
 	}	
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what();
 	}
+
+	return false;
 }
 
 
@@ -435,7 +457,13 @@ void run_gui()
 
 Board board;
 
+void init()
+{
+	runFile("gates/init.gate");
+}
+
 int main()
 {
+	init();
 	run_gui();
 }

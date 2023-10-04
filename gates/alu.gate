@@ -1,3 +1,7 @@
+need xor
+need not
+need and
+need 4b_adder
 c alu
 i +
 i +

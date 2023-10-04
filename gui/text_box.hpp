@@ -152,6 +152,12 @@ public:
 		return get_text_max_height(*m_text);
 	}
 
+	void reset()
+	{
+		m_text->setString(m_default_str);
+		m_input_text = "";
+	}
+
 private:
 	bool                      m_can_edit;
 	bool                      m_edit_mode;

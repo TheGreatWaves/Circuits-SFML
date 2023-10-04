@@ -1,4 +1,5 @@
-# Requires: OR, NAND, AND
+need or
+need and
 create xor
 i +
 i +

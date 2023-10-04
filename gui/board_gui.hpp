@@ -235,6 +235,7 @@ public:
     m_components.clear();
     m_input_pin_port.clear_port();
     m_output_pin_port.clear_port();
+    m_name_text_box.reset();
   }
 
   void save_current_configuration()

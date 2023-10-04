@@ -1,4 +1,5 @@
-# Requires: OR, NOT
+need or
+need not
 create nor
 i +
 i +
