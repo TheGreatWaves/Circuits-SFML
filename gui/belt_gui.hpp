@@ -3,6 +3,7 @@
  * The implementation looks horribly wasteful, and it probably is.
  */
 #pragma once
+#include <SFML/Window/Keyboard.hpp>
 #ifndef BELT_GUI
 #define BELT_GUI
 
@@ -87,6 +88,13 @@ public:
     if (m_active_component != nullptr)
     {
       m_active_component->set_position(static_cast<sf::Vector2f>(mouse_pos));
+
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+      {
+        m_active_component = nullptr;
+      }
+      
+      return;
     }
 
     float x_pos = 0.f;
@@ -112,30 +120,11 @@ public:
     }
   }
 
-  void select_belt()
-  {
-    switch (m_active_index)
-    {
-      break; case -2:
-      {
-        const auto& name = Context::instance()->current_component_name;
-
-        if (!name.empty())
-        {
-          Board::instance()->create_new(name);
-        }
-      }
-      break; case -1: return;
-      break; default:
-      {
-        auto names = Board::instance()->get_names();
-        auto chosen = names[m_active_index];
-        m_active_component = std::make_unique<ComponentGui>(chosen);
-      }
-    }
-  }
+  void select_belt();
 
   void place_component();
+
+  void create_new_component();
 
   void handle_events(const sf::Event &event) 
   {

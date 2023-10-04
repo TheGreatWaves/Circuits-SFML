@@ -188,16 +188,23 @@ struct Gate
     }
   }
 
-  void add_input_pin()
+
+  void add_input_pin(int n = 1)
   {
-    pin_count++;
-    input_pins.emplace_back();
+    while (n --> 0)
+    {
+      pin_count++;
+      input_pins.emplace_back();
+    }
   }
 
-  void add_output_pin()
+  void add_output_pin(int n = 1)
   {
-    pin_count++;
-    output_pins.emplace_back();
+    while (n --> 0)
+    {
+      pin_count++;
+      output_pins.emplace_back();
+    }
   }
 
   Pin* get_pin(std::size_t pin)
@@ -375,6 +382,7 @@ struct Gate
 
 inline void Gate::handle_custom_type()
 {
+
   if (serialized)
   {
     simulate_serialized();

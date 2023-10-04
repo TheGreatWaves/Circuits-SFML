@@ -76,7 +76,26 @@ public:
     m_src = src;
   }
 
-  void add_dest_pin(PinGui* dest)
+  void set_src_index(std::size_t idx)
+  {
+    m_src_idx = idx;
+  }
+
+  void set_dest_index(std::size_t idx)
+  {
+    m_dest_idx = idx;
+  }
+  std::size_t get_src_index() const
+  {
+    return m_src_idx;
+  }
+
+  std::size_t get_dest_index() const
+  {
+    return m_dest_idx;
+  }
+
+  void set_dest_pin(PinGui* dest)
   {
     m_dest_pins = dest;
   }
@@ -127,6 +146,11 @@ public:
   {
     return m_src;
   }
+  
+  PinGui* get_dest_pin()
+  {
+    return m_dest_pins;
+  }
 
 private:
   
@@ -138,6 +162,9 @@ private:
   sf::CircleShape           m_circle{};
   PinGui*                   m_dest_pins{};
   PinGui*                   m_src{};
+
+  std::size_t m_src_idx{};
+  std::size_t m_dest_idx{};
 };
 
 

@@ -57,9 +57,11 @@ public:
 
   Gate* get_component(std::string_view name)
   {
-    if (found(name))
+    auto it = components.find(std::string(name));
+
+    if (it != components.end())
     {
-      return components[std::string(name)].get();
+      return it->second.get();
     }
 
     return nullptr;

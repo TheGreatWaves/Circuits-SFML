@@ -72,19 +72,18 @@ public:
     }
   }
 
-
   void anchor(const sf::RectangleShape& base, bool lhs = true)
   {
     this->set_size(base);
-    auto pos = base.getGlobalBounds();
+    auto base_gbounds = base.getGlobalBounds();
 
     if (lhs)
     {
-      this->set_position({pos.left-(this->get_size().x / 2.f), pos.top});
+      this->set_position({base_gbounds.left-(this->get_size().x / 2.f), base_gbounds.top});
     }
     else
     {
-      this->set_position({pos.left + base.getSize().x - (this->get_size().x / 2.f), pos.top});
+      this->set_position({base_gbounds.left + base_gbounds.width - (this->get_size().x / 2.f), base_gbounds.top});
     }
 
     auto size = m_pins.size();
@@ -110,17 +109,19 @@ public:
     m_pins.clear();
   }
 
-  PinGui* get_pin(const sf::Vector2f& pos)
+  std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
   {
+    std::size_t index = 0;
     for (auto& p : m_pins)
     {
       // Ugly and wasteful but it has to be done.
       if (p.contains(pos))
       {
-        return &p;
+        return {index, &p};
       }
+      index++;
     }
-    return nullptr;
+    return {0, nullptr};
   }
 
   void set_size(const sf::RectangleShape& parent)

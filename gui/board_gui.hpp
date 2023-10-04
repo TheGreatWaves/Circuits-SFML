@@ -1,4 +1,5 @@
 #pragma once
+#include "pin_gui.hpp"
 #ifndef BOARD_GUI
 #define BOARD_GUI
 
@@ -123,6 +124,50 @@ public:
     m_output_pin_port.handle_events(event);
   }
 
+
+  // returns the PIN ID and the pin.
+  std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
+  {
+    std::size_t input_pid_acc = 0;
+    std::size_t output_pid_acc = 0;
+
+    // Query main input pins.
+    auto [pid, pin] = m_input_pin_port.get_pin(pos);
+
+    // Return if found from main input port.
+    if (pin != nullptr) return {pid, pin};
+    input_pid_acc += m_input_pin_port.size();
+
+    // Query main output pins.
+    std::tie(pid, pin) = m_output_pin_port.get_pin(pos);
+
+    // Return if found from main output port.
+    if (pin != nullptr) return {pid + INPUT_PIN_LIMIT, pin};
+    output_pid_acc += m_output_pin_port.size();
+
+    // Query from components (this is where it gets messy).
+    for (auto& component : m_components)
+    {
+      // Search the input port.
+      std::tie(pid, pin) = component->get_input_pin_port()->get_pin(pos);
+
+      // Return if found from input port.
+      if (pin != nullptr) return {input_pid_acc + pid, pin};
+
+      // Search the output port.
+      std::tie(pid, pin) = component->get_output_pin_port()->get_pin(pos);
+
+      // Return if found from output port.
+      if (pin != nullptr) return {output_pid_acc + pid + INPUT_PIN_LIMIT, pin};
+
+      // If we reached here it means that we haven't found them. We add to the i/o accumulators.
+      input_pid_acc += component->get_input_pin_port()->size();
+      output_pid_acc += component->get_output_pin_port()->size();
+    }
+
+    return {0, nullptr};
+  }
+
   void handle_wiring_mode(const sf::Event& event)
   {
     if (event.type == sf::Event::MouseButtonPressed)
@@ -130,16 +175,7 @@ public:
       auto mouse_pos = sf::Vector2f(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
 
       // Retrieve pin.
-      // TODO: Make this better.
-      // This is pretty horrible, but let's do it for now.
-      // This is the kind of code that keeps me awake at night.
-      auto pin = m_input_pin_port.get_pin(mouse_pos);
-      if (pin == nullptr) pin = m_output_pin_port.get_pin(mouse_pos);
-      for (auto& component : m_components)
-      {
-        if (pin == nullptr) pin = component->get_input_pin_port()->get_pin(mouse_pos);
-        if (pin == nullptr) pin = component->get_output_pin_port()->get_pin(mouse_pos);
-      }
+      auto [pid, pin] = get_pin(mouse_pos);
 
       auto* active_wire = Context::instance()->active_wire;
 
@@ -148,7 +184,8 @@ public:
         if (pin != nullptr && pin != active_wire->get_src_pin())
         {
           active_wire->add_node(pin->get_position());
-          active_wire->add_dest_pin(pin);
+          active_wire->set_dest_pin(pin);
+          active_wire->set_dest_index(pid);
           Context::instance()->active_wire = nullptr;
         }
         else
@@ -163,6 +200,7 @@ public:
         m_wires.emplace_back();
         auto& wire = m_wires.back();
         wire.set_src_pin(pin);
+        wire.set_src_index(pid);
         wire.add_node(pin->get_position());
         Context::instance()->active_wire = &wire;
       }
@@ -194,8 +232,53 @@ public:
   void clear()
   {
     m_wires.clear();
+    m_components.clear();
     m_input_pin_port.clear_port();
     m_output_pin_port.clear_port();
+  }
+
+  void save_current_configuration()
+  {
+    auto ctx = Context::instance();
+    auto board = Board::instance();
+    auto current_component_name = ctx->current_component_name;
+
+    auto name_not_empty = !current_component_name.empty();
+    auto component_not_found = !Board::instance()->found(current_component_name);
+
+    // We will only be able to save when the name isn't empty
+    // and the component isn't already pre-existing.
+    if (name_not_empty && component_not_found)
+    {
+      board->create_new(current_component_name);
+      board->set_context(current_component_name);
+      auto [_, current] = board->context();
+
+      // Add main input/output pins.
+      current->add_input_pin(m_input_pin_port.size());
+      current->add_output_pin(m_output_pin_port.size());
+
+      // Add all subgates.
+      for (auto& component : m_components)
+      {
+        const auto& name = component->get_component_name();
+        auto gate = board->get_component(name);
+        current->add_subgate(gate);
+      }
+
+      // Add all wires.
+      for (auto& wire : m_wires)
+      {
+        if (wire.get_src_pin() != nullptr && wire.get_dest_pin() != nullptr)
+        {
+          current->wire_pins(wire.get_src_index(), wire.get_dest_index());
+        }
+      }
+
+      current->serialize();
+
+      clear();
+    }
   }
 
 private:

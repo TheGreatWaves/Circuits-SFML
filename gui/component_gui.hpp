@@ -25,6 +25,7 @@ public:
   : m_name("", false)
   , m_input_pins(COMPONENT_PIN_RADIUS)
   , m_output_pins(COMPONENT_PIN_RADIUS)
+  , m_component_name(configuration_name)
   {
     auto board = Board::instance();
     auto component = board->get_component(configuration_name);
@@ -106,12 +107,18 @@ public:
     return &m_output_pins;
   }
 
+  [[nodiscard]] const std::string& get_component_name() noexcept
+  {
+    return m_component_name;
+  }
+
 private:
   Gate*              m_component;
   sf::RectangleShape m_body;
   TextBoxGui         m_name;
   PinPortGui         m_input_pins;
   PinPortGui         m_output_pins;
+  std::string        m_component_name;
 };
 
 #endif /* COMPONENT_GUI */
