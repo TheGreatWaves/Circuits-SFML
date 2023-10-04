@@ -13,6 +13,7 @@
 #include "../board.hpp"
 #include "context.hpp"
 #include "text_box.hpp"
+#include "component_gui.hpp"
 
 constexpr float OPTIONS_OFFSET = 5.f;
 
@@ -36,7 +37,6 @@ public:
     m_selection_box.setPosition(x_pos + 10.f, m_target_size.y - (m_selection_box.getSize().y + 10.f));
     m_text_box.set_position({m_selection_box.getPosition().x + 3.f, m_selection_box.getPosition().y});
 
-
     x_pos += m_selection_box.getSize().x + OPTIONS_OFFSET;
   }
 
@@ -54,6 +54,11 @@ public:
 
   void draw(sf::RenderTarget &target, sf::RenderStates states) 
   {
+    if (m_active_component != nullptr)
+    {
+      m_active_component->draw(target, states);
+    }
+
     auto names = Board::instance()->get_names();
 
     float x_pos = 0.f;
@@ -79,6 +84,11 @@ public:
     auto names = Board::instance()->get_names();
     auto mouse_pos = sf::Mouse::getPosition(*Context::instance()->window);
 
+    if (m_active_component != nullptr)
+    {
+      m_active_component->set_position(static_cast<sf::Vector2f>(mouse_pos));
+    }
+
     float x_pos = 0.f;
 
     m_active_index = -1;
@@ -102,37 +112,55 @@ public:
     }
   }
 
+  void select_belt()
+  {
+    switch (m_active_index)
+    {
+      break; case -2:
+      {
+        const auto& name = Context::instance()->current_component_name;
+
+        if (!name.empty())
+        {
+          Board::instance()->create_new(name);
+        }
+      }
+      break; case -1: return;
+      break; default:
+      {
+        auto names = Board::instance()->get_names();
+        auto chosen = names[m_active_index];
+        m_active_component = std::make_unique<ComponentGui>(chosen);
+      }
+    }
+  }
+
+  void place_component();
+
   void handle_events(const sf::Event &event) 
   {
     if (event.type == event.MouseButtonPressed)
     {
       if (event.mouseButton.button == sf::Mouse::Left)
       {
-        switch (m_active_index)
+        if (m_active_component != nullptr)
         {
-          break; case -2:
-          {
-            const auto& name = Context::instance()->current_component_name;
-
-            if (!name.empty())
-            {
-              Board::instance()->create_new(name);
-            }
-          }
-          break; case -1: return;
-          break; default:
-          {
-          }
+          place_component();
+        }
+        else
+        {
+          select_belt();
         }
       }
     }
   }
 
 private:
-  int                m_active_index{};
-  TextBoxGui         m_text_box;
-  const sf::Vector2f m_target_size;
-  sf::RectangleShape m_selection_box;
+  int                           m_active_index{};
+  std::unique_ptr<ComponentGui> m_active_component{};
+  TextBoxGui                    m_text_box;
+  const sf::Vector2f            m_target_size;
+  sf::RectangleShape            m_selection_box;
 };
 
 #endif /* BELT_GUI */

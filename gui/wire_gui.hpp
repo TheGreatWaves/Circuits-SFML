@@ -20,7 +20,7 @@ inline float lerp(float a, float b, float f)
     return a + f * (b - a);
 }
 
-constexpr float WIRE_GROWTH_RATE = 100.f;
+constexpr float WIRE_GROWTH_RATE = 200.f;
 
 class WireGui
 {

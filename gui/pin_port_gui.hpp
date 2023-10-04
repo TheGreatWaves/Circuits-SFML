@@ -76,15 +76,15 @@ public:
   void anchor(const sf::RectangleShape& base, bool lhs = true)
   {
     this->set_size(base);
-    auto pos = base.getPosition();
+    auto pos = base.getGlobalBounds();
 
     if (lhs)
     {
-      this->set_position({pos.x-(this->get_size().x / 2.f), pos.y});
+      this->set_position({pos.left-(this->get_size().x / 2.f), pos.top});
     }
     else
     {
-      this->set_position({pos.x + base.getSize().x - (this->get_size().x / 2.f), pos.y});
+      this->set_position({pos.left + base.getSize().x - (this->get_size().x / 2.f), pos.top});
     }
 
     auto size = m_pins.size();

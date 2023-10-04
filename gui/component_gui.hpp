@@ -44,6 +44,7 @@ public:
       auto body_size = sf::Vector2f{ m_name.get_width() + NAME_PADDING + PIN_RADIUS * 2, max_side_pins_count * PIN_RADIUS * 2 };
       m_body.setSize(body_size);
       m_body.setFillColor(BODY_COLOR);
+      m_body.setOrigin(m_body.getSize()/2.f);
 
       m_input_pins.set_interactability(true);
       m_output_pins.set_interactability(false);
@@ -76,7 +77,8 @@ public:
     m_output_pins.anchor(m_body, false);
     auto body_size = m_body.getSize();
 
-    auto text_pos = sf::Vector2f{m_body.getPosition().x + (body_size.x/2.f) - (m_name.get_width()/2.f), m_body.getGlobalBounds().top + (body_size.y/2.f) - (m_name.get_height())};
+    auto body_gbounds = m_body.getGlobalBounds();
+    auto text_pos = sf::Vector2f{body_gbounds.left + (body_size.x/2.f) - (m_name.get_width()/2.f), body_gbounds.top + (body_size.y/2.f) - (m_name.get_height())};
     m_name.set_position(text_pos);
   }
   

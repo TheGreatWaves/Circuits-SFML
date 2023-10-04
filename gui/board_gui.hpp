@@ -21,6 +21,9 @@ public:
   : m_mode_text_box("Normal mode", false)
   , m_belt(size)
   {
+    // TODO: Yes this is bad.
+    Context::instance()->board = this;
+
     m_background.setSize(size);
     m_background.setFillColor(sf::Color(30, 30, 46));
 
@@ -41,11 +44,11 @@ public:
     m_output_pin_port.anchor(m_prototype, false);
     m_output_pin_port.set_interactability(false);
 
-    // TODO: REMOVE THIS.
-    // Let's add nand for now.
-    m_components.emplace_back("nand");
+  }
 
-    m_components.back().set_position({400.f, 400.f});
+  void add_component(std::unique_ptr<ComponentGui> component)
+  {
+    m_components.push_back(std::move(component));
   }
 
   void update(const sf::Time& dt)
@@ -64,7 +67,7 @@ public:
 
     for (auto& component : m_components)
     {
-      component.update(dt);
+      component->update(dt);
     }
   }
 
@@ -80,7 +83,7 @@ public:
 
     for (auto& component : m_components)
     {
-      component.draw(target, states);
+      component->draw(target, states);
     }
 
     for (auto& wire : m_wires)
@@ -134,8 +137,8 @@ public:
       if (pin == nullptr) pin = m_output_pin_port.get_pin(mouse_pos);
       for (auto& component : m_components)
       {
-        if (pin == nullptr) pin = component.get_input_pin_port()->get_pin(mouse_pos);
-        if (pin == nullptr) pin = component.get_output_pin_port()->get_pin(mouse_pos);
+        if (pin == nullptr) pin = component->get_input_pin_port()->get_pin(mouse_pos);
+        if (pin == nullptr) pin = component->get_output_pin_port()->get_pin(mouse_pos);
       }
 
       auto* active_wire = Context::instance()->active_wire;
@@ -175,7 +178,7 @@ public:
 
     for (auto& component : m_components)
     {
-      component.handle_events(event);
+      component->handle_events(event);
     }
 
     if (event.type == sf::Event::KeyPressed && context->edit_mode != Mode::TEXT) handle_keyboard(event);
@@ -207,7 +210,7 @@ private:
   BeltGui m_belt;
 
   std::vector<WireGui> m_wires;
-  std::vector<ComponentGui> m_components;
+  std::vector<std::unique_ptr<ComponentGui>> m_components;
 };
 
 #endif /* BOARD_GUI */

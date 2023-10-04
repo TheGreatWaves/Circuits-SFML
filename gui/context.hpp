@@ -6,7 +6,6 @@
 #pragma once
 #ifndef GUI_CONTEXT
 #define GUI_CONTEXT
-
 #include <string_view>
 
 #include <SFML/Graphics.hpp>
@@ -20,16 +19,19 @@ enum class Mode
 
 // Forwarding wire class
 class WireGui;
+class ComponentGui;
+class BoardGui;
 
 struct Context
 {
   /**
    * Data members.
    */
-  std::string_view current_component_name;
-  Mode             edit_mode = Mode::IDLE;
-  WireGui*         active_wire = nullptr;
-  sf::RenderWindow* window = nullptr;
+  std::string_view              current_component_name;
+  Mode                          edit_mode = Mode::IDLE;
+  WireGui*                      active_wire = nullptr;
+  sf::RenderWindow*             window = nullptr;
+  BoardGui*                     board = nullptr;
 
 
   /**
