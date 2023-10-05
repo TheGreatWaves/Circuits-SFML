@@ -34,7 +34,14 @@ public:
 
   void create_new(std::string_view name)
   {
-    components[make_lower(name)] = std::make_unique<Gate>();
+    auto gate = std::make_unique<Gate>();
+    gate->set_name(name);
+    components[make_lower(name)] = std::move(gate);
+  }
+
+  void reset_context()
+  {
+    current = std::pair{"", nullptr};
   }
 
   void set_context(std::string_view name)
@@ -53,6 +60,12 @@ public:
   auto context()
   {
     return current;
+  }
+
+  void save_sketch(std::unique_ptr<Gate> sketch)
+  {
+    std::string name = sketch->name;
+    components.insert({name, std::move(sketch)});
   }
 
   Gate* get_component(std::string_view name)

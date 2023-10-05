@@ -1,14 +1,16 @@
 #pragma once
-#include <utility>
+#include <algorithm>
 #ifndef D_SERIALIZER
 #define D_SERIALIZER
 
 #include <vector>
 #include <map>
+#include <utility>
 #include <fstream>
 
 #include "pin.hpp"
 #include "utils.hpp"
+#include "wire_info.hpp"
 
 #define INPUT_PIN_LIMIT 100
 
@@ -19,17 +21,21 @@ enum class GateType
   CUSTOM
 };
 
-// Built in chips.
 struct Gate
 {
   std::vector<Pin>                             input_pins;
   std::vector<Pin>                             output_pins;
   std::size_t                                  pin_count;
   GateType                                     type;
-  std::size_t                                  subgate_count;
+  std::size_t                                  subgate_count{};
   std::string                                  name;
   std::map<std::size_t, std::unique_ptr<Gate>> subgates;
+  std::vector<Wire*> wires;
+  WireConstructionInfo                         wire_construction_recipe;
 
+  
+  // Used for book keeping during simulate.
+  std::vector<bool>                            components_up_to_date{};
   bool                                         serialized;
   std::vector<std::size_t>                     serialized_computation;
 
@@ -95,6 +101,16 @@ struct Gate
     }
   }
 
+  bool is_serialized()
+  {
+    return serialized;
+  }
+
+  void set_name(std::string_view new_name)
+  {
+    name = new_name;
+  }
+
   void serialize()
   {
     std::size_t indicies = (2 << (input_pins.size() - 1));
@@ -141,6 +157,9 @@ struct Gate
     // Retrieve the serialized output entry using the serialized input.
     auto serialized_output = serialized_computation[serialized_input];
 
+
+    log("Applied serialized input: ", serialized_input, " output: ", serialized_output, '\n');
+
     // Apply the serialized output to the output pins.
     apply_output(static_cast<int>(output_pins.size()), serialized_output);
   }
@@ -165,6 +184,7 @@ struct Gate
 
   void simulate()
   {
+    // Simulate the input pins.
     switch (type)
     {
     break; case GateType::NAND: handle_nand();
@@ -172,8 +192,9 @@ struct Gate
     break; default: log("Invalid type...?\n");
     }
 
+    // Simulate the output pins.
     for (auto& pins : output_pins)
-    {
+    { 
       pins.simulate();
     }
   }
@@ -260,6 +281,17 @@ struct Gate
     return nullptr;
   }
 
+  void construct_wire(WireConstructionInfo& wire_info)
+  {
+    for (auto [src, dest] : wire_info)
+    {
+      if (!wire_pins(src, dest))
+      {
+        std::cerr << "Error: Failed constructing wire with " << src << " and " << dest << '\n';
+      }
+    }
+  }
+
   bool wire_pins(std::size_t p1, std::size_t p2)
   {
     auto pa = get_pin(p1);
@@ -275,6 +307,8 @@ struct Gate
     {
       return false;
     }
+
+    wire_construction_recipe.push_back({p1, p2});
 
     return connect_pins(pa, pb);
   }
@@ -300,21 +334,22 @@ struct Gate
 
   std::size_t add_subgate(Gate* gate)
   {
-    auto key = subgate_count++;
-    subgates[key] = std::make_unique<Gate>(gate->duplicate());
-
-    for (auto& p : subgates[key]->input_pins)
-    {
-      p.parent = subgates[key].get();
-    }
-
-    return key;
+  	return add_subgate(gate->name);
   }
+
+  std::size_t add_subgate(std::string_view gate_name);
 
   Gate duplicate()
   {
     Gate g(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
     g.serialized_computation = this->serialized_computation;
+
+    for (std::size_t i = 0; i < subgate_count; i++)
+    {
+      g.add_subgate(subgates.at(i)->name);
+    }
+
+    g.construct_wire(this->wire_construction_recipe);
     return g;
   }
 
@@ -327,7 +362,9 @@ struct Gate
  * 4. Gather all of the output pins and repeat step 1. The simulation is completed once there
  *    is no longer any wire to travel across.
  */
-  void handle_custom_type();
+  void handle_custom_type(std::vector<bool>* visited = nullptr, 
+    std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr
+  );
 
   /**
    * Built-in type handlers.
@@ -343,6 +380,9 @@ struct Gate
   // Prints information about the current gate.
   void info()
   {
+    log(BLOCK, " Gate ", name, BLOCK, '\n');
+    log("Is serialized: ", (serialized ? "yes" : "no"), '\n');
+    log("Wire count: ", wires.size(), '\n');
     log(BLOCK, " Input Pins ", BLOCK, '\n');
 		auto count = 0;
 		for (const auto& pin : input_pins)
@@ -355,23 +395,23 @@ struct Gate
     log(BLOCK, " Output Pins ", BLOCK, '\n');
 		for (const auto& pin : output_pins)
 		{
-			log("pin[", output_count + INPUT_PIN_LIMIT, "]\n");
+			log("pin[", output_count + INPUT_PIN_LIMIT, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
 			output_count++;
 		}
 
     for (const auto& subgate : subgates)
     {
       newline();
-      log(BLOCK, " Subgate[", subgate.first, "] ", BLOCK, "\n");
+      log(BLOCK, " Subgate[", subgate.first, " : ", subgate.second->name, "] ", BLOCK, "\n");
   		for (const auto& pin : subgate.second->input_pins)
   		{
-  			log("    pin[", count, "]\n");
+			  log("    pin[", count, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
   			count++;
   		}
       log("Exposed output pins:\n");
   		for (const auto& pin : subgate.second->output_pins)
   		{
-  			log("    pin[", output_count+INPUT_PIN_LIMIT, "]\n");
+  			log("    pin[", output_count + INPUT_PIN_LIMIT, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
   			output_count++;
   		}
     }
@@ -380,27 +420,32 @@ struct Gate
 
 #include "wire.hpp"
 
-inline void Gate::handle_custom_type()
+inline void Gate::handle_custom_type(std::vector<bool>* visited, 
+    std::map<std::size_t, std::unique_ptr<Gate>>* components)
 {
-
   if (serialized)
   {
     simulate_serialized();
     return;
   }
-  /**
-   * Loop through all input pins and propagate signal.
-   */
-  for (auto& pins : input_pins)
+  for (auto& subgate : subgates)
   {
-    pins.simulate();
+    for (auto& wire : wires)
+    {
+      wire->simulate();
+    }
+    subgate.second->simulate();
+  }
+  for (auto& wire : wires)
+  {
+    wire->simulate();
   }
 }
 
 inline bool Gate::connect_pins(Pin* input, Pin* output)
 {
-  if (input == nullptr || output == nullptr) return false;
   input->connections.push_back(std::make_shared<Wire>(input, output));
+  wires.push_back(input->connections.back().get());
   return true;
 }
 

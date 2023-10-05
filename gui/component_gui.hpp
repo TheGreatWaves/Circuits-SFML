@@ -1,14 +1,14 @@
 #pragma once
-#include "pin_gui.hpp"
-#include <SFML/System/Vector2.hpp>
 #ifndef COMPONENT_GUI
 #define COMPONENT_GUI
 
 #include <string_view>
 
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 
 #include "../board.hpp"
+#include "pin_gui.hpp"
 
 #include "text_box.hpp"
 #include "pin_port_gui.hpp"

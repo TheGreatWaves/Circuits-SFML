@@ -5,7 +5,6 @@
 #include "pin.hpp"
 #include "utils.hpp"
 
-
 // Let's assume wires are one way.
 class Wire
 {
@@ -16,12 +15,13 @@ public:
   , output(o)
   {}
 
-  void simulate()
+  void simulate(std::vector<bool>* visited = nullptr, 
+    std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr)
   {
     if (output != nullptr)
     {
       output->state = input->state;
-      output->simulate();
+      output->simulate(visited, components);
     }
   }
 

@@ -1,0 +1,18 @@
+need not
+need and
+need or
+create latch
+i +
+i +
+o +
+add not
+add and
+add or
+w 0 5
+w 103 100
+w 103 3
+w 102 6
+w 1 2
+w 101 4
+d
+x

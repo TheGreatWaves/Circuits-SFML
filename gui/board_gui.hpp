@@ -1,5 +1,4 @@
 #pragma once
-#include "pin_gui.hpp"
 #ifndef BOARD_GUI
 #define BOARD_GUI
 
@@ -9,6 +8,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
+#include "pin_gui.hpp"
 #include "text_box.hpp"
 #include "pin_port_gui.hpp"
 #include "wire_gui.hpp"
@@ -24,6 +24,8 @@ public:
   {
     // TODO: Yes this is bad.
     Context::instance()->board = this;
+    m_sketch = std::make_unique<Gate>();    
+    Context::instance()->sketch = m_sketch.get();
 
     m_background.setSize(size);
     m_background.setFillColor(sf::Color(30, 30, 46));
@@ -44,7 +46,6 @@ public:
 
     m_output_pin_port.anchor(m_prototype, false);
     m_output_pin_port.set_interactability(false);
-
   }
 
   void add_component(std::unique_ptr<ComponentGui> component)
@@ -116,12 +117,16 @@ public:
 
       m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
     }
+    else if (event.key.code == sf::Keyboard::C)
+    {
+      clear();
+    }
   }
 
   void handle_edit_mode(const sf::Event& event)
   {
     m_input_pin_port.handle_events(event);
-    m_output_pin_port.handle_events(event);
+    m_output_pin_port.handle_events(event, false);
   }
 
 
@@ -187,6 +192,7 @@ public:
           active_wire->set_dest_pin(pin);
           active_wire->set_dest_index(pid);
           Context::instance()->active_wire = nullptr;
+          Context::instance()->sketch->wire_pins(active_wire->get_src_index(), active_wire->get_dest_index());
         }
         else
         {
@@ -236,9 +242,11 @@ public:
     m_input_pin_port.clear_port();
     m_output_pin_port.clear_port();
     m_name_text_box.reset();
+    m_sketch = std::make_unique<Gate>();
+    Context::instance()->sketch = m_sketch.get();
   }
 
-  void save_current_configuration()
+  void save_current_configuration(bool serialize = false)
   {
     auto ctx = Context::instance();
     auto board = Board::instance();
@@ -251,13 +259,13 @@ public:
     // and the component isn't already pre-existing.
     if (name_not_empty && component_not_found)
     {
-      board->create_new(current_component_name);
-      board->set_context(current_component_name);
-      auto [_, current] = board->context();
+      auto current = ctx->sketch;
+      ctx->sketch->set_name(current_component_name);
+      board->save_sketch(std::move(m_sketch));
+      m_sketch = std::make_unique<Gate>();
+      ctx->sketch = m_sketch.get();
 
-      // Add main input/output pins.
-      current->add_input_pin(m_input_pin_port.size());
-      current->add_output_pin(m_output_pin_port.size());
+      board->set_context(current_component_name);
 
       // Add all subgates.
       for (auto& component : m_components)
@@ -267,16 +275,10 @@ public:
         current->add_subgate(gate);
       }
 
-      // Add all wires.
-      for (auto& wire : m_wires)
+      if (serialize)
       {
-        if (wire.get_src_pin() != nullptr && wire.get_dest_pin() != nullptr)
-        {
-          current->wire_pins(wire.get_src_index(), wire.get_dest_index());
-        }
+        current->serialize();
       }
-
-      current->serialize();
 
       clear();
     }
@@ -295,6 +297,7 @@ private:
 
   std::vector<WireGui> m_wires;
   std::vector<std::unique_ptr<ComponentGui>> m_components;
+  std::unique_ptr<Gate> m_sketch;
 };
 
 #endif /* BOARD_GUI */

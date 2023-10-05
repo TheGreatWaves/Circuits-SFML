@@ -62,6 +62,11 @@ void handle_input(std::string_view str)
 				desc("F    <source_file>", "Run file");
 				desc("Q <component_name>", "Show truth table of component.");
 				desc("N <component_name>", "Marks specified component as needed, auto import if available.");
+				desc("X                 ", "Reset context.");
+		}
+		break; case 'x':
+		{
+			Board::instance()->reset_context();
 		}
 		break; case 'n':
 		{
@@ -167,6 +172,10 @@ void handle_input(std::string_view str)
 			if (!current->wire_pins(p1, p2))
 			{
 				log("Failed to wire pin ", p1, " and ", p2, '\n');
+			}
+			else
+			{
+				log("Successfully wired pin ", p1, " and ", p2, '\n');
 			}
 		}
 		break; case 'd':
@@ -334,14 +343,7 @@ void handle_input(std::string_view str)
 
 				if (auto component = board->get_component(name); component != nullptr)
 				{
-					if (component->serialized)
-					{
-						auto id = current.second->add_subgate(component);
-					}
-					else
-					{
-						log("Component ", component->name, " is not yet serialized\n");
-					}
+					current.second->add_subgate(component);
 				}
 				else
 				{
@@ -447,6 +449,21 @@ void run_cli()
 		handle_input(line);
 		newline();
 	}
+}
+
+std::size_t Gate::add_subgate(std::string_view gate_name)
+{
+	components_up_to_date.push_back(false);
+  auto key = subgate_count++;
+	auto gate = Board::instance()->get_component(gate_name);
+  subgates[key] = std::make_unique<Gate>(gate->duplicate());
+
+  for (auto& p : subgates[key]->input_pins)
+  {
+    p.parent = subgates[key].get();
+  }
+
+  return key;
 }
 
 void run_gui()

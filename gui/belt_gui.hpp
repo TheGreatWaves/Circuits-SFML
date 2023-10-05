@@ -69,6 +69,11 @@ public:
     target.draw(m_selection_box, states);
     target.draw(m_text_box, states);
 
+    set_string("Serialize", x_pos);
+    set_hover(m_active_index==-3);
+    target.draw(m_selection_box, states);
+    target.draw(m_text_box, states);
+
     auto count = 0;
     for (auto name : names)
     {
@@ -107,6 +112,12 @@ public:
       m_active_index = -2;
     }
 
+    set_string("Serialize", x_pos);
+    if (m_selection_box.getGlobalBounds().contains(static_cast<sf::Vector2f>(mouse_pos)))
+    {
+      m_active_index = -3;
+    }
+
     int count = 0;
     for (auto name : names)
     {
@@ -124,7 +135,7 @@ public:
 
   void place_component();
 
-  void create_new_component();
+  void create_new_component(bool serialize = false);
 
   void handle_events(const sf::Event &event) 
   {

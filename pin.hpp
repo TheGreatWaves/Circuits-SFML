@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <map>
 
 class Wire;
 class Gate;
@@ -27,7 +28,7 @@ struct Pin
   {
   }
 
-  void simulate();
+  void simulate(std::vector<bool>* visited = nullptr, std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr);
 
   [[nodiscard]] PinState get_state()
   {

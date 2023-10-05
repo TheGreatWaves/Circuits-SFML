@@ -129,7 +129,7 @@ public:
     m_strip.setSize({10.f, parent.getSize().y});
   }
   
-  void handle_events(const sf::Event& event)
+  void handle_events(const sf::Event& event, bool is_input = true)
 	{
     if (Context::instance()->edit_mode == Mode::WIRING)
     {
@@ -158,12 +158,12 @@ public:
 
       if (pressed)
       {
-        m_pins.emplace_back(m_pin_rad);
-        m_pins.back().set_interactability(m_interactable);
-        m_pins.back().set_position({m_strip.getPosition().x + (m_strip.getSize().x/2.f), mouse_pos.y});
+        add_pin(mouse_pos, is_input);
       }
     }
 	}
+
+  void add_pin(const sf::Vector2f& pos, bool is_input = true);
 
   void draw(sf::RenderTarget &target, sf::RenderStates states) 
   {

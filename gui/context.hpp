@@ -6,9 +6,11 @@
 #pragma once
 #ifndef GUI_CONTEXT
 #define GUI_CONTEXT
-#include <string_view>
 
 #include <SFML/Graphics.hpp>
+
+#include <string_view>
+#include <memory>
 
 enum class Mode
 {
@@ -21,6 +23,7 @@ enum class Mode
 class WireGui;
 class ComponentGui;
 class BoardGui;
+class Gate;
 
 struct Context
 {
@@ -32,7 +35,7 @@ struct Context
   WireGui*                      active_wire = nullptr;
   sf::RenderWindow*             window = nullptr;
   BoardGui*                     board = nullptr;
-
+  Gate*                         sketch = nullptr;
 
   /**
    * Yes, I should throw an error if the constructor is called again, but I'm too lazy!
