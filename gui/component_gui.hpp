@@ -32,7 +32,7 @@ public:
 
     if (component != nullptr)
     {
-      m_component = component;
+      m_component = component->duplicate();
 
       auto input_count = m_component->input_pins.size();
       auto output_count = m_component->output_pins.size();
@@ -59,15 +59,22 @@ public:
   {
     if (m_component != nullptr)
     {
+      // std::cout << BLOCK << " [ UPDATING COMPONENT: `" << m_component->name << "` ] " << BLOCK  << BLOCK << BLOCK << '\n';
       auto input_bits = m_input_pins.get_bits();    
-
       m_component->apply_input(m_input_pins.size(), input_bits);
+      // m_component->input_info();
+      // m_component->wire_info();
+      // m_component->subgates_brief();
 
       m_component->simulate();
-
       auto output_bits = m_component->serialize_output();
-
       m_output_pins.apply_bits(output_bits);
+
+      // m_component->output_info();
+
+      // m_component->info();
+
+      // std::cout << '\n';
     }
   }
 
@@ -113,12 +120,12 @@ public:
   }
 
 private:
-  Gate*              m_component;
-  sf::RectangleShape m_body;
-  TextBoxGui         m_name;
-  PinPortGui         m_input_pins;
-  PinPortGui         m_output_pins;
-  std::string        m_component_name;
+  std::unique_ptr<Gate> m_component;
+  sf::RectangleShape    m_body;
+  TextBoxGui            m_name;
+  PinPortGui            m_input_pins;
+  PinPortGui            m_output_pins;
+  std::string           m_component_name;
 };
 
 #endif /* COMPONENT_GUI */

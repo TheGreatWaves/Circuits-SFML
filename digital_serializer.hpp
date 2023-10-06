@@ -1,8 +1,8 @@
 #pragma once
-#include <algorithm>
 #ifndef D_SERIALIZER
 #define D_SERIALIZER
 
+#include <algorithm>
 #include <vector>
 #include <map>
 #include <utility>
@@ -109,6 +109,11 @@ struct Gate
   void set_name(std::string_view new_name)
   {
     name = new_name;
+  }
+  
+  const std::string& get_name() const
+  {
+    return name;
   }
 
   void serialize()
@@ -278,8 +283,14 @@ struct Gate
     return nullptr;
   }
 
+  void clear_wires()
+  {
+    wires.clear();
+  }
+
   void construct_wire(WireConstructionInfo& wire_info)
   {
+    clear_wires();
     for (auto [src, dest] : wire_info)
     {
       if (!wire_pins(src, dest))
@@ -336,29 +347,31 @@ struct Gate
 
   std::size_t add_subgate(std::string_view gate_name);
 
-  Gate duplicate()
+  std::unique_ptr<Gate> duplicate()
   {
-    Gate g(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
-    g.serialized_computation = this->serialized_computation;
+    auto g = std::make_unique<Gate>(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
 
-    for (std::size_t i = 0; i < subgate_count; i++)
+    if (this->serialized)
     {
-      g.add_subgate(subgates.at(i)->name);
+      // If it is serialized we don't actually need to do any wiring (no simulation).
+      g->serialized_computation = this->serialized_computation;
+      return g;
     }
+    else
+    {
+      // Not serialized, which means that we need to simulate it. 
+      // Add the subgates and copy the wiring.
+      for (std::size_t i = 0; i < subgate_count; i++)
+      {
+        g->add_subgate(subgates.at(i)->name);
+      }
 
-    g.construct_wire(this->wire_construction_recipe);
-    return g;
+      g->construct_wire(this->wire_construction_recipe);
+     
+      return g;
+    }
   }
 
-/**
- * The following describes how I think the code should run.
- * 
- * 1. Loop through all input pins.
- * 2. Simulate connected wires. (collect all pins the inputs are connected to)
- * 3. Loop through all the pins found and simulate the components which they are attached to.
- * 4. Gather all of the output pins and repeat step 1. The simulation is completed once there
- *    is no longer any wire to travel across.
- */
   void handle_custom_type(std::vector<bool>* visited = nullptr, 
     std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr
   );
@@ -373,13 +386,99 @@ struct Gate
                          ? PinState::ACTIVE
                          : PinState::INACTIVE;
   }
+
+
+  void input_info()
+  {
+    log("Input Info:\n");
+    for (std::size_t count = 0; count < input_pins.size(); count++)
+		{
+			log("pin[", count, "] ", input_pins[count].state == PinState::ACTIVE ? 1 : 0, "\n");
+		}
+  }
+
+  void output_info()
+  {
+    log("output Info:\n");
+    for (std::size_t count = 0; count < output_pins.size(); count++)
+		{
+			log("pin[", count + INPUT_PIN_LIMIT, "] ", output_pins[count].state == PinState::ACTIVE ? 1 : 0, "\n");
+		}
+  }
+
+
+  void subgates_info()
+  {
+    auto count = input_pins.size();
+    auto output_count = output_pins.size();
+    for (const auto& subgate : subgates)
+    {
+      newline();
+      log(BLOCK, " Subgate[", subgate.first, " : ", subgate.second->name, "] ", BLOCK, "\n");
+  		for (const auto& pin : subgate.second->input_pins)
+  		{
+			  log("    pin[", count, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
+  			count++;
+  		}
+      log("Exposed output pins:\n");
+  		for (const auto& pin : subgate.second->output_pins)
+  		{
+  			log("    pin[", output_count + INPUT_PIN_LIMIT, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
+  			output_count++;
+  		}
+    }  
+  }
+
+  void subgates_brief()
+  {
+    auto count = input_pins.size();
+    auto output_count = output_pins.size();
+    for (const auto& subgate : subgates)
+    {
+      newline();
+      log(BLOCK, " Subgate[", subgate.first, " : ", subgate.second->name, "] ", BLOCK, "\n");
+  		for (const auto& pin : subgate.second->input_pins)
+  		{
+			  log("> ", count, '\n');
+  			count++;
+  		}
+      log("Exposed output pins:\n");
+  		for (const auto& pin : subgate.second->output_pins)
+  		{
+			  log("> ", output_count + INPUT_PIN_LIMIT, '\n');
+  			output_count++;
+  		}
+    }  
+  }
+
+
+  void input_pin_address_info()
+  {
+    log("Input pins address:\n");
+		for (const auto& pin : input_pins)
+		{
+		  log("> ", &pin, '\n');
+		}
+    newline();
+  }
+
+
+  void wire_info()
+  {
+    log("Wire count: ", wires.size(), '\n');
+    for (auto [src, dest] : wire_construction_recipe)
+    {
+      std::cout << src << " <---> " << dest << '\n';
+    }  }
   
   // Prints information about the current gate.
   void info()
   {
     log(BLOCK, " Gate ", name, BLOCK, '\n');
     log("Is serialized: ", (serialized ? "yes" : "no"), '\n');
-    log("Wire count: ", wires.size(), '\n');
+    wire_info();
+    input_pin_address_info();
+
     log(BLOCK, " Input Pins ", BLOCK, '\n');
 		auto count = 0;
 		for (const auto& pin : input_pins)
@@ -396,22 +495,7 @@ struct Gate
 			output_count++;
 		}
 
-    for (const auto& subgate : subgates)
-    {
-      newline();
-      log(BLOCK, " Subgate[", subgate.first, " : ", subgate.second->name, "] ", BLOCK, "\n");
-  		for (const auto& pin : subgate.second->input_pins)
-  		{
-			  log("    pin[", count, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
-  			count++;
-  		}
-      log("Exposed output pins:\n");
-  		for (const auto& pin : subgate.second->output_pins)
-  		{
-  			log("    pin[", output_count + INPUT_PIN_LIMIT, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
-  			output_count++;
-  		}
-    }
+    subgates_info();
   }
 };
 
@@ -431,7 +515,11 @@ inline void Gate::handle_custom_type(std::vector<bool>* visited,
     {
       wire->simulate();
     }
+    // std::cout << "    HANDLING SUBGATE: " << subgate.first << '\n';
+    // subgate.second->input_info();
     subgate.second->simulate();
+    // std::cout << "    HANDLING SUBGATE: DONE " << subgate.first << '\n';
+    // subgate.second->info();
   }
   for (auto& wire : wires)
   {

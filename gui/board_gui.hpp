@@ -67,10 +67,16 @@ public:
       wire.update(dt);
     }
 
+    // std::cout << BLOCK << BLOCK << " [ UPDATING ALL COMPONENT ] " << BLOCK  << BLOCK << BLOCK << BLOCK << BLOCK << '\n';
+    // m_input_pin_port.info();
+    // Context::instance()->sketch->wire_info();
+    // Context::instance()->sketch->subgates_brief();
+
     for (auto& component : m_components)
     {
       component->update(dt);
     }
+   
   }
 
   void draw(sf::RenderTarget &target, sf::RenderStates states)
@@ -245,6 +251,7 @@ public:
     m_sketch = std::make_unique<Gate>();
     Context::instance()->sketch = m_sketch.get();
   }
+
 
   void save_current_configuration(bool serialize = false)
   {

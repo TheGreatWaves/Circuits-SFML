@@ -7,6 +7,7 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <iostream>
 #include <vector>
 #include "pin_gui.hpp"
 
@@ -23,6 +24,17 @@ public:
   void set_interactability(bool interactable)
   {
     m_interactable = interactable;
+  }
+
+
+  void info()
+  {
+    std::cout << "=== Pins ===\n";
+    for (std::size_t i = 0; i < m_pins.size(); i++)
+    {
+      std::cout << "Pin[" << i << "]: " << (m_pins[i].is_on() ? 1 : 0) << '\n';
+    }
+    std::cout << '\n';
   }
 
   std::size_t get_bits()
