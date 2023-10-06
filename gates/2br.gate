@@ -1,0 +1,19 @@
+need dff
+create 2br
+add dff
+add dff
+i +
+i +
+i +
+i +
+o +
+o +
+w 0 4
+w 0 7
+w 1 5
+w 2 8
+w 3 6
+w 3 9
+w 102 100
+w 103 101
+x

@@ -1,0 +1,24 @@
+need not
+need and
+need latch
+create dff
+i +
+i +
+i +
+o +
+add not
+add and
+add and
+add latch
+add latch
+w 0 4
+w 0 6
+w 1 9
+w 2 5
+w 2 3
+w 101 7
+w 102 10
+w 103 8
+w 104 11
+w 105 100
+x

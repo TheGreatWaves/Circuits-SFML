@@ -1,8 +1,8 @@
 c not
+add nand
 i +
 o +
-add nand
 w 0 1
 w 0 2
 w 101 100
-x
+e

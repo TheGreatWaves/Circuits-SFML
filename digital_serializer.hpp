@@ -157,9 +157,6 @@ struct Gate
     // Retrieve the serialized output entry using the serialized input.
     auto serialized_output = serialized_computation[serialized_input];
 
-
-    log("Applied serialized input: ", serialized_input, " output: ", serialized_output, '\n');
-
     // Apply the serialized output to the output pins.
     apply_output(static_cast<int>(output_pins.size()), serialized_output);
   }
