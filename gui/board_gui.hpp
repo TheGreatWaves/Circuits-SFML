@@ -14,6 +14,7 @@
 #include "wire_gui.hpp"
 #include "belt_gui.hpp"
 #include "component_gui.hpp"
+#include "../component_recipe.hpp"
 
 class BoardGui 
 {
@@ -252,6 +253,17 @@ public:
     Context::instance()->sketch = m_sketch.get();
   }
 
+  void create_new_sketch(std::string_view new_component_name)
+  {
+    auto board = Board::instance();
+    auto ctx = Context::instance();
+
+    m_sketch = std::make_unique<Gate>();
+    ctx->sketch = m_sketch.get();
+
+    board->set_context(new_component_name);
+  }
+
 
   void save_current_configuration(bool serialize = false)
   {
@@ -269,23 +281,19 @@ public:
       auto current = ctx->sketch;
       ctx->sketch->set_name(current_component_name);
       board->save_sketch(std::move(m_sketch));
-      m_sketch = std::make_unique<Gate>();
-      ctx->sketch = m_sketch.get();
 
-      board->set_context(current_component_name);
+      create_new_sketch(current_component_name);
 
-      // Add all subgates.
-      for (auto& component : m_components)
-      {
-        const auto& name = component->get_component_name();
-        auto gate = board->get_component(name);
-        current->add_subgate(gate);
-      }
+      std::cout << "Adding " << m_components.size() << " subgates\n";
 
       if (serialize)
       {
         current->serialize();
       }
+
+      ComponentRecipe recipe = ComponentRecipe::construct_recipe(current);
+      recipe.set_wire_configuration(current->wire_construction_recipe);
+      recipe.create_recipe_file();
 
       clear();
     }

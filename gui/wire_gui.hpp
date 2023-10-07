@@ -12,6 +12,7 @@
 #include <sys/syscall.h>
 
 #include "context.hpp"
+#include "../common.hpp"
 
 class PinGui;
 
@@ -19,8 +20,6 @@ inline float lerp(float a, float b, float f)
 {
     return a + f * (b - a);
 }
-
-constexpr float WIRE_GROWTH_RATE = 200.f;
 
 class WireGui
 {

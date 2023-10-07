@@ -1,9 +1,0 @@
-# Define commonly used gates
-file gates/not.gate
-file gates/and.gate
-file gates/or.gate
-file gates/nor.gate
-file gates/xor.gate
-file gates/adder.gate
-file gates/4b_adder.gate
-file gates/alu.gate
