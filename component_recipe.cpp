@@ -1,5 +1,5 @@
 #include "component_recipe.hpp"
-#include "digital_serializer.hpp"
+#include "gate.hpp"
 
 ComponentRecipe ComponentRecipe::construct_recipe(const Gate* gate)
 {

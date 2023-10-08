@@ -1,6 +1,6 @@
 #pragma once
-#ifndef D_SERIALIZER
-#define D_SERIALIZER
+#ifndef GATE
+#define GATE
 
 #include <algorithm>
 #include <vector>
@@ -8,13 +8,10 @@
 #include <utility>
 #include <fstream>
 
+#include "common.hpp"
 #include "pin.hpp"
 #include "utils.hpp"
 #include "wire_info.hpp"
-
-#define INPUT_PIN_LIMIT 100
-
-extern std::size_t indent_level;
 
 // List of built in types.
 enum class GateType
@@ -534,4 +531,4 @@ inline bool Gate::connect_pins(Pin* input, Pin* output)
   return true;
 }
 
-#endif /* D_SERIALIZER */
+#endif /* GATE */

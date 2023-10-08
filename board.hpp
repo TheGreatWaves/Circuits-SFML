@@ -2,7 +2,7 @@
 #ifndef BOARD
 #define BOARD
 
-#include "digital_serializer.hpp"
+#include "gate.hpp"
 #include "utils.hpp"
 #include <memory>
 #include <map>

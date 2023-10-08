@@ -15,6 +15,12 @@ const std::string SEPERATOR {"/"};
 const std::string GATE_RECIPE_DIRECTORY = DEFAULT_GATE_DIRECTORY + SEPERATOR + DEFAULT_RECIPE_SAVE_DIRECTORY + SEPERATOR;
 
 /**
+ * Max number of input pins, referring to a pin ID bigger than 
+ * this number wi return an output pin.
+ */
+constexpr std::size_t INPUT_PIN_LIMIT{ 100 };
+
+/**
  * GUI wire's signal speed.
  */
 constexpr float WIRE_GROWTH_RATE = 900.f;

@@ -1,7 +1,5 @@
-#include "digital_serializer.hpp"
+#include "gate.hpp"
 #include "board.hpp"
-
-std::size_t indent_level = 0;
 
 std::size_t Gate::add_subgate(std::string_view gate_name)
 {

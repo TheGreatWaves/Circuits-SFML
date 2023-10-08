@@ -1,5 +1,5 @@
 #include "pin_port_gui.hpp"
-#include "../digital_serializer.hpp"
+#include "../gate.hpp"
 
 void PinPortGui::add_pin(const sf::Vector2f& pos, bool is_input)
 {
