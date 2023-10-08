@@ -14,6 +14,8 @@
 
 #define INPUT_PIN_LIMIT 100
 
+extern std::size_t indent_level;
+
 // List of built in types.
 enum class GateType
 {
@@ -505,6 +507,7 @@ inline void Gate::handle_custom_type(std::vector<bool>* visited,
     simulate_serialized();
     return;
   }
+
   for (auto& subgate : subgates)
   {
     for (auto& wire : wires)
@@ -517,6 +520,7 @@ inline void Gate::handle_custom_type(std::vector<bool>* visited,
     // std::cout << "    HANDLING SUBGATE: DONE " << subgate.first << '\n';
     // subgate.second->info();
   }
+
   for (auto& wire : wires)
   {
     wire->simulate();

@@ -59,6 +59,7 @@ public:
   {
     if (m_component != nullptr)
     {
+
       // std::cout << BLOCK << " [ UPDATING COMPONENT: `" << m_component->name << "` ] " << BLOCK  << BLOCK << BLOCK << '\n';
       auto input_bits = m_input_pins.get_bits();    
       m_component->apply_input(m_input_pins.size(), input_bits);
@@ -71,9 +72,7 @@ public:
       m_output_pins.apply_bits(output_bits);
 
       // m_component->output_info();
-
       // m_component->info();
-
       // std::cout << '\n';
     }
   }

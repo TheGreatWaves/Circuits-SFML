@@ -199,6 +199,8 @@ public:
           active_wire->set_dest_pin(pin);
           active_wire->set_dest_index(pid);
           Context::instance()->active_wire = nullptr;
+
+          // log("Wired: ", active_wire->get_src_index(), " and ", active_wire->get_dest_index(), '\n');
           Context::instance()->sketch->wire_pins(active_wire->get_src_index(), active_wire->get_dest_index());
         }
         else
@@ -249,8 +251,12 @@ public:
     m_input_pin_port.clear_port();
     m_output_pin_port.clear_port();
     m_name_text_box.reset();
+
+    m_sketch = nullptr;
     m_sketch = std::make_unique<Gate>();
+
     Context::instance()->sketch = m_sketch.get();
+    Context::instance()->active_wire = nullptr;
   }
 
   void create_new_sketch(std::string_view new_component_name)

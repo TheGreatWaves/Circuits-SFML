@@ -1,6 +1,7 @@
 #include "digital_serializer.hpp"
 #include "board.hpp"
 
+std::size_t indent_level = 0;
 
 std::size_t Gate::add_subgate(std::string_view gate_name)
 {
@@ -12,7 +13,14 @@ std::size_t Gate::add_subgate(std::string_view gate_name)
   for (auto& p : subgates[key]->input_pins)
   {
     p.parent = subgates[key].get();
+		p.reset();
   }
+
+  for (auto& p : subgates[key]->output_pins)
+  {
+		p.reset();
+  }
+
 
   return key;
 }
