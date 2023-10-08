@@ -153,6 +153,7 @@ void handle_input(std::string_view str)
 				return;
 			}
 			current->serialize();
+			current->print_truth_table();
 		}
 		break; case 'w':
 		{

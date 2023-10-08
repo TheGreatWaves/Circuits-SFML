@@ -200,7 +200,6 @@ public:
           active_wire->set_dest_index(pid);
           Context::instance()->active_wire = nullptr;
 
-          // log("Wired: ", active_wire->get_src_index(), " and ", active_wire->get_dest_index(), '\n');
           Context::instance()->sketch->wire_pins(active_wire->get_src_index(), active_wire->get_dest_index());
         }
         else
@@ -290,11 +289,10 @@ public:
 
       create_new_sketch(current_component_name);
 
-      std::cout << "Adding " << m_components.size() << " subgates\n";
-
       if (serialize)
       {
         current->serialize();
+        current->print_truth_table();
       }
 
       ComponentRecipe recipe = ComponentRecipe::construct_recipe(current);

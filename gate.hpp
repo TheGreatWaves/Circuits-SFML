@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 #include <fstream>
+#include <unordered_set>
 
 #include "common.hpp"
 #include "pin.hpp"
@@ -157,7 +158,6 @@ struct Gate
     // Retrieve the serialized output entry using the serialized input.
     auto serialized_output = serialized_computation[serialized_input];
 
-    // Apply the serialized output to the output pins.
     apply_output(static_cast<int>(output_pins.size()), serialized_output);
   }
 
@@ -179,23 +179,7 @@ struct Gate
     }
   }
 
-  void simulate()
-  {
-    // Simulate the input pins.
-    switch (type)
-    {
-    break; case GateType::NAND: handle_nand();
-    break; case GateType::CUSTOM: handle_custom_type();
-    break; default: log("Invalid type...?\n");
-    }
-
-    // Simulate the output pins.
-    for (auto& pins : output_pins)
-    { 
-      pins.simulate();
-    }
-  }
-
+  void simulate(std::unordered_set<Gate*> was_visited = {});
 
   void reset()
   {
@@ -209,6 +193,22 @@ struct Gate
 
   void add_input_pin(int n = 1)
   {
+    // We update all the pins which are above this number.
+    auto old_input_count = input_pins.size();
+
+    // Update output pins recipe for coherency.
+    for (auto& [a, b] : wire_construction_recipe)
+    {
+      if (a >= old_input_count && a < INPUT_PIN_LIMIT)
+      {
+        a += n;
+      }
+      if (b >= old_input_count && b < INPUT_PIN_LIMIT)
+      {
+        b += n;
+      }
+    }
+
     while (n --> 0)
     {
       pin_count++;
@@ -218,11 +218,28 @@ struct Gate
 
   void add_output_pin(int n = 1)
   {
+    // We update all the pins which are above this number.
+    auto old_output_count = output_pins.size() + INPUT_PIN_LIMIT;
+
+    // Update output pins recipe for coherency.
+    for (auto& [a, b] : wire_construction_recipe)
+    {
+      if (a >= old_output_count)
+      {
+        a += n;
+      }
+      if (b >= old_output_count)
+      {
+        b += n;
+      }
+    }
+
     while (n --> 0)
     {
       pin_count++;
       output_pins.emplace_back();
     }
+
   }
 
   Pin* get_pin(std::size_t pin)
@@ -367,9 +384,7 @@ struct Gate
     }
   }
 
-  void handle_custom_type(std::vector<bool>* visited = nullptr, 
-    std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr
-  );
+  void handle_custom_type(std::unordered_set<Gate*> was_visited);
 
   /**
    * Built-in type handlers.
@@ -493,42 +508,5 @@ struct Gate
     subgates_info();
   }
 };
-
-#include "wire.hpp"
-
-inline void Gate::handle_custom_type(std::vector<bool>* visited, 
-    std::map<std::size_t, std::unique_ptr<Gate>>* components)
-{
-  if (serialized)
-  {
-    simulate_serialized();
-    return;
-  }
-
-  for (auto& subgate : subgates)
-  {
-    for (auto& wire : wires)
-    {
-      wire->simulate();
-    }
-    // std::cout << "    HANDLING SUBGATE: " << subgate.first << '\n';
-    // subgate.second->input_info();
-    subgate.second->simulate();
-    // std::cout << "    HANDLING SUBGATE: DONE " << subgate.first << '\n';
-    // subgate.second->info();
-  }
-
-  for (auto& wire : wires)
-  {
-    wire->simulate();
-  }
-}
-
-inline bool Gate::connect_pins(Pin* input, Pin* output)
-{
-  input->connections.push_back(std::make_shared<Wire>(input, output));
-  wires.push_back(input->connections.back().get());
-  return true;
-}
 
 #endif /* GATE */

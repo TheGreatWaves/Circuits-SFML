@@ -8,8 +8,8 @@ void Pin::simulate(std::vector<bool>* visited,
   /** 
    * Simulate connection.
    */
-  for (auto& connection : connections)
-  {
-    connection->simulate(visited, components);
-  }
+  // for (auto& connection : connections)
+  // {
+  //   connection->simulate(visited, components);
+  // }
 }

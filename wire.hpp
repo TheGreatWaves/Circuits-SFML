@@ -6,10 +6,8 @@
 #include "utils.hpp"
 
 // Let's assume wires are one way.
-class Wire
+struct Wire
 {
-public:
-
   Wire(Pin* i, Pin* o)
   : input(i)
   , output(o)
@@ -21,11 +19,8 @@ public:
     if (output != nullptr)
     {
       output->state = input->state;
-      output->simulate(visited, components);
     }
   }
-
-private:
 
   Pin* input;
   Pin* output;
