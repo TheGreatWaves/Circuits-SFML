@@ -126,10 +126,6 @@ struct Gate
       serialized_computation.push_back(serialize_output());
     }
     serialized = true;
-
-    log(BLOCK, " Serialized Truth Table ", BLOCK, '\n');
-
-    print_truth_table();
   }
 
   std::size_t serialize_output()
