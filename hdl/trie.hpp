@@ -63,7 +63,7 @@ struct TrieNode
   /**
    * Returns a newly created trie node.
    */
-  [[ nodiscard ]] static TrieNode* make(const char letter) noexcept
+  [[ nodiscard ]] static inline TrieNode* make(const char letter) noexcept
   {
     return new TrieNode {
       .letter = letter,
@@ -149,6 +149,37 @@ public:
   for (auto i = 0; word[i] != '\0'; i++)
   {
    const char letter = word[i];
+   auto index = static_cast<unsigned int>(letter - 'A');
+   if (index >= 26) index -= 6;
+
+   /**
+    * If the current character's branch does not exist, not found.
+    */
+   if (current->children[index] == nullptr)
+   {
+    return false;
+   }
+   current = current->children[index];
+  }
+
+  return current->end_of_word;
+ }
+
+ /**
+  * Check the word against an expected entry.
+  */
+ [[ nodiscard ]] bool match(const std::string& expected_word, const std::string& word) noexcept 
+ {
+  if (expected_word.length() != word.length()) return false;
+
+  TrieNode* current = this->root;
+
+  for (auto i = 0; word[i] != '\0'; i++)
+  {
+   const char expected_letter = expected_word[i];
+   const char letter = word[i];
+   if (expected_letter != letter) return false;
+
    auto index = static_cast<unsigned int>(letter - 'A');
    if (index >= 26) index -= 6;
 
