@@ -334,7 +334,7 @@ void handle_input(std::string_view str)
 
 				for (auto& c : current.second->subgates)
 				{
-					log(c.second->name);
+					log(c->name);
 					newline();
 				}
 

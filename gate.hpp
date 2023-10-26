@@ -38,25 +38,46 @@
 #include "utils.hpp"
 #include "wire_info.hpp"
 
-// List of built in types.
+/**
+ * Different type of gates. At the moment we only have one built-in type.
+ */
 enum class GateType
 {
   NAND,
   CUSTOM
 };
 
+/**
+ * A Gate represents a component board. Each component board consists of I/O ports,
+ * subgates and wires. The gate also contains its wire construction recipe for the
+ * sake of self replication.
+ */
 struct Gate
 {
-  std::vector<Pin>                             input_pins;
-  std::vector<Pin>                             output_pins;
-  std::size_t                                  pin_count;
+  /**
+   * Gate information.
+   */
   GateType                                     type;
   std::size_t                                  subgate_count{};
-  std::string                                  name;
-  std::map<std::size_t, std::unique_ptr<Gate>> subgates;
-  std::vector<Wire*> wires;
+  std::string                                  name{};
   WireConstructionInfo                         wire_construction_recipe;
 
+  /**
+   * Input/Output ports.
+   */
+  std::vector<Pin>                             input_pins{};
+  std::vector<Pin>                             output_pins{};
+  std::size_t                                  pin_count{};
+
+  /**
+   * Subgates.
+   */
+  std::vector<std::unique_ptr<Gate>> subgates;
+
+  /**
+   * Wires.
+   */
+  std::vector<Wire*> wires;
   
   // Used for book keeping during simulate.
   std::vector<bool>                            components_up_to_date{};
@@ -280,12 +301,12 @@ struct Gate
       {
         for (auto& subgate : subgates)
         {
-          auto s = subgate.second->input_pins.size();
+          auto s = subgate->input_pins.size();
           range += s;
           if ( range > pin )
           {
             range -= s;
-            return &subgate.second->input_pins.at(pin - range);
+            return &subgate->input_pins.at(pin - range);
           }
         }
       }
@@ -305,12 +326,12 @@ struct Gate
       {
         for (auto& subgate : subgates)
         {
-          auto s = subgate.second->output_pins.size();
+          auto s = subgate->output_pins.size();
           range += s;
           if ( range > pin )
           {
             range -= s;
-            return &subgate.second->output_pins.at(pin - range);
+            return &subgate->output_pins.at(pin - range);
           }
         }
       }
@@ -445,17 +466,18 @@ struct Gate
   {
     auto count = input_pins.size();
     auto output_count = output_pins.size();
-    for (const auto& subgate : subgates)
+    for (auto i=0; i < subgates.size(); i++)
     {
+      const auto& subgate = subgates.at(i);
       newline();
-      log(BLOCK, " Subgate[", subgate.first, " : ", subgate.second->name, "] ", BLOCK, "\n");
-  		for (const auto& pin : subgate.second->input_pins)
+      log(BLOCK, " Subgate[", i, " : ", subgate->name, "] ", BLOCK, "\n");
+  		for (const auto& pin : subgate->input_pins)
   		{
 			  log("    pin[", count, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
   			count++;
   		}
       log("Exposed output pins:\n");
-  		for (const auto& pin : subgate.second->output_pins)
+  		for (const auto& pin : subgate->output_pins)
   		{
   			log("    pin[", output_count + INPUT_PIN_LIMIT, "] ", pin.state == PinState::ACTIVE ? 1 : 0, "\n");
   			output_count++;
@@ -467,17 +489,18 @@ struct Gate
   {
     auto count = input_pins.size();
     auto output_count = output_pins.size();
-    for (const auto& subgate : subgates)
+    for (auto i=0; i < subgates.size(); i++)
     {
+      const auto& subgate = subgates.at(i);
       newline();
-      log(BLOCK, " Subgate[", subgate.first, " : ", subgate.second->name, "] ", BLOCK, "\n");
-  		for (const auto& pin : subgate.second->input_pins)
+      log(BLOCK, " Subgate[", i, " : ", subgate->name, "] ", BLOCK, "\n");
+  		for (const auto& pin : subgate->input_pins)
   		{
 			  log("> ", count, '\n');
   			count++;
   		}
       log("Exposed output pins:\n");
-  		for (const auto& pin : subgate.second->output_pins)
+  		for (const auto& pin : subgate->output_pins)
   		{
 			  log("> ", output_count + INPUT_PIN_LIMIT, '\n');
   			output_count++;

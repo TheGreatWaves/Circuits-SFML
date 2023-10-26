@@ -33,7 +33,7 @@ ComponentRecipe ComponentRecipe::construct_recipe(const Gate* gate)
   recipe.set_component_name(gate->name);
 
   // Add sub components and mark dependency.
-  for (const auto& [_, sub_component] : gate->subgates)
+  for (const auto& sub_component : gate->subgates)
   {
     recipe.add_sub_component(sub_component->name);
   }

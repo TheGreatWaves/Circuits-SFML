@@ -23,61 +23,48 @@
  */
 
 #pragma once
-#ifndef PIN
-#define PIN
+#ifndef HDL_TOKEN
+#define HDL_TOKEN
 
-#include <vector>
-#include <memory>
-#include <map>
+#include <string>
 
-class Wire;
-class Gate;
-
-enum class PinState
+/**
+ * Different token types.
+ */
+enum class TokenType : unsigned int
 {
-  INACTIVE,
-  ACTIVE
+  ILLEGAL = 0,
+  END,
+
+  /**
+   * Identifiers.
+   */
+  NUMBER,
+  IDENT,
+
+  /**
+   * Groups.
+   */
+  LBRACE, // {
+  RBRACE, // }
+  LPAREN, // (
+  RPAREN, // )
+
+  COMMA,
+  ASSIGNMENT,
+
+  /**
+   * Keywords.
+   */
+  CHIP, // The beginning of a chip declaration.
+  IN,   // The beginning of input ports naming.
+  OUT,  // The beginning of output ports naming.
 };
 
-struct Pin
+struct Token
 {
-  PinState state;
-  std::vector<std::shared_ptr<Wire>> connections;
-  // OPTIONAL: The pin may live on a gate, in which case we can simulate it.
-  Gate* parent;
-
-  Pin(Gate* p = nullptr)
-  : state{ PinState::INACTIVE }
-  , parent(p)
-  {
-  }
-
-  ~Pin() = default;
-
-  void simulate(std::vector<bool>* visited = nullptr, std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr);
-
-  [[nodiscard]] PinState get_state()
-  {
-    return state;
-  }
-
-  bool is_active()
-  {
-    return state == PinState::ACTIVE;
-  }
-
-  void reset()
-  {
-    state = PinState::INACTIVE;
-  }
-
-  void flip()
-  {
-    state = is_active() ? PinState::INACTIVE : PinState::ACTIVE;
-  }
-
+  std::string lexeme;
+  TokenType   type;
 };
 
-
-
-#endif /* PIN */
+#endif /* HDL_TOKEN */

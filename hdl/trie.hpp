@@ -23,61 +23,49 @@
  */
 
 #pragma once
-#ifndef PIN
-#define PIN
+#ifndef DATASTRUCTURE_TRIE
+#define DATASTRUCTURE_TRIE
 
-#include <vector>
-#include <memory>
-#include <map>
+#include <array>
 
-class Wire;
-class Gate;
+constexpr std::size_t ALPHABET_SIZE {26};
 
-enum class PinState
+/**
+ * A simple trie node.
+ */
+struct TrieNode 
 {
-  INACTIVE,
-  ACTIVE
+  /**
+   * This is only for debugging.
+   */
+  char letter{};
+
+  /**
+   * All possible nodes you can travel 
+   * down to from the current node.
+   */
+  std::array<TrieNode*, ALPHABET_SIZE> children{};
+
+  /**
+   * This denotes the the current node is a leaf.
+   */
+  bool end_of_word{};
+
+  /**
+   * METHODS.
+   */
+
+  /**
+   * Returns a newly created trie node.
+   */
+  [[ nodiscard ]] constexpr static TrieNode make(const char letter) noexcept
+  {
+    return {
+      .letter = letter,
+      .children = {nullptr},
+      .end_of_word = false,
+    };
+  }
 };
 
-struct Pin
-{
-  PinState state;
-  std::vector<std::shared_ptr<Wire>> connections;
-  // OPTIONAL: The pin may live on a gate, in which case we can simulate it.
-  Gate* parent;
-
-  Pin(Gate* p = nullptr)
-  : state{ PinState::INACTIVE }
-  , parent(p)
-  {
-  }
-
-  ~Pin() = default;
-
-  void simulate(std::vector<bool>* visited = nullptr, std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr);
-
-  [[nodiscard]] PinState get_state()
-  {
-    return state;
-  }
-
-  bool is_active()
-  {
-    return state == PinState::ACTIVE;
-  }
-
-  void reset()
-  {
-    state = PinState::INACTIVE;
-  }
-
-  void flip()
-  {
-    state = is_active() ? PinState::INACTIVE : PinState::ACTIVE;
-  }
-
-};
-
-
-
-#endif /* PIN */
+#endif /* DATASTRUCTURE_TRIE */
