@@ -27,8 +27,13 @@
 #define DATASTRUCTURE_TRIE
 
 #include <array>
+#include <string>
 
-constexpr std::size_t ALPHABET_SIZE {26};
+/**
+ * Case sentitive!
+ * Lowercase and uppercase letters.
+ */
+constexpr std::size_t ALPHABET_SIZE {52};
 
 /**
  * A simple trie node.
@@ -58,14 +63,110 @@ struct TrieNode
   /**
    * Returns a newly created trie node.
    */
-  [[ nodiscard ]] constexpr static TrieNode make(const char letter) noexcept
+  [[ nodiscard ]] static TrieNode* make(const char letter) noexcept
   {
-    return {
+    return new TrieNode {
       .letter = letter,
-      .children = {nullptr},
+      .children = { nullptr, },
       .end_of_word = false,
     };
   }
+};
+
+/**
+ * The Trie class holds one root TrieNode.
+ */
+class Trie
+{
+public:
+
+ /**
+  * Create a new trie.
+  */
+ Trie() noexcept
+ : root{ TrieNode::make('\0') }
+ {
+ }
+
+ /**
+  * Delete the root node and all of it's children.
+  */
+ ~Trie() noexcept 
+ {
+  clean_up(this->root);
+ }
+
+ /**
+  * Clean up tree.
+  */
+ void clean_up(TrieNode* node) noexcept 
+ {
+  if (node == nullptr) return;
+  for (std::size_t i = 0; i < ALPHABET_SIZE; i++)
+  {
+    clean_up(node->children[i]);
+  }
+  delete node;
+ }
+
+ /**
+  * Inserts the word into the trie.
+  */
+ void insert(const std::string& word) noexcept
+ {
+  TrieNode* current = this->root;
+
+  for (auto i = 0; word[i] != '\0'; i++)
+  {
+   const char letter = word[i];
+   auto index = static_cast<unsigned int>(letter - 'A');
+   if (index >= 26) index -= 6;
+
+   /**
+    * If the current character's branch does not exist, create it.
+    */
+   if (current->children[index] == nullptr)
+   {
+    current->children[index] = TrieNode::make(letter);
+   }
+   current = current->children[index];
+  }
+
+  /**
+   * By this point, we would have reached the end of the word.
+   * Now we can just must this position as a leaf node.
+   */
+  current->end_of_word = true;
+ }
+
+ /**
+  * Search for the given word. Returns true if found.
+  */
+ [[ nodiscard ]] bool search(const std::string& word) noexcept 
+ {
+  TrieNode* current = this->root;
+
+  for (auto i = 0; word[i] != '\0'; i++)
+  {
+   const char letter = word[i];
+   auto index = static_cast<unsigned int>(letter - 'A');
+   if (index >= 26) index -= 6;
+
+   /**
+    * If the current character's branch does not exist, not found.
+    */
+   if (current->children[index] == nullptr)
+   {
+    return false;
+   }
+   current = current->children[index];
+  }
+
+  return current->end_of_word;
+ }
+
+private:
+ TrieNode* root;
 };
 
 #endif /* DATASTRUCTURE_TRIE */
