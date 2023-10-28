@@ -65,21 +65,18 @@ struct Scanner
     /**
      * Read all the source code from the file.
      */
-    void read_source(const std::string& path)
+    bool read_source(const std::string& path)
     {
         this->source_code.clear();
 
-        try
-        {
-            std::ifstream     ifs(path);
-            std::stringstream buffer;
-            buffer << ifs.rdbuf();
-            this->source_code = buffer.str();
-        }
-        catch (const std::exception&)
-        {
-            throw("Could not read file!");
-        }
+        std::ifstream     ifs(path);
+        if (ifs.fail()) return false;
+
+        std::stringstream buffer;
+        buffer << ifs.rdbuf();
+        this->source_code = buffer.str();
+
+        return true;
     }
 
     /**
@@ -212,10 +209,13 @@ struct Scanner
         {
             switch (peek())
             {
-                break; case ' ':
+                break; case '\n':
+                {
+                    ++line;
+                }
                        case '\r':
                        case '\t':
-                       case '\n':
+                       case ' ':
                 {
                     advance_position();
                 }
@@ -244,7 +244,7 @@ struct Scanner
     [[nodiscard]] Token make_token(const TokenType type) noexcept 
     {
         const std::size_t length = current - start;
-        return Token(type, this->source_code.substr(start, length));
+        return Token(type, this->source_code.substr(start, length), this->line);
     }
 
     /**
@@ -252,7 +252,7 @@ struct Scanner
      */
     [[nodiscard]] Token error_token(const std::string& message) noexcept 
     {
-        return Token(TokenType::ILLEGAL, message);
+        return Token(TokenType::ILLEGAL, message, this->line);
     }
 
   private:
@@ -260,6 +260,7 @@ struct Scanner
     std::size_t current{start};
     std::string source_code{};
     Trie        keywords;
+    std::size_t line{1};
 };
 
 } /* namespace hdl */

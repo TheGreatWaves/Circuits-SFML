@@ -80,9 +80,10 @@ struct Token
     /**
      * Constructor.
      */
-    [[nodiscard]] Token(TokenType t, std::string_view l) noexcept
+    [[nodiscard]] Token(TokenType t, std::string_view l, std::size_t line_num) noexcept
         : type{t}
         , lexeme{l}
+        , line{line_num}
     {
     }
 
@@ -111,8 +112,9 @@ struct Token
     /**
      * MEMBERS.
      */
-    TokenType   type;
-    std::string lexeme;
+    TokenType   type{};
+    std::string lexeme{};
+    std::size_t line{};
 };
 
 const Token EOF_TOKEN{};
