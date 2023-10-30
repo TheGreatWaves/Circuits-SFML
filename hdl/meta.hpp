@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "trie.hpp"
+#include "parser_base.hpp"
 
 namespace hdl
 {
@@ -76,7 +77,15 @@ inline static const Meta NAND_GATE = Meta{
 
 [[nodiscard]] inline auto generate_meta_from_path(std::string_view component_name) -> const Meta
 {
-
+    Meta meta;
+    try
+    {
+        auto parser = BaseParser(std::string(component_name));
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 }
 
 
