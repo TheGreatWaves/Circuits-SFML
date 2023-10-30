@@ -61,18 +61,18 @@ class Parser
     /**
      * Default Ctor prohibted.
      */
-    Parser() = delete;
+    constexpr Parser() = delete;
 
     /**
      * Parse the source code and build the RecipeBuilder.
      */
-    bool parse() noexcept
+    [[nodiscard]] auto parse() noexcept -> bool
     {
         advance();
 
         while (!match(TokenType::END))
         {
-         declaration();
+            declaration();
         }
 
         return this->has_error;
@@ -82,38 +82,154 @@ class Parser
      * Parsing functions.
      */
   private:
-
-    void declaration()
+    auto declaration() noexcept -> void
     {
-     if (match(TokenType::IN))
-     {
-         IN_statement();
-     }
+        if (match(TokenType::IN))
+        {
+            IN_statement();
+        }
+        else if (match(TokenType::OUT))
+        {
+            OUT_statement();
+        }
+        else if (match(TokenType::PARTS))
+        {
+            PARTS_statement();
+        }
+        else if (match(TokenType::IDENT))
+        {
+            SUBGATE_statement();
+        }
 
-     if (this->panic)
-     {
-       restabilize();
-     }
+        if (this->panic)
+        {
+            log("Stabilizing...");
+            restabilize();
+            log("Restabilized...");
+        }
     }
 
     /**
      * Parsing an IN (input) statement.
      */
-    void IN_statement()
+    auto IN_statement() noexcept -> void
     {
         log("Parsing IN statement.");
         // We expect at least one identifier.
         consume(TokenType::IDENT, "IN statement expects atleast one identifier.");
         log("Parsing identifier: " + previous.lexeme + ".");
 
-        while(match(TokenType::COMMA))
+        while (match(TokenType::COMMA))
         {
             consume(TokenType::IDENT, "Expected identifier, found '" + current.lexeme + "'.");
             log("Parsing identifier: " + previous.lexeme + ".");
         }
-        consume(TokenType::SEMICOLON, "Expected ';' at the end of an IN statement, found '" + current.lexeme + "'.");
+        consume(TokenType::SEMICOLON,
+                "Expected ';' at the end of an IN statement, found '" + current.lexeme + "'.");
 
         log("Finished parsing IN statement.");
+    }
+
+    /**
+     * Parsing an OUT (output) statement.
+     */
+    auto OUT_statement() noexcept -> void
+    {
+        log("Parsing OUT statement.");
+        // We expect at least one identifier.
+        consume(TokenType::IDENT, "OUT statement expects atleast one identifier.");
+        log("Parsing identifier: " + previous.lexeme + ".");
+
+        while (match(TokenType::COMMA))
+        {
+            consume(TokenType::IDENT, "Expected identifier, found '" + current.lexeme + "'.");
+            log("Parsing identifier: " + previous.lexeme + ".");
+        }
+        consume(TokenType::SEMICOLON,
+                "Expected ';' at the end of an OUT statement, found '" + current.lexeme + "'.");
+
+        log("Finished parsing OUT statement.");
+    }
+
+    auto SUBGATE_statement() noexcept -> void
+    {
+        log("Parsing identifier: " + previous.lexeme + ".");
+
+        // Parsing the parameters of the subgate.
+        consume(TokenType::LPAREN,
+                "Expected left parenthesis, found '" + current.lexeme + "'.");
+
+        // We expect ATLEAST one linkage.
+        consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+    log("Link in " + previous.lexeme + ".");
+        consume(TokenType::ASSIGNMENT,
+                "Expected assignment operator, found '" + current.lexeme + "'.");
+        consume(TokenType::IDENT,
+                "Linkage statement expected output, found '" + current.lexeme + "'.");
+    log("Link out " + previous.lexeme + ".");
+
+        while (match(TokenType::COMMA))
+        {
+            consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+            log("Link in " + previous.lexeme + ".");
+            consume(TokenType::ASSIGNMENT,
+                    "Expected assignment operator, found '" + current.lexeme + "'.");
+            consume(TokenType::IDENT,
+                    "Linkage statement expected output, found '" + current.lexeme + "'.");
+            log("Link out " + previous.lexeme + ".");
+        }
+        consume(TokenType::RPAREN,
+                "Expected closing parenthesis, found '" + current.lexeme + "'.");
+        consume(TokenType::SEMICOLON, "Expected ';' at the end of an PARTS statement, found '" +
+                                          current.lexeme + "'.");
+    }
+
+    /**
+     * Parsing parts.
+     */
+    auto PARTS_statement() noexcept -> void
+    {
+        log("Parsing PARTS statement.");
+
+        consume(TokenType::COLON, "Expected ':', found '" + current.lexeme + "'.");
+
+        // Subcomponents are NOT optional. A gate without subgates would be useless.
+        // We expect atleast one identifier.
+        consume(TokenType::IDENT, "PARTS statement expects atleast one identifier.");
+        log("Parsing identifier: " + previous.lexeme + ".");
+
+        // Parsing the parameters of the subgate.
+        consume(TokenType::LPAREN, "Expected left parenthesis, found '" + current.lexeme + "'.");
+
+        // We expect ATLEAST one linkage.
+        consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+        log("Link in " + previous.lexeme + ".");
+        consume(TokenType::ASSIGNMENT,
+                "Expected assignment operator, found '" + current.lexeme + "'.");
+        consume(TokenType::IDENT,
+                "Linkage statement expected output, found '" + current.lexeme + "'.");
+        log("Link out " + previous.lexeme + ".");
+
+        while (match(TokenType::COMMA))
+        {
+            consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+            log("Link in " + previous.lexeme + ".");
+            consume(TokenType::ASSIGNMENT,
+                    "Expected assignment operator, found '" + current.lexeme + "'.");
+            consume(TokenType::IDENT,
+                    "Linkage statement expected output, found '" + current.lexeme + "'.");
+            log("Link out " + previous.lexeme + ".");
+        }
+        consume(TokenType::RPAREN, "Expected closing parenthesis, found '" + current.lexeme + "'.");
+        consume(TokenType::SEMICOLON,
+                "Expected ';' at the end of an PARTS statement, found '" + current.lexeme + "'.");
+
+        while (match(TokenType::IDENT))
+        {
+            SUBGATE_statement();
+        }
+
+        log("Finished parsing PARTS statement.");
     }
 
     /**
@@ -123,13 +239,10 @@ class Parser
     /**
      * Advance the current token.
      */
-    void advance() noexcept
+    auto advance() noexcept -> void
     {
         previous = current;
 
-        /**
-         * Similar to a stack trace.
-         */
         while (true)
         {
             current = scanner.scan_token();
@@ -145,7 +258,7 @@ class Parser
      * Consume the current token if it matches what we expect,
      * else we report error.
      */
-    void consume(TokenType type, std::string_view message) noexcept
+    auto consume(TokenType type, std::string_view message) noexcept -> void
     {
         if (current.type == type)
         {
@@ -160,7 +273,7 @@ class Parser
      * This consumption is optional, an error will not be thrown. Returns
      * true if the token was consumed.
      */
-    bool match(TokenType type) noexcept
+    [[nodiscard]] auto match(TokenType type) noexcept -> bool
     {
         if (current.type == type)
         {
@@ -181,7 +294,7 @@ class Parser
     /**
      * Report the token which caused an error.
      */
-    void report_token_error(Token token) noexcept
+    auto report_token_error(Token token) noexcept -> void
     {
         auto message = "Unexpected token " + token.lexeme + '.';
         report_error(message);
@@ -190,7 +303,7 @@ class Parser
     /**
      * Report a generic error. (Custom error messasge)
      */
-    void report_error(std::string_view message) noexcept
+    auto report_error(std::string_view message) noexcept -> void
     {
         // Prevevent error message overload for one declaration.
         if (this->panic)
@@ -206,27 +319,30 @@ class Parser
     /**
      * Log function, for debugging purposes.
      */
-    void log(std::string_view message) noexcept
+    auto log(std::string_view message) const noexcept -> void
     {
 #ifdef DEBUG
         std::cout << "LOG [ " << message << " ]\n";
 #else
 #endif
     }
-  
 
     /**
      * We restabilize at the next declaration, by doing this, we can report more than
      * a single in one parse, instead of having to parse over and over and returning
      * only a single error back at a time.
      */
-    void restabilize()
+    auto restabilize() noexcept -> void
     {
         // Reset panic flag, since now we can report a new error for a different part.
         this->panic = false;
 
+        log("Restabilizing...");
+
         while (this->current.type != TokenType::END)
         {
+            auto token = "Token: " + current.lexeme + ", " + std::to_string(static_cast<int>(current.type));
+            log(token);
             if (this->previous.type == TokenType::SEMICOLON)
                 return;
 
@@ -252,8 +368,8 @@ class Parser
     Scanner       scanner;
     RecipeBuilder builder;
 
-    bool panic { false };
-    bool has_error { false };
+    bool panic{false};
+    bool has_error{false};
 };
 
 } /* namespace hdl */

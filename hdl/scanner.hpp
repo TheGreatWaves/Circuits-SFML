@@ -101,7 +101,7 @@ struct Scanner
      * Return the identifer type. This could return as
      * one of the keyword types.
      */
-    [[nodiscard]] TokenType identifier_type() noexcept 
+    [[nodiscard]] auto identifier_type() -> TokenType 
     {
         auto word = source_code.substr(start, current-start);
         if (keywords.match("IN", word)) return TokenType::IN;
@@ -119,7 +119,10 @@ struct Scanner
         skip_whitespace();
         start = current;
 
-        if (is_at_end()) return EOF_TOKEN;
+        if (is_at_end()) 
+        {
+            return EOF_TOKEN;
+        }
 
         const auto c = advance();
 
@@ -184,7 +187,7 @@ struct Scanner
      */
     [[nodiscard]] bool is_at_end() noexcept
     {
-        return current == this->source_code.length();
+        return current >= this->source_code.length();
     }
 
     /**
