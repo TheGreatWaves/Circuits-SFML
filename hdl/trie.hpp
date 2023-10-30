@@ -91,6 +91,15 @@ class Trie
     }
 
     /**
+     * Create a new trie with one value.
+     */
+    Trie(const std::string& word) noexcept
+        : root{TrieNode::make('\0')}
+    {
+      insert(word);
+    }
+
+    /**
      * Delete the root node and all of it's children.
      */
     ~Trie() noexcept
