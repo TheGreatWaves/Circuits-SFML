@@ -26,17 +26,17 @@
 #ifndef HDL_META
 #define HDL_META
 
+#include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <optional>
-#include <memory>
 
+#include "raw_parser.hpp"
 #include "recipe_builder.hpp"
 #include "token.hpp"
 #include "trie.hpp"
-#include "raw_parser.hpp"
 
 namespace hdl
 {
@@ -52,8 +52,8 @@ struct Meta
         std::size_t pin_number;
 
         PinEntry(const std::string& name, std::size_t number)
-        : pin_name{ name }
-        , pin_number{ number }
+            : pin_name{name}
+            , pin_number{number}
         {
         }
     };
@@ -79,11 +79,10 @@ struct Meta
 
         return {};
     }
-    
-    [[nodiscard]] static inline auto get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>;
-    [[nodiscard]] static inline auto generate_meta_from_path(std::string_view component_name) -> std::unique_ptr<const Meta>;
 
-    std::string     name{};
+    [[nodiscard]] static inline auto get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>;
+
+    std::string           name{};
     std::size_t           input_count{};
     std::size_t           output_count{};
     std::vector<PinEntry> input_pins{};
@@ -95,12 +94,12 @@ struct Meta
  * Built in meta for NAND.
  */
 
-[[nodiscard]] inline auto Meta::generate_meta_from_path(std::string_view component_name) -> std::unique_ptr<const Meta>
+[[nodiscard]] inline auto Meta::get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>
 {
     auto meta = std::make_unique<Meta>();
     try
     {
-        auto parser = hdl::RawParser(std::string(component_name));
+        auto parser = hdl::RawParser(std::string(component_name) + ".meta");
         static_cast<void>(parser.advance_token());
 
         // Parse the name of the component
@@ -111,11 +110,13 @@ struct Meta
         parser.consume_token(TokenType::IDENT, "Expected identifier.");
         if (auto lexeme = parser.get_previous().lexeme; lexeme != "INPUTS")
             parser.report_custom_error("Expected 'INPUTS', found " + lexeme);
-        parser.consume_token(TokenType::NUMBER, "Expected INPUTS count (number), found " + parser.get_current().lexeme);
+        parser.consume_token(TokenType::NUMBER, "Expected INPUTS count (number), found " +
+                                                    parser.get_current().lexeme);
         meta->input_count = std::stoi(parser.get_previous().lexeme);
-        for (std::size_t i=0; i < meta->input_count; i++)
+        for (std::size_t i = 0; i < meta->input_count; i++)
         {
-            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" + parser.get_current().lexeme + "'.");
+            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" +
+                                                       parser.get_current().lexeme + "'.");
             auto lexeme = parser.get_previous().lexeme;
             meta->input_pins.emplace_back(lexeme, i);
             meta->trie.insert(lexeme);
@@ -125,11 +126,13 @@ struct Meta
         parser.consume_token(TokenType::IDENT, "Expected identifier.");
         if (auto lexeme = parser.get_previous().lexeme; lexeme != "OUTPUTS")
             parser.report_custom_error("Expected 'outputS', found " + lexeme);
-        parser.consume_token(TokenType::NUMBER, "Expected outputS count (number), found " + parser.get_current().lexeme);
+        parser.consume_token(TokenType::NUMBER, "Expected outputS count (number), found " +
+                                                    parser.get_current().lexeme);
         meta->output_count = std::stoi(parser.get_previous().lexeme);
-        for (std::size_t i=0; i < meta->output_count; i++)
+        for (std::size_t i = 0; i < meta->output_count; i++)
         {
-            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" + parser.get_current().lexeme + "'.");
+            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" +
+                                                       parser.get_current().lexeme + "'.");
             auto lexeme = parser.get_previous().lexeme;
             meta->output_pins.emplace_back(lexeme, i + MAX_INPUT_PINS);
             meta->trie.insert(lexeme);
@@ -142,17 +145,12 @@ struct Meta
 
         return std::move(meta);
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
 
     return nullptr;
-}
-
-[[nodiscard]] inline auto Meta::get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>
-{
-    return Meta::generate_meta_from_path(std::string(component_name) + ".meta");
 }
 
 } /* namespace hdl */

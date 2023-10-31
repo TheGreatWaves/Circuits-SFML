@@ -374,8 +374,7 @@ class HDLParser : public BaseParser
         }
 
         consume(TokenType::RPAREN, "Expected closing parenthesis, found '" + current.lexeme + "'.");
-        consume(TokenType::SEMICOLON,
-                "Expected ';' at the end of an PARTS statement, found '" + current.lexeme + "'.");
+        consume(TokenType::SEMICOLON, "Expected ';' at the end of an PARTS statement, found '" + current.lexeme + "'.");
 
         // Increment the offset accordingly.
         input_pin_offset += context_gate_metadata->input_count;
