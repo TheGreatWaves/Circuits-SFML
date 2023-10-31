@@ -28,6 +28,8 @@
 
 #include <array>
 #include <string>
+#include <string_view>
+#include <vector>
 
 /**
  * Case sentitive!
@@ -65,7 +67,7 @@ struct TrieNode
      */
     [[nodiscard]] static inline TrieNode* make(const char letter) noexcept
     {
-        return new TrieNode{
+        auto trie = new TrieNode{
             .letter = letter,
             .children =
                 {
@@ -73,6 +75,13 @@ struct TrieNode
                 },
             .end_of_word = false,
         };
+
+        for (std::size_t i = 0; i < ALPHABET_SIZE; i++)
+        {
+          trie->children[i] = nullptr;
+        }
+
+        return trie;
     }
 };
 
@@ -96,7 +105,19 @@ class Trie
     Trie(const std::string& word) noexcept
         : root{TrieNode::make('\0')}
     {
-      insert(word);
+        insert(word);
+    }
+
+    /**
+     * Create a new trie with multiple value.
+     */
+    Trie(const std::vector<std::string> words) noexcept
+        : root{TrieNode::make('\0')}
+    {
+        for (const auto& word : words)
+        {
+            insert(word);
+        }
     }
 
     /**
@@ -104,7 +125,8 @@ class Trie
      */
     ~Trie() noexcept
     {
-        clean_up(this->root);
+        if (this->root != nullptr)
+         clean_up(this->root);
     }
 
     /**
@@ -182,7 +204,7 @@ class Trie
     /**
      * Check the word against an expected entry.
      */
-    [[nodiscard]] bool match(const std::string& expected_word, const std::string& word) noexcept
+    [[nodiscard]] bool match(const std::string& expected_word, const std::string& word) const noexcept
     {
         if (expected_word.length() != word.length())
             return false;
@@ -195,7 +217,6 @@ class Trie
             const char letter          = word[i];
             if (expected_letter != letter)
                 return false;
-
 
             auto index = static_cast<unsigned int>(letter - 'A');
             if (index >= 26)

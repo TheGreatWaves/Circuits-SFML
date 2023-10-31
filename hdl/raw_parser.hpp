@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef HDL_PARSER
-#define HDL_PARSER
+#ifndef RAW_PARSER
+#define RAW_PARSER
 
 #include "parser_base.hpp"
 
@@ -57,6 +57,14 @@ struct RawParser : public BaseParser
     [[nodiscard]] auto get_current() const noexcept -> Token
     {
         return this->current;
+    }
+
+    /**
+     * Return the error status of the parser.
+     */
+    [[nodiscard]] auto get_error() const noexcept -> bool
+    {
+      return this->has_error;
     }
 
     /**
@@ -103,4 +111,4 @@ struct RawParser : public BaseParser
 
 } /* namespace hdl */
 
-#endif /* HDL_PARSER */
+#endif /* RAW_PARSER */

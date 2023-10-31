@@ -26,12 +26,17 @@
 #ifndef HDL_META
 #define HDL_META
 
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
+#include <optional>
+#include <memory>
 
+#include "recipe_builder.hpp"
+#include "token.hpp"
 #include "trie.hpp"
-#include "parser_base.hpp"
+#include "raw_parser.hpp"
 
 namespace hdl
 {
@@ -45,50 +50,110 @@ struct Meta
     {
         std::string pin_name;
         std::size_t pin_number;
+
+        PinEntry(const std::string& name, std::size_t number)
+        : pin_name{ name }
+        , pin_number{ number }
+        {
+        }
     };
 
-    const std::string     name;
-    std::vector<PinEntry> input_pins;
-    std::vector<PinEntry> output_pins;
+    [[nodiscard]] auto get_pin(std::string_view name) const noexcept -> const std::optional<PinEntry>
+    {
+        auto pin_name = std::string(name);
+        for (const auto& pin_entry : input_pins)
+        {
+            if (trie.match(pin_entry.pin_name, pin_name))
+            {
+                return pin_entry;
+            }
+        }
+
+        for (const auto& pin_entry : output_pins)
+        {
+            if (trie.match(pin_entry.pin_name, pin_name))
+            {
+                return pin_entry;
+            }
+        }
+
+        return {};
+    }
+    
+    [[nodiscard]] static inline auto get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>;
+    [[nodiscard]] static inline auto generate_meta_from_path(std::string_view component_name) -> std::unique_ptr<const Meta>;
+
+    std::string     name{};
+    std::size_t           input_count{};
+    std::size_t           output_count{};
+    std::vector<PinEntry> input_pins{};
+    std::vector<PinEntry> output_pins{};
     Trie                  trie;
 };
 
 /**
  * Built in meta for NAND.
  */
-inline static const Meta NAND_GATE = Meta{
-    .name        = "Nand",
-    .input_pins  = {{"a", 0}, {"b", 1}},
-    .output_pins = {{"out", 100}},
-    .trie        = Trie{"Nand"},
-};
 
-[[nodiscard]] inline auto get_meta(std::string_view component_name) -> const Meta
+[[nodiscard]] inline auto Meta::generate_meta_from_path(std::string_view component_name) -> std::unique_ptr<const Meta>
 {
-    if (component_name == "Nand")
-    {
-        return NAND_GATE;
-    }
-    else
-    {
-
-    }
-}
-
-[[nodiscard]] inline auto generate_meta_from_path(std::string_view component_name) -> const Meta
-{
-    Meta meta;
+    auto meta = std::make_unique<Meta>();
     try
     {
-        auto parser = BaseParser(std::string(component_name));
+        auto parser = hdl::RawParser(std::string(component_name));
+        static_cast<void>(parser.advance_token());
+
+        // Parse the name of the component
+        parser.consume_token(TokenType::IDENT, "Expected identifier.");
+        meta->name = parser.get_previous().lexeme;
+
+        // Parse the the count of inputs.
+        parser.consume_token(TokenType::IDENT, "Expected identifier.");
+        if (auto lexeme = parser.get_previous().lexeme; lexeme != "INPUTS")
+            parser.report_custom_error("Expected 'INPUTS', found " + lexeme);
+        parser.consume_token(TokenType::NUMBER, "Expected INPUTS count (number), found " + parser.get_current().lexeme);
+        meta->input_count = std::stoi(parser.get_previous().lexeme);
+        for (std::size_t i=0; i < meta->input_count; i++)
+        {
+            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" + parser.get_current().lexeme + "'.");
+            auto lexeme = parser.get_previous().lexeme;
+            meta->input_pins.emplace_back(lexeme, i);
+            meta->trie.insert(lexeme);
+        }
+
+        // Parse the the count of outputs.
+        parser.consume_token(TokenType::IDENT, "Expected identifier.");
+        if (auto lexeme = parser.get_previous().lexeme; lexeme != "OUTPUTS")
+            parser.report_custom_error("Expected 'outputS', found " + lexeme);
+        parser.consume_token(TokenType::NUMBER, "Expected outputS count (number), found " + parser.get_current().lexeme);
+        meta->output_count = std::stoi(parser.get_previous().lexeme);
+        for (std::size_t i=0; i < meta->output_count; i++)
+        {
+            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" + parser.get_current().lexeme + "'.");
+            auto lexeme = parser.get_previous().lexeme;
+            meta->output_pins.emplace_back(lexeme, i + MAX_INPUT_PINS);
+            meta->trie.insert(lexeme);
+        }
+
+        if (parser.get_error())
+        {
+            throw std::runtime_error("Parser error occured.");
+        }
+
+        return std::move(meta);
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
+
+    return nullptr;
 }
 
-
+[[nodiscard]] inline auto Meta::get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>
+{
+    return Meta::generate_meta_from_path(std::string(component_name) + ".meta");
+}
 
 } /* namespace hdl */
 

@@ -25,11 +25,14 @@
 #ifndef HDL_RECIPE_BUILDER
 #define HDL_RECIPE_BUILDER
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "../wire_info.hpp"
 
 constexpr std::size_t MAX_INPUT_PINS = 100;
 
@@ -47,27 +50,34 @@ class RecipeBuilder
     {
         // Debug
         std::cout << compile();
+        std::cout << '\n';
+        std::cout << meta();
     }
 
     [[nodiscard]] auto compile() const noexcept -> std::string
     {
         std::stringstream ss;
 
-        writeln(ss, "// THIS DEFINITION FILE IS AUTO GENERATED. DO NOT EDIT MANUALLY.");
+        comment(ss, "THIS DEFINITION FILE IS AUTO GENERATED. DO NOT EDIT MANUALLY.");
+        ln(ss);
 
         // Adding dependencies.
-        ln(ss);
-        writeln(ss, "// DEPENDENCIES.");
+        comment(ss, "DEPENDENCIES.");
         compile_dependencies(ss);
+        ln(ss);
+
+        // Create gate.
+        comment(ss, "BEGINNING OF GATE DECLARATION.");
+        writeln(ss, "create " + this->name);
+        ln(ss);
 
         // Defining inputs.
-        ln(ss);
-        writeln(ss, "// GLOBAL INPUT PINS.");
+        comment(ss, "GLOBAL INPUT PINS.");
         compile_input_pins(ss);
         ln(ss);
 
         // Defining inputs.
-        writeln(ss, "// GLOBAL OUTPUT PINS.");
+        comment(ss, "GLOBAL OUTPUT PINS.");
         compile_output_pins(ss);
         ln(ss);
 
@@ -76,8 +86,61 @@ class RecipeBuilder
         compile_subgates(ss);
         ln(ss);
 
+        comment(ss, "LINKAGES");
+        compile_linkage(ss);
+        ln(ss);
+
+        comment(ss, "DEFINITION COMPLETE.");
+        writeln(ss, "save");
+        ln(ss);
+
         writeln(ss, "// END OF FILE.");
 
+        return ss.str();
+    }
+
+    /**
+     * Set gate name.
+     */
+    auto set_gate_name(const std::string& name) noexcept -> void
+    {
+         this->name = name;   
+    }
+
+    /**
+     * Generate the meta file.
+     */
+    [[nodiscard]] auto meta() const noexcept -> std::string
+    {
+        std::stringstream ss;
+
+        comment(ss, "THIS META FILE IS AUTO GENERATED. DO NOT EDIT MANUALLY.");
+
+        // Adding dependencies.
+        ln(ss);
+        comment(ss, "GATE NAME.");
+        writeln(ss, name);
+
+        // Defining inputs.
+        ln(ss);
+        comment(ss, "GLOBAL INPUT PINS.");
+        writeln(ss, "INPUTS");
+        for (std::size_t i = 0; i < input_pins.size(); i++)
+        {
+         writeln(ss, input_pins.at(i));
+        }
+        ln(ss);
+
+        // Defining outputs.
+        comment(ss, "GLOBAL OUTPUT PINS.");
+        writeln(ss, "OUTPUTS");
+        for (std::size_t i = 0; i < output_pins.size(); i++)
+        {
+         writeln(ss, output_pins.at(i));
+        }
+        ln(ss);
+
+        writeln(ss, "// END OF FILE.");
         return ss.str();
     }
 
@@ -94,7 +157,23 @@ class RecipeBuilder
      */
     auto add_input_pin(const std::string& name) noexcept -> void
     {
-        input_pins.emplace_back(name);
+        input_pins[input_pins.size()] = name;
+    }
+
+    /**
+     * The number of input pins.
+     */
+    [[nodiscard]] auto input_pin_size() const noexcept -> std::size_t
+    {
+        return input_pins.size();
+    }
+
+    /**
+     * The number of output pins.
+     */
+    [[nodiscard]] auto output_pin_size() const noexcept -> std::size_t
+    {
+        return output_pins.size();
     }
 
     /**
@@ -102,7 +181,15 @@ class RecipeBuilder
      */
     auto add_output_pin(const std::string& name) noexcept -> void
     {
-        output_pins.emplace_back(name);
+        output_pins[output_pins.size()] = name;
+    }
+
+    /**
+     * Add wire linkage.
+     */
+    auto add_wire_linkage(const std::size_t src, const std::size_t dest) noexcept -> void
+    {
+        wire_linkages.emplace_back(WireInfo{src, dest});
     }
 
     /**
@@ -125,26 +212,34 @@ class RecipeBuilder
         }
     }
 
+    auto compile_linkage(std::stringstream& ss) const noexcept -> void
+    {
+        for (const auto& linkage : wire_linkages)
+        {
+            ss << "wire " << linkage.src << ' ' << linkage.dest << '\n';
+        }
+    }
+
     auto compile_input_pins(std::stringstream& ss) const noexcept -> void
     {
-     comment(ss, "INPUT PINS MAPPING.");
-     for (std::size_t i = 0; i < input_pins.size(); i++)
-     {
-       const auto& pin = input_pins[i];
-       ss << "// " << std::setw(2) << i << " " << pin << '\n';
-     }
-     ss << "input " << input_pins.size() << '\n';
+        comment(ss, "INPUT PINS MAPPING.");
+        for (std::size_t i = 0; i < input_pins.size(); i++)
+        {
+            const auto& pin = input_pins.at(i);
+            ss << "// " << std::setw(2) << i << " " << pin << '\n';
+        }
+        ss << "input " << input_pins.size() << '\n';
     }
 
     auto compile_output_pins(std::stringstream& ss) const noexcept -> void
     {
-     comment(ss, "OUTPUT PINS MAPPING.");
-     for (std::size_t i = 0; i < output_pins.size(); i++)
-     {
-       const auto& pin = output_pins[i];
-       ss << "// " << std::setw(3) << (i + MAX_INPUT_PINS) << " " << pin << '\n';
-     }
-     ss << "output " << output_pins.size() << '\n';
+        comment(ss, "OUTPUT PINS MAPPING.");
+        for (std::size_t i = 0; i < output_pins.size(); i++)
+        {
+            const auto& pin = output_pins.at(i);
+            ss << "// " << std::setw(3) << (i + MAX_INPUT_PINS) << " " << pin << '\n';
+        }
+        ss << "output " << output_pins.size() << '\n';
     }
 
     auto writeln(std::stringstream& ss, const std::string& str) const noexcept -> void
@@ -163,9 +258,11 @@ class RecipeBuilder
     }
 
   private:
-    std::vector<std::string> dependencies;
-    std::vector<std::string> input_pins;
-    std::vector<std::string> output_pins;
+    std::string                        name;
+    std::vector<std::string>           dependencies;
+    std::map<std::size_t, std::string> input_pins;
+    std::map<std::size_t, std::string> output_pins;
+    std::vector<WireInfo>              wire_linkages;
 };
 } /* namespace hdl */
 
