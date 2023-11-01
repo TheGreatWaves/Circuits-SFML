@@ -1,0 +1,54 @@
+#ifndef TOKEN
+#define TOKEN(name)
+#endif
+
+#ifndef KEYWORD_TOKEN
+#define KEYWORD_TOKEN(name, keyword) TOKEN(name)
+#endif
+
+#ifndef SYMBOL_TOKEN
+#define SYMBOL_TOKEN(name, symbol) TOKEN(name)
+#endif
+
+/*================================*/
+/*                                */
+/*        TOKENS DEFINITION.      */
+/*                                */
+/*================================*/
+
+/**
+ * The error token needs to be defined first, making it the default token.
+ */
+TOKEN(Error)
+TOKEN(EndOfFile)
+
+/**
+ * Identifiers.
+ */
+TOKEN(Number)
+TOKEN(Identifier)
+
+/**
+ * Grouping.
+ */
+SYMBOL_TOKEN(LBrace, "{")
+SYMBOL_TOKEN(RBrace, "}")
+SYMBOL_TOKEN(LParen, "(")
+SYMBOL_TOKEN(RParen, ")")
+
+SYMBOL_TOKEN(Comma,      ",")
+SYMBOL_TOKEN(Semicolon,  ";")
+SYMBOL_TOKEN(Colon,      ":")
+SYMBOL_TOKEN(Assignment, "=")
+
+/**
+ * Keywords.
+ */
+KEYWORD_TOKEN(Chip,  "CHIP")
+KEYWORD_TOKEN(In,    "IN")
+KEYWORD_TOKEN(Out,   "OUT")
+KEYWORD_TOKEN(Parts, "PARTS")
+
+#undef SYMBOL_TOKEN
+#undef KEYWORD_TOKEN
+#undef TOKEN
