@@ -84,7 +84,7 @@ class EnumBase
   public:
     using RawEnumType    = RawT;
     using EnumType       = DerivedT;
-    using UnderlyingType = std::underlying_type<RawT>;
+    using UnderlyingType = std::underlying_type_t<RawT>;
 
     // Allow conversion to raw type.
     constexpr operator RawEnumType() const noexcept
@@ -107,9 +107,14 @@ class EnumBase
         return r;
     }
 
-    [[nodiscard]] constexpr auto as_int() const noexcept -> int
+    [[nodiscard]] constexpr auto as_int() const noexcept -> UnderlyingType
     {
-        return static_cast<int>(value);
+        return static_cast<UnderlyingType>(value);
+    }
+
+    [[nodiscard]] constexpr auto from_int(UnderlyingType v) -> EnumType
+    {
+      return create(static_cast<RawEnumType>(v));
     }
 
   private:
