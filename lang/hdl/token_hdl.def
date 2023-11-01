@@ -1,14 +1,4 @@
-#ifndef TOKEN
-#define TOKEN(name)
-#endif
-
-#ifndef KEYWORD_TOKEN
-#define KEYWORD_TOKEN(name, keyword) TOKEN(name)
-#endif
-
-#ifndef SYMBOL_TOKEN
-#define SYMBOL_TOKEN(name, symbol) TOKEN(name)
-#endif
+#include "../core/token_begin.def"
 
 /*================================*/
 /*                                */
@@ -49,6 +39,4 @@ KEYWORD_TOKEN(In,    "IN")
 KEYWORD_TOKEN(Out,   "OUT")
 KEYWORD_TOKEN(Parts, "PARTS")
 
-#undef SYMBOL_TOKEN
-#undef KEYWORD_TOKEN
-#undef TOKEN
+#include "../core/token_end.def"

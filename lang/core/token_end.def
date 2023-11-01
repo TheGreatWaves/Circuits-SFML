@@ -1,0 +1,3 @@
+#undef SYMBOL_TOKEN
+#undef KEYWORD_TOKEN
+#undef TOKEN

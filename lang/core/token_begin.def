@@ -1,0 +1,11 @@
+#ifndef TOKEN
+#define TOKEN(name)
+#endif
+
+#ifndef KEYWORD_TOKEN
+#define KEYWORD_TOKEN(name, keyword) TOKEN(name)
+#endif
+
+#ifndef SYMBOL_TOKEN
+#define SYMBOL_TOKEN(name, symbol) TOKEN(name)
+#endif

@@ -33,17 +33,20 @@
  * This enum implementation technique is heaviliy inspired by the Carbon programming language enums.
  */
 
+// Fixing macro pasting issue.
+#define JOIN(x, y) x ## y
+
 /**
  * Use to declare a new raw enum class. Note that this also define 
  * a list holding the name of each enum.
  */
-#define DECLARE_RAW_ENUM_CLASS(enum_class_name, underlying_type) \
-    namespace _private                                                 \
-    {                                                                  \
-    enum class enum_class_name##Raw : underlying_type;                 \
-    extern const std::string_view enum_class_name##Names[];            \
-    }                                                                  \
-    enum class _private::enum_class_name##Raw : underlying_type
+#define DECLARE_RAW_ENUM_CLASS(enum_class_name, underlying_type)  \
+    namespace _private                                            \
+    {                                                             \
+    enum class JOIN(enum_class_name, Raw) : underlying_type;      \
+    extern const std::string_view JOIN(enum_class_name, Names)[]; \
+    }                                                             \
+    enum class _private::JOIN(enum_class_name, Raw) : underlying_type
 
 /**
  * Defines a list of strings holding the name for
@@ -51,7 +54,7 @@
  * be called after declaring a new enum class.
  */
 #define DEFINE_ENUM_CLASS_NAMES(enum_class_name) \
-inline constexpr std::string_view _private::enum_class_name##Names[]
+inline constexpr std::string_view _private::JOIN(enum_class_name, Names)[]
 
 /**
  * ENUMERATORS.
@@ -74,7 +77,7 @@ inline constexpr std::string_view _private::enum_class_name##Names[]
  * The base class for Enums.
  */
 #define ENUM_BASE(enum_class_name) \
- EnumBase<enum_class_name, _private::enum_class_name##Raw, _private::enum_class_name##Names>
+ EnumBase<enum_class_name, _private::JOIN(enum_class_name, Raw), _private::JOIN(enum_class_name, Names)>
 
 // The TokenBase class is simply a wrapper class for a enum type.
 // It utilizes X-macros for ease of extension.
@@ -97,6 +100,16 @@ class EnumBase
         return Names[as_int()];
     }
 
+    [[nodiscard]] static constexpr auto from_int(UnderlyingType v) -> EnumType
+    {
+      return create(static_cast<RawEnumType>(v));
+    }
+
+    [[nodiscard]] constexpr auto as_int() const noexcept -> UnderlyingType
+    {
+        return static_cast<UnderlyingType>(value);
+    }
+
   protected:
     constexpr EnumBase() = default;
 
@@ -105,16 +118,6 @@ class EnumBase
         EnumType r;
         r.value = v;
         return r;
-    }
-
-    [[nodiscard]] constexpr auto as_int() const noexcept -> UnderlyingType
-    {
-        return static_cast<UnderlyingType>(value);
-    }
-
-    [[nodiscard]] constexpr auto from_int(UnderlyingType v) -> EnumType
-    {
-      return create(static_cast<RawEnumType>(v));
     }
 
   private:
