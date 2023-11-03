@@ -124,7 +124,7 @@ class RecipeBuilder
         // Defining inputs.
         ln(ss);
         comment(ss, "GLOBAL INPUT PINS.");
-        writeln(ss, "INPUTS");
+        writeln(ss, "INPUTS " + std::to_string(input_pins.size()));
         for (std::size_t i = 0; i < input_pins.size(); i++)
         {
          writeln(ss, input_pins.at(i));
@@ -133,7 +133,7 @@ class RecipeBuilder
 
         // Defining outputs.
         comment(ss, "GLOBAL OUTPUT PINS.");
-        writeln(ss, "OUTPUTS");
+        writeln(ss, "OUTPUTS " + std::to_string(output_pins.size()));
         for (std::size_t i = 0; i < output_pins.size(); i++)
         {
          writeln(ss, output_pins.at(i));
