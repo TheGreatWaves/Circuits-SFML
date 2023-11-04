@@ -35,7 +35,7 @@
  * Case sentitive!
  * Lowercase and uppercase letters.
  */
-constexpr std::size_t ALPHABET_SIZE{52};
+constexpr std::size_t ASCII_COUNT{256};
 
 /**
  * A simple trie node.
@@ -51,7 +51,7 @@ struct TrieNode
      * All possible nodes you can travel
      * down to from the current node.
      */
-    std::array<TrieNode*, ALPHABET_SIZE> children{};
+    std::array<TrieNode*, ASCII_COUNT> children{};
 
     /**
      * This denotes the the current node is a leaf.
@@ -76,7 +76,7 @@ struct TrieNode
             .end_of_word = false,
         };
 
-        for (std::size_t i = 0; i < ALPHABET_SIZE; i++)
+        for (std::size_t i = 0; i < ASCII_COUNT; i++)
         {
           trie->children[i] = nullptr;
         }
@@ -136,7 +136,7 @@ class Trie
     {
         if (node == nullptr)
             return;
-        for (std::size_t i = 0; i < ALPHABET_SIZE; i++)
+        for (std::size_t i = 0; i < ASCII_COUNT; i++)
         {
             clean_up(node->children[i]);
         }
@@ -153,9 +153,7 @@ class Trie
         for (auto i = 0; word[i] != '\0'; i++)
         {
             const char letter = word[i];
-            auto       index  = static_cast<unsigned int>(letter - 'A');
-            if (index >= 26)
-                index -= 6;
+            auto       index  = static_cast<unsigned int>(letter);
 
             /**
              * If the current character's branch does not exist, create it.
@@ -184,9 +182,7 @@ class Trie
         for (auto i = 0; word[i] != '\0'; i++)
         {
             const char letter = word[i];
-            auto       index  = static_cast<unsigned int>(letter - 'A');
-            if (index >= 26)
-                index -= 6;
+            auto       index  = static_cast<unsigned int>(letter);
 
             /**
              * If the current character's branch does not exist, not found.
@@ -218,9 +214,7 @@ class Trie
             if (expected_letter != letter)
                 return false;
 
-            auto index = static_cast<unsigned int>(letter - 'A');
-            if (index >= 26)
-                index -= 6;
+            auto index = static_cast<unsigned int>(letter);
 
             /**
              * If the current character's branch does not exist, not found.
