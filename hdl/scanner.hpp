@@ -33,7 +33,7 @@
 #include <string_view>
 
 #include "token.hpp"
-#include "trie.hpp"
+#include "../lang/core/comptrie.hpp"
 
 namespace hdl
 {
@@ -53,13 +53,6 @@ struct Scanner
      */ 
     Scanner()
     {
-        /**
-         * These are the different keywords we have.
-         */
-        keywords.insert("IN");
-        keywords.insert("OUT");
-        keywords.insert("CHIP");
-        keywords.insert("PARTS");
     }
 
     /**
@@ -104,11 +97,14 @@ struct Scanner
     [[nodiscard]] auto identifier_type() -> TokenType 
     {
         auto word = source_code.substr(start, current-start);
-        if (keywords.match("IN", word)) return TokenType::IN;
-        else if (keywords.match("OUT", word)) return TokenType::OUT;
-        else if (keywords.match("CHIP", word)) return TokenType::CHIP;
-        else if (keywords.match("PARTS", word)) return TokenType::PARTS;
-        else return TokenType::IDENT;
+        
+        return MATCH(word)
+            return TokenType::IDENT;
+        CASE("IN") return TokenType::IN;
+        CASE("OUT") return TokenType::OUT;
+        CASE("CHIP") return TokenType::CHIP;
+        CASE("PARTS") return TokenType::PARTS;
+        ENDMATCH;
     }
 
     /**
@@ -135,17 +131,17 @@ struct Scanner
             return scan_identifier();
         }
 
-        #define CASE(character, token) break; case character: return make_token(token)
+        #define CCASE(character, token) break; case character: return make_token(token)
         switch (c)
         {
-            CASE('(', TokenType::LPAREN);
-            CASE(')', TokenType::RPAREN);
-            CASE('{', TokenType::LBRACE);
-            CASE('}', TokenType::RBRACE);
-            CASE(';', TokenType::SEMICOLON);
-            CASE(':', TokenType::COLON);
-            CASE(',', TokenType::COMMA);
-            CASE('=', TokenType::ASSIGNMENT);
+            CCASE('(', TokenType::LPAREN);
+            CCASE(')', TokenType::RPAREN);
+            CCASE('{', TokenType::LBRACE);
+            CCASE('}', TokenType::RBRACE);
+            CCASE(';', TokenType::SEMICOLON);
+            CCASE(':', TokenType::COLON);
+            CCASE(',', TokenType::COMMA);
+            CCASE('=', TokenType::ASSIGNMENT);
         }
         #undef CASE
 
@@ -262,7 +258,6 @@ struct Scanner
     std::size_t start{0};
     std::size_t current{start};
     std::string source_code{};
-    Trie        keywords;
     std::size_t line{1};
 };
 
