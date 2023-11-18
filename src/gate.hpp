@@ -102,29 +102,29 @@ struct Gate
   {
     if (!serialized)
     {
-      log("Component not serialized, can't evaluate print table.\n");
+      log("Component not serialized, can't evaluate print table.");
       return;
     }
     std::size_t indicies = (2 << (input_pins.size() - 1));
 
     for (std::size_t n = 0; n < input_pins.size(); n++)
     {
-      log(n, ' ');
+      print(n, ' ');
     }
 
-    log("| ");
+    print("| ");
 
     for (std::size_t n = 0; n < output_pins.size(); n++)
     {
-      log(n, ' ');
+      print(n, ' ');
     }
 
     newline();
     for (std::size_t n = 0; n < (input_pins.size() + output_pins.size()); n++)
     {
-      log("==");
+      print("==");
     }
-    log("=");
+    print("=");
     newline();
 
     // Loop through all perms.
@@ -134,13 +134,13 @@ struct Gate
 
       for (std::size_t j = 0; j < input_pins.size(); j++)
       {
-        log(i >> (input_pins.size() - (1 + j)) & 1, ' ');
+        print(i >> (input_pins.size() - (1 + j)) & 1, ' ');
       }
 
-      log("| ");
+      print("| ");
       for (std::size_t j = 0; j < output_pins.size(); j++)
       {
-        log(output >> (output_pins.size() - (1 + j)) & 1, ' ');
+        print(output >> (output_pins.size() - (1 + j)) & 1, ' ');
       }
       newline();
     }

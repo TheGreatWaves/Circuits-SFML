@@ -40,8 +40,10 @@ public:
     auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "Nand", true);
     auto nandp = nandc.get();
     components["Nand"] = std::move(nandc);
-    components["Nand"]->get_pin(0)->parent = nandp;
-    components["Nand"]->get_pin(1)->parent = nandp;
+    auto nand = components["Nand"].get();
+    nand->get_pin(0)->parent = nandp;
+    nand->get_pin(1)->parent = nandp;
+    nand->serialize();
 
     singleton = this;
   }

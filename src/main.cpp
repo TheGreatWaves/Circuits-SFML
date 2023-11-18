@@ -35,6 +35,7 @@
 #include "lang/core/comptrie.hpp"
 #include "lang/core/raw_parser.hpp"
 #include "lang/assem/token_assem.hpp"
+#include "lang/hdl/parser.hpp"
 
 /**
  * Function prototypes.
@@ -79,8 +80,68 @@ void show_truth_table(RawParser& parser)
 	}
 	else
 	{
-		log("Component with given name `", name, "` not found!\n");
+		log("Component with given name `", name, "` not found!");
 	}
+}
+
+void show_list(RawParser& parser)
+{
+	auto component_names = Board::instance()->get_names();
+	if (component_names.empty())
+	{
+		info("No component found.");
+		return;
+	}
+	for (const auto& n : component_names)
+	{
+		log(n);
+	}
+}
+
+void compile(RawParser& parser)
+{
+	const auto token = parser.advance_token();
+
+	if (token.type != RawTokenType::Identifier)
+	{
+		error("Please input a valid component name.");
+		return;
+	}
+
+	// Get the component name.
+	const auto& name = token.lexeme;
+
+	auto hdl_parser = hdl::HDLParser(hdl_file(name));
+
+	if (!hdl_parser.parse())
+	{
+		error("Failed to parse file '" + name + "'.");
+		return;
+	}
+
+	const auto result = hdl_parser.result();
+
+	// Gate file.
+  std::ofstream gate_file { 
+    DEFAULT_GATE_DIRECTORY + 
+    std::string("/") +  
+    DEFAULT_RECIPE_SAVE_DIRECTORY + 
+    std::string("/") +  
+    name + 
+    GATE_EXTENSION 
+  };
+	gate_file << result.compile();
+	gate_file.close();
+
+	// Meta file.
+  std::ofstream meta_file { 
+    SCRIPTS_DIR + 
+    std::string("/") +  
+    name + 
+    META_EXTENSION 
+  };
+	meta_file << result.meta();
+	meta_file.close();
 }
 
 void handle_input(RawParser& parser, std::string_view str)
@@ -93,25 +154,20 @@ void handle_input(RawParser& parser, std::string_view str)
 	CASE("help")
 		desc("gui               ", "Start GUI mode.");
 		desc("list              ", "List all components.");
+		desc("info              ", "Display general information.");
+		desc("table  <component>", "Display truth table of the specified component.");
+		desc("compile     <file>", "Display truth table of the specified component.");
 	CASE("gui")
 		run_gui();
 	CASE("list")
-		auto component_names = Board::instance()->get_names();
-		if (component_names.empty())
-		{
-			info("No component found.");
-			return;
-		}
-		for (const auto& n : component_names)
-		{
-			log(n);
-		}
+		show_list(parser);
 	CASE("info")
 		log("Gate Recipe Directory: ", GATE_RECIPE_DIRECTORY);
 	CASE("table")
 		show_truth_table(parser);
+	CASE("compile")
+		compile(parser);
   ENDMATCH;
-	
 
 	// switch (command.at(0))
 	// {
@@ -487,10 +543,11 @@ void handle_input(RawParser& parser, std::string_view str)
 
 void init()
 {
-	auto gate_sketch_dir = DEFAULT_GATE_DIRECTORY + std::string("/") + DEFAULT_RECIPE_SAVE_DIRECTORY;
+	const auto gate_sketch_dir = DEFAULT_GATE_DIRECTORY + std::string("/") + DEFAULT_RECIPE_SAVE_DIRECTORY;
 
 	std::filesystem::create_directory(DEFAULT_GATE_DIRECTORY);
 	std::filesystem::create_directory(gate_sketch_dir);
+	std::filesystem::create_directory(SCRIPTS_DIR);
 
 	// Load init files.
 	auto init_file = DEFAULT_GATE_DIRECTORY + std::string("/init") + GATE_EXTENSION;

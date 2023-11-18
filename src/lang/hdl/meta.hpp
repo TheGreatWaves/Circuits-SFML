@@ -33,6 +33,7 @@
 #include <string_view>
 #include <vector>
 
+#include "../../common.hpp"
 #include "../core/raw_parser.hpp"
 #include "recipe_builder.hpp"
 #include "../core/token.hpp"
@@ -95,7 +96,7 @@ struct Meta
     auto meta = std::make_unique<Meta>();
     try
     {
-        auto parser = RawParser(std::string(component_name) + ".meta");
+        auto parser = RawParser(SCRIPTS_DIR + "/" + std::string(component_name) + ".meta");
         static_cast<void>(parser.advance_token());
 
         // Parse the name of the component

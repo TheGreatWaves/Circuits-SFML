@@ -43,6 +43,7 @@ inline std::string make_lower(std::string_view str)
  * Logging related functions.
  */
 template<typename ... Args> auto log(Args&& ... args)->void{(std::cout<<...<<std::forward<Args>(args)) << '\n';} 
+template<typename ... Args> auto print(Args&& ... args)->void{(std::cout<<...<<std::forward<Args>(args));} 
 
 inline void desc(std::string_view name, std::string_view brief)
 {
