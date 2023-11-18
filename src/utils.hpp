@@ -59,6 +59,11 @@ inline void info(std::string_view dump)
 	std::cout << dump << '\n';
 }
 
+inline void error(std::string_view dump)
+{
+	std::cout << "Error: " << dump << '\n';
+}
+
 #define BLOCK "======"
 
 #endif /* UTILS */

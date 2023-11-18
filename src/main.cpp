@@ -32,6 +32,8 @@
 #include "board.hpp"
 #include "gui/driver.hpp"
 
+#include "lang/assem/token_assem.hpp"
+
 /**
  * Function prototypes.
  */
@@ -40,7 +42,6 @@ void create_component(std::string_view name);
 void run_gui();
 
 Board board;
-
 
 void greet()
 {
@@ -56,10 +57,9 @@ bool prompt()
 	return true;
 }
 
-
-
 void handle_input(std::string_view str)
 {
+	
 	if (str.at(0) == '#') return;
 
 	std::string command = make_lower(str);
@@ -478,29 +478,167 @@ void run_cli()
 	}
 }
 
-bool runFile(const std::string& filePath)
+bool runFile(const std::string& file_path)
 {
-	try
+	AssemTokenTypeScanner scanner;
+	if (!scanner.read_source(std::string(file_path)))
 	{
-		std::ifstream ifs(filePath);
-		std::string line;
-
-		while(std::getline(ifs, line))
-		{
-			handle_input(line);
-		}
-
-		ifs.close();
-
-		return true;
-
-	}	
-	catch(const std::exception& e)
-	{
-		std::cerr << e.what();
+		return false;
 	}
 
-	return false;
+	auto board = Board::instance();
+
+	while (!scanner.is_at_end())
+	{
+		const auto token = scanner.scan_token();		
+
+		switch(token.type)
+		{
+			break; case AssemTokenType::EndOfFile: {}
+			break; case AssemTokenType::Number: 
+			       case AssemTokenType::Identifier:
+			       case AssemTokenType::Error:
+			{ 
+				return false; 
+			}
+      break; case AssemTokenType::Need: 
+			{
+				const auto next = scanner.scan_token();
+				const auto chip_name = next.lexeme;
+
+				log("Next type: ", chip_name, "\n");
+
+
+				if (next.type != AssemTokenType::Identifier)
+				{
+					log("Error: Invalid argument to need, not an identifier.");
+					return false;
+				}
+				
+				if (!board->found(chip_name) && !runFile(GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION))
+				{
+					log("Error: Needed component with given name `", chip_name, "` not found!\n");
+					exit(1);
+				}
+			}
+      break; case AssemTokenType::Create: 
+			{
+				const auto next = scanner.scan_token();
+				const auto name = next.lexeme;
+
+				if (next.type != AssemTokenType::Identifier)
+				{
+					log("Error: Please provide a valid component name to create.\n");
+					return false;	
+				}
+
+				create_component(name);
+
+				if (board->context().second == nullptr)
+				{
+					log("Create: Error: Failed to create context.\n");
+				}
+
+			}
+      break; case AssemTokenType::In: 
+			{
+				auto current = board->context().second;
+
+				if (current == nullptr)
+				{
+					log("IN: Error: Current context is empty, please select a configuration.\n");
+					return false;
+				}
+
+				const auto next = scanner.scan_token();
+
+				if (next.type != AssemTokenType::Number)
+				{
+					error("Input count is not a number.");
+					return false;
+				}
+
+				current->add_input_pin(std::stoi(next.lexeme));
+			}
+      break; case AssemTokenType::Out:
+			{
+				auto current = board->context().second;
+
+				if (current == nullptr)
+				{
+					log("OUT: Error: Current context is empty, please select a configuration.\n");
+					return false;
+				}
+
+				const auto next = scanner.scan_token();
+
+				if (next.type != AssemTokenType::Number)
+				{
+					error("Output count is not a number.");
+					return false;
+				}
+
+				current->add_output_pin(std::stoi(next.lexeme));
+			}
+      break; case AssemTokenType::Add: 
+			{
+				auto current = board->context();
+
+				if (current.second == nullptr)
+				{
+					error("Add: Current context is empty, please select a configuration\n");
+					return false;
+				}
+
+				const auto next = scanner.scan_token();
+				const auto chip_name = next.lexeme;
+
+				
+				if (auto component = board->get_component(chip_name); component != nullptr)
+				{
+					current.second->add_subgate(component);
+				}
+				else
+				{
+					error("Component with given name `" + chip_name + "` not found!");
+					return false;
+				}
+			}
+      break; case AssemTokenType::Wire: 
+			{
+				auto current = board->context().second;		
+
+				if (current == nullptr)
+				{
+					error("Current context is empty, please select a configuration");
+					return false;
+				}
+
+				auto pin1 = scanner.scan_token();
+				auto pin2 = scanner.scan_token();
+
+				if (pin1.type != AssemTokenType::Number 
+				&& pin2.type != AssemTokenType::Number)
+				{
+					error("Pin 1/2 not a number.");
+					return false;
+				}
+
+				if (!current->wire_pins(std::stoi(pin1.lexeme), std::stoi(pin2.lexeme)))
+				{
+					error("Failed to wire pin " + pin1.lexeme + " and pin " + pin2.lexeme);
+					return false;
+				}
+			}
+      break; case AssemTokenType::Save: 
+			{
+				// Simply get out of context.
+				board->reset_context();
+			}
+    }
+	}
+
+	return true;
 }
 
 void create_component(std::string_view name)
@@ -509,8 +647,6 @@ void create_component(std::string_view name)
 
 	instance->create_new(name);
 	instance->set_context(name);
-
-	log("New component created: ", name, ". Context switched.\n");
 }
 
 void run_gui()

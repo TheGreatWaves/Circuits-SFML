@@ -14,7 +14,7 @@ file(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cpp" "src/gui/*.cpp")
 add_executable(Sim ${SOURCES})
 
 target_link_libraries(Sim PRIVATE sfml-graphics)
-target_compile_features(Sim PRIVATE cxx_std_17)
+target_compile_features(Sim PRIVATE cxx_std_20)
 
 if(WIN32)
     add_custom_command(

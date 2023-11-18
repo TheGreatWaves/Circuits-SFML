@@ -37,11 +37,11 @@ class Board
 public:
   Board()
   {
-    auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
+    auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "Nand", true);
     auto nandp = nandc.get();
-    components["nand"] = std::move(nandc);
-    components["nand"]->get_pin(0)->parent = nandp;
-    components["nand"]->get_pin(1)->parent = nandp;
+    components["Nand"] = std::move(nandc);
+    components["Nand"]->get_pin(0)->parent = nandp;
+    components["Nand"]->get_pin(1)->parent = nandp;
 
     singleton = this;
   }
@@ -70,9 +70,10 @@ public:
 
   void set_context(std::string_view name)
   {
-    bool f = found(name);
-    std::string entry{ name };
-    current = f ? std::pair(name, components[entry].get()) : std::pair{"", nullptr};
+    const auto case_insensitive_name = make_lower(name);
+    bool f = found(case_insensitive_name);
+    std::string entry{ case_insensitive_name };
+    current = f ? std::pair(case_insensitive_name, components[entry].get()) : std::pair{"", nullptr};
   }
 
   bool found(std::string_view name)
