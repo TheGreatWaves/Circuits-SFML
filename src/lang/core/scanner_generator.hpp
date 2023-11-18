@@ -148,7 +148,7 @@ struct SCANNER(TOKEN_CLASS_NAME)
             #define SYMBOL_TOKEN(name, symbol) break; case symbol[0]: return make_token(TOKEN_CLASS_NAME::name);
             #include TOKEN_DESCRIPTOR_FILE
         }
-        #undef CASE
+        #undef CCASE
 
         return error_token("Unexpected character.");
     }
@@ -273,5 +273,9 @@ struct SCANNER(TOKEN_CLASS_NAME)
     std::size_t line{1};
 };
 
-#undef SCANNER
 #endif
+
+#undef TOKEN_DESCRIPTOR_FILE
+#undef TOKEN_CLASS_NAME
+
+#undef SCANNER

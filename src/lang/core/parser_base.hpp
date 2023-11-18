@@ -32,11 +32,7 @@
 #include <string>
 #include <string_view>
 
-#include "recipe_builder.hpp"
-#include "scanner.hpp"
-
-namespace hdl
-{
+#include "../core/token.hpp"
 
 /**
  * The parser for the HDL. This parser does not form an AST, it will
@@ -44,22 +40,36 @@ namespace hdl
  * With the current design, a single parser is only intended to parse
  * a single file with a single CHIP declaration.
  */
+template <class Scanner, class TokenType>
 class BaseParser
 {
+    enum class Type
+    {
+        File,
+        Source
+    };
+
   public:
     /**
      * Constructor with file path of HDL source code.
      */
-    [[nodiscard]] explicit BaseParser(const std::string& file_path)
+    [[nodiscard]] explicit BaseParser(const std::string& input, Type type = Type::File)
     {
-        if (!scanner.read_source(file_path))
-            throw std::invalid_argument("File: " + file_path + " not found!");
+        if (type == Type::File)
+        {
+            if (!scanner.read_source(input))
+                throw std::invalid_argument("File: " + input + " not found!");
+        }
+        else
+        {
+            scanner.set_source(input);
+        }
     }
 
     /**
      * Default Ctor prohibted.
      */
-    constexpr BaseParser() = delete;
+    constexpr BaseParser() {}
 
     /**
      * Protected methods.
@@ -75,7 +85,7 @@ class BaseParser
         while (true)
         {
             current = scanner.scan_token();
-            if (current.type != TokenType::ILLEGAL)
+            if (current.type != TokenType::Error)
             {
                 break;
             }
@@ -123,7 +133,7 @@ class BaseParser
     /**
      * Report the token which caused an error.
      */
-    auto report_token_error(Token token) noexcept -> void
+    auto report_token_error(Token<TokenType> token) noexcept -> void
     {
         auto message = "Unexpected token " + token.lexeme + '.';
         report_error(message);
@@ -160,14 +170,12 @@ class BaseParser
      * Members.
      */
   protected:
-    Token         current;
-    Token         previous;
-    Scanner       scanner;
+    Token<TokenType> current;
+    Token<TokenType> previous;
+    Scanner          scanner;
 
     bool panic{false};
     bool has_error{false};
 };
-
-} /* namespace hdl */
 
 #endif /* HDL_PARSER_BASE */

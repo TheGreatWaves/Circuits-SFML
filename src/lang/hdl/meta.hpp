@@ -33,10 +33,10 @@
 #include <string_view>
 #include <vector>
 
-#include "raw_parser.hpp"
+#include "../core/raw_parser.hpp"
 #include "recipe_builder.hpp"
-#include "token.hpp"
-#include "trie.hpp"
+#include "../core/token.hpp"
+#include "../core/trie.hpp"
 
 namespace hdl
 {
@@ -95,23 +95,23 @@ struct Meta
     auto meta = std::make_unique<Meta>();
     try
     {
-        auto parser = hdl::RawParser(std::string(component_name) + ".meta");
+        auto parser = RawParser(std::string(component_name) + ".meta");
         static_cast<void>(parser.advance_token());
 
         // Parse the name of the component
-        parser.consume_token(TokenType::IDENT, "Expected identifier.");
+        parser.consume_token(RawTokenType::Identifier, "Expected identifier.");
         meta->name = parser.get_previous().lexeme;
 
         // Parse the the count of inputs.
-        parser.consume_token(TokenType::IDENT, "Expected identifier.");
+        parser.consume_token(RawTokenType::Identifier, "Expected identifier.");
         if (auto lexeme = parser.get_previous().lexeme; lexeme != "INPUTS")
             parser.report_custom_error("Expected 'INPUTS', found " + lexeme);
-        parser.consume_token(TokenType::NUMBER, "Expected INPUTS count (number), found " +
+        parser.consume_token(RawTokenType::Number, "Expected INPUTS count (number), found " +
                                                     parser.get_current().lexeme);
         meta->input_count = std::stoi(parser.get_previous().lexeme);
         for (std::size_t i = 0; i < meta->input_count; i++)
         {
-            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" +
+            parser.consume_token(RawTokenType::Identifier, "Expected identifier, found '" +
                                                        parser.get_current().lexeme + "'.");
             auto lexeme = parser.get_previous().lexeme;
             meta->input_pins.emplace_back(lexeme, i);
@@ -119,15 +119,15 @@ struct Meta
         }
 
         // Parse the the count of outputs.
-        parser.consume_token(TokenType::IDENT, "Expected identifier.");
+        parser.consume_token(RawTokenType::Identifier, "Expected identifier.");
         if (auto lexeme = parser.get_previous().lexeme; lexeme != "OUTPUTS")
             parser.report_custom_error("Expected 'outputS', found " + lexeme);
-        parser.consume_token(TokenType::NUMBER, "Expected outputS count (number), found " +
+        parser.consume_token(RawTokenType::Number, "Expected outputS count (number), found " +
                                                     parser.get_current().lexeme);
         meta->output_count = std::stoi(parser.get_previous().lexeme);
         for (std::size_t i = 0; i < meta->output_count; i++)
         {
-            parser.consume_token(TokenType::IDENT, "Expected identifier, found '" +
+            parser.consume_token(RawTokenType::Identifier, "Expected identifier, found '" +
                                                        parser.get_current().lexeme + "'.");
             auto lexeme = parser.get_previous().lexeme;
             meta->output_pins.emplace_back(lexeme, i + MAX_INPUT_PINS);

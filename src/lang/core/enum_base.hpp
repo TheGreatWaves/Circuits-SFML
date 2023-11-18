@@ -110,8 +110,8 @@ class EnumBase
         return static_cast<UnderlyingType>(value);
     }
 
-  protected:
     constexpr EnumBase() = default;
+  protected:
 
     static constexpr auto create(RawEnumType v) -> EnumType
     {

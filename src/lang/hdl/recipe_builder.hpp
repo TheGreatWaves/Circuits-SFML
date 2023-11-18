@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-#include "../wire_info.hpp"
+#include "../../wire_info.hpp"
 
 constexpr std::size_t MAX_INPUT_PINS = 100;
 

@@ -27,10 +27,10 @@
  * The implementation looks horribly wasteful, and it probably is.
  */
 #pragma once
-#include <SFML/Window/Keyboard.hpp>
 #ifndef BELT_GUI
 #define BELT_GUI
 
+#include <SFML/Window/Keyboard.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 #include "SFML/System.hpp"

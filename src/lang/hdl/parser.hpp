@@ -36,9 +36,9 @@
 #include <map>
 #include <memory>
 
-#include "parser_base.hpp"
+#include "token_hdl.hpp"
+#include "../core/parser_base.hpp"
 #include "recipe_builder.hpp"
-#include "scanner.hpp"
 #include "meta.hpp"
 
 namespace hdl
@@ -50,14 +50,14 @@ namespace hdl
  * With the current design, a single parser is only intended to parse
  * a single file with a single CHIP declaration.
  */
-class HDLParser : public BaseParser
+class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 {
   public:
     /**
      * Constructor with file path of HDL source code.
      */
     [[nodiscard]] explicit HDLParser(const std::string& file_path)
-        : BaseParser(file_path)
+        : BaseParser<HDLTokenTypeScanner, HDLTokenType>(file_path)
     {
     }
 
@@ -73,7 +73,7 @@ class HDLParser : public BaseParser
     {
         advance();
 
-        while (!match(TokenType::END))
+        while (!match(HDLTokenType::EndOfFile))
         {
             declaration();
         }
@@ -92,23 +92,23 @@ class HDLParser : public BaseParser
   private:
     auto declaration() noexcept -> void
     {
-        if (match(TokenType::IN))
+        if (match(HDLTokenType::In))
         {
             IN_statement();
         }
-        else if (match(TokenType::OUT))
+        else if (match(HDLTokenType::Out))
         {
             OUT_statement();
         }
-        else if (match(TokenType::PARTS))
+        else if (match(HDLTokenType::Parts))
         {
             PARTS_statement();
         }
-        else if (match(TokenType::IDENT))
+        else if (match(HDLTokenType::Identifier))
         {
             SUBGATE_statement();
         }
-        else if (match(TokenType::CHIP))
+        else if (match(HDLTokenType::Chip))
         {
             CHIP();
         }
@@ -126,20 +126,20 @@ class HDLParser : public BaseParser
     {
         log("Parsing IN statement.");
         // We expect at least one identifier.
-        consume(TokenType::IDENT, "IN statement expects atleast one identifier.");
+        consume(HDLTokenType::Identifier, "IN statement expects atleast one identifier.");
         builder.add_input_pin(previous.lexeme);
         pin_numbers[previous.lexeme] = input_pin_offset++;
 
         log("Parsing identifier: " + previous.lexeme + ".");
 
-        while (match(TokenType::COMMA))
+        while (match(HDLTokenType::Comma))
         {
-            consume(TokenType::IDENT, "Expected identifier, found '" + current.lexeme + "'.");
+            consume(HDLTokenType::Identifier, "Expected identifier, found '" + current.lexeme + "'.");
             builder.add_input_pin(previous.lexeme);
             pin_numbers[previous.lexeme] = input_pin_offset++;
             log("Parsing identifier: " + previous.lexeme + ".");
         }
-        consume(TokenType::SEMICOLON,
+        consume(HDLTokenType::Semicolon,
                 "Expected ';' at the end of an IN statement, found '" + current.lexeme + "'.");
 
         log("Finished parsing IN statement.");
@@ -152,19 +152,19 @@ class HDLParser : public BaseParser
     {
         log("Parsing OUT statement.");
         // We expect at least one identifier.
-        consume(TokenType::IDENT, "OUT statement expects atleast one identifier.");
+        consume(HDLTokenType::Identifier, "OUT statement expects atleast one identifier.");
         builder.add_output_pin(previous.lexeme);
         pin_numbers[previous.lexeme] = MAX_INPUT_PINS + output_pin_offset++;
         log("Parsing identifier: " + previous.lexeme + ".");
 
-        while (match(TokenType::COMMA))
+        while (match(HDLTokenType::Comma))
         {
-            consume(TokenType::IDENT, "Expected identifier, found '" + current.lexeme + "'.");
+            consume(HDLTokenType::Identifier, "Expected identifier, found '" + current.lexeme + "'.");
             builder.add_output_pin(previous.lexeme);
             pin_numbers[previous.lexeme] = MAX_INPUT_PINS + output_pin_offset++;
             log("Parsing identifier: " + previous.lexeme + ".");
         }
-        consume(TokenType::SEMICOLON,
+        consume(HDLTokenType::Semicolon,
                 "Expected ';' at the end of an OUT statement, found '" + current.lexeme + "'.");
 
         log("Finished parsing OUT statement.");
@@ -191,13 +191,13 @@ class HDLParser : public BaseParser
         log("Parsing identifier: " + previous.lexeme + ".");
 
         // Parsing the parameters of the subgate.
-        consume(TokenType::LPAREN, "Expected left parenthesis, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::LParen, "Expected left parenthesis, found '" + current.lexeme + "'.");
 
         // We expect ATLEAST one linkage.
-        consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+        consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
         const auto subgate_input_pin = previous.lexeme;
-        consume(TokenType::ASSIGNMENT, "Expected assignment operator, found '" + current.lexeme + "'.");
-        consume(TokenType::IDENT, "Linkage statement expected output, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
         const auto subgate_output_name = previous.lexeme;
 
         if (subgate_added)
@@ -225,12 +225,12 @@ class HDLParser : public BaseParser
             }
         }
 
-        while (match(TokenType::COMMA))
+        while (match(HDLTokenType::Comma))
         {
-            consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+            consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
             const auto subgate_input_pin = previous.lexeme;
-            consume(TokenType::ASSIGNMENT, "Expected assignment operator, found '" + current.lexeme + "'.");
-            consume(TokenType::IDENT, "Linkage statement expected output, found '" + current.lexeme + "'.");
+            consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
+            consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
             const auto subgate_output_name = previous.lexeme;
 
             if (subgate_added)
@@ -261,8 +261,8 @@ class HDLParser : public BaseParser
             }
         }
 
-        consume(TokenType::RPAREN, "Expected closing parenthesis, found '" + current.lexeme + "'.");
-        consume(TokenType::SEMICOLON,
+        consume(HDLTokenType::RParen, "Expected closing parenthesis, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Semicolon,
                 "Expected ';' at the end of an PARTS statement, found '" + current.lexeme + "'.");
 
         // Increment the offset accordingly.
@@ -277,11 +277,11 @@ class HDLParser : public BaseParser
     {
         log("Parsing PARTS statement.");
 
-        consume(TokenType::COLON, "Expected ':', found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Colon, "Expected ':', found '" + current.lexeme + "'.");
 
         // Subcomponents are NOT optional. A gate without subgates would be useless.
         // We expect atleast one identifier.
-        consume(TokenType::IDENT, "PARTS statement expects atleast one identifier.");
+        consume(HDLTokenType::Identifier, "PARTS statement expects atleast one identifier.");
         auto subgate_name = previous.lexeme;
         builder.add_dependency(subgate_name);
         auto subgate_added = add_subgate_metadata(previous.lexeme);
@@ -298,13 +298,13 @@ class HDLParser : public BaseParser
         log("Parsing identifier: " + previous.lexeme + ".");
 
         // Parsing the parameters of the subgate.
-        consume(TokenType::LPAREN, "Expected left parenthesis, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::LParen, "Expected left parenthesis, found '" + current.lexeme + "'.");
 
         // We expect ATLEAST one linkage.
-        consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+        consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
         const auto subgate_input_pin = previous.lexeme;
-        consume(TokenType::ASSIGNMENT, "Expected assignment operator, found '" + current.lexeme + "'.");
-        consume(TokenType::IDENT, "Linkage statement expected output, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
         const auto subgate_output_name = previous.lexeme;
 
         if (subgate_added)
@@ -336,12 +336,12 @@ class HDLParser : public BaseParser
             }
         }
 
-        while (match(TokenType::COMMA))
+        while (match(HDLTokenType::Comma))
         {
-            consume(TokenType::IDENT, "Linkage statement expects atleast one identifier.");
+            consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
             const auto subgate_input_pin = previous.lexeme;
-            consume(TokenType::ASSIGNMENT, "Expected assignment operator, found '" + current.lexeme + "'.");
-            consume(TokenType::IDENT, "Linkage statement expected output, found '" + current.lexeme + "'.");
+            consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
+            consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
             const auto subgate_output_name = previous.lexeme;
 
             if (subgate_added)
@@ -373,14 +373,14 @@ class HDLParser : public BaseParser
             }
         }
 
-        consume(TokenType::RPAREN, "Expected closing parenthesis, found '" + current.lexeme + "'.");
-        consume(TokenType::SEMICOLON, "Expected ';' at the end of an PARTS statement, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::RParen, "Expected closing parenthesis, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Semicolon, "Expected ';' at the end of an PARTS statement, found '" + current.lexeme + "'.");
 
         // Increment the offset accordingly.
         input_pin_offset += context_gate_metadata->input_count;
         output_pin_offset += context_gate_metadata->output_count;
 
-        while (match(TokenType::IDENT))
+        while (match(HDLTokenType::Identifier))
         {
             SUBGATE_statement();
         }
@@ -396,27 +396,27 @@ class HDLParser : public BaseParser
         log("Parsing CHIP declaration.");
 
         // Parse the chip name.
-        consume(TokenType::IDENT, "Expected CHIP name, found '" + current.lexeme + "'.");
+        consume(HDLTokenType::Identifier, "Expected CHIP name, found '" + current.lexeme + "'.");
         builder.set_gate_name(previous.lexeme);
 
         // Beginning the definition.
-        consume(TokenType::LBRACE, "CHIP declaration expected definition block, missing '{', found '" + current.lexeme + "'.");
+        consume(HDLTokenType::LBrace, "CHIP declaration expected definition block, missing '{', found '" + current.lexeme + "'.");
 
-        while (!match(TokenType::RBRACE))
+        while (!match(HDLTokenType::RBrace))
         {
-            if (match(TokenType::IN))
+            if (match(HDLTokenType::In))
             {
                 IN_statement();
             }
-            else if (match(TokenType::OUT))
+            else if (match(HDLTokenType::Out))
             {
                 OUT_statement();
             }
-            else if (match(TokenType::PARTS))
+            else if (match(HDLTokenType::Parts))
             {
                 PARTS_statement();
             }
-            else if (match(TokenType::END))
+            else if (match(HDLTokenType::EndOfFile))
             {
                 report_error("CHIP definition not terminated, expected '}', found '" + current.lexeme + "'.");
                 return;
@@ -462,19 +462,19 @@ class HDLParser : public BaseParser
 
         log("Restabilizing...");
 
-        while (this->current.type != TokenType::END)
+        while (this->current.type != HDLTokenType::EndOfFile)
         {
-            auto token = "Token: " + current.lexeme + ", " + std::to_string(static_cast<int>(current.type));
+            auto token = "Token: " + current.lexeme + ", " + std::string(current.type.name());
             log(token);
-            if (this->previous.type == TokenType::SEMICOLON)
+            if (this->previous.type == HDLTokenType::Semicolon)
                 return;
 
             switch (this->current.type)
             {
-                case TokenType::CHIP:
-                case TokenType::IN:
-                case TokenType::OUT:
-                case TokenType::PARTS:
+                case HDLTokenType::Chip:
+                case HDLTokenType::In:
+                case HDLTokenType::Out:
+                case HDLTokenType::Parts:
                     return;
                 default:; // Do nothing...
             }

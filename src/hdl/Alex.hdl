@@ -1,6 +1,0 @@
-CHIP AlexGate {
-	IN in;
-	OUT out;
-	PARTS:
-	Nand(lol=in, b=in, out=out);
-}

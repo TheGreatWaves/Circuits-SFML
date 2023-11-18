@@ -26,17 +26,16 @@
 #ifndef RAW_PARSER
 #define RAW_PARSER
 
-#include "parser_base.hpp"
 
-namespace hdl
-{
+#include "token_raw.hpp"
+#include "parser_base.hpp"
 
 /**
  * The RawParser class simply exposes the protected methods of the base parser class.
  * This allows it to be used in any context easily. It is a struct because everything
  * is expected to be public.
  */
-struct RawParser : public BaseParser
+struct RawParser : public BaseParser<RawTokenTypeScanner, RawTokenType>
 {
     /**
      * Constructor with file path of HDL source code.
@@ -49,12 +48,20 @@ struct RawParser : public BaseParser
     /**
      * Default Ctor prohibted.
      */
-    constexpr RawParser() = delete;
+    constexpr RawParser() 
+     : BaseParser()
+    {
+    }
+
+    auto set_source (const std::string& source) -> void
+    {
+     scanner.set_source(source);
+    }
 
     /**
      * Retrieve the current token.
      */
-    [[nodiscard]] auto get_current() const noexcept -> Token
+    [[nodiscard]] auto get_current() const noexcept -> Token<RawTokenType>
     {
         return this->current;
     }
@@ -70,7 +77,7 @@ struct RawParser : public BaseParser
     /**
      *  Retrieve the previous token.
      */
-    [[nodiscard]] auto get_previous() const noexcept -> Token
+    [[nodiscard]] auto get_previous() const noexcept -> Token<RawTokenType>
     {
         return this->previous;
     }
@@ -80,7 +87,7 @@ struct RawParser : public BaseParser
      * This consumption is optional, an error will not be thrown. Returns
      * true if the token was consumed.
      */
-    [[nodiscard]] auto match_token(TokenType type) noexcept -> bool
+    [[nodiscard]] auto match_token(RawTokenType type) noexcept -> bool
     {
         return match(type);
     }
@@ -89,7 +96,7 @@ struct RawParser : public BaseParser
      * Consume the current token if it matches what we expect,
      * else we report error.
      */
-    auto consume_token(TokenType type, std::string_view message) noexcept -> void
+    auto consume_token(RawTokenType type, std::string_view message) noexcept -> void
     {
         consume(type, message);
     }
@@ -97,7 +104,7 @@ struct RawParser : public BaseParser
     /**
      * Advance and return the current token.
      */
-    [[nodiscard]] auto advance_token() noexcept -> Token
+    [[nodiscard]] auto advance_token() noexcept -> Token<RawTokenType>
     {
         advance();
         return current;
@@ -108,7 +115,5 @@ struct RawParser : public BaseParser
         report_error(message);
     }
 };
-
-} /* namespace hdl */
 
 #endif /* RAW_PARSER */
