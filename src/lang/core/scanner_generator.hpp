@@ -58,11 +58,21 @@ struct SCANNER(TOKEN_CLASS_NAME)
     // JOIN(TOKEN_CLASS_NAME, Scanner)() = default;
     SCANNER(TOKEN_CLASS_NAME)() = default;
 
+    
+
+    void set_source(const std::string& source)
+    {
+        reset();
+        source_code = source;
+    }
+
     /**
      * Read all the source code from the file.
      */
     bool read_source(const std::string& path)
     {
+        reset();
+
         this->source_code.clear();
 
         std::ifstream     ifs(path);
@@ -167,6 +177,13 @@ struct SCANNER(TOKEN_CLASS_NAME)
     void advance_position() noexcept
     {
         ++current;
+    }
+
+    void reset() noexcept
+    {
+        start = 0;
+        current = start;
+        line = 1;
     }
 
     /**
