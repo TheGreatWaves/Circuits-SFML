@@ -90,10 +90,6 @@ struct Meta
     Trie                  trie;
 };
 
-/**
- * Built in meta for NAND.
- */
-
 [[nodiscard]] inline auto Meta::get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>
 {
     auto meta = std::make_unique<Meta>();

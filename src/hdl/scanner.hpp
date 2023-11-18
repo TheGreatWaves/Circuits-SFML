@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef HDL_SCANNER
-#define HDL_SCANNER
+#ifndef HDL_SCANNER_H
+#define HDL_SCANNER_H
 
 #include <cctype>
 #include <fstream>
@@ -263,4 +263,4 @@ struct Scanner
 
 } /* namespace hdl */
 
-#endif /* HDL_SCANNER */
+#endif /* HDL_SCANNER_H */

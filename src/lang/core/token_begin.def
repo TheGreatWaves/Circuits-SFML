@@ -9,3 +9,15 @@
 #ifndef SYMBOL_TOKEN
 #define SYMBOL_TOKEN(name, symbol) TOKEN(name)
 #endif
+
+/**
+ * The error token needs to be defined first, making it the default token.
+ */
+TOKEN(Error)
+TOKEN(EndOfFile)
+
+/**
+ * Identifiers.
+ */
+TOKEN(Number)
+TOKEN(Identifier)

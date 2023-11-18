@@ -7,18 +7,6 @@
 /*================================*/
 
 /**
- * The error token needs to be defined first, making it the default token.
- */
-TOKEN(Error)
-TOKEN(EndOfFile)
-
-/**
- * Identifiers.
- */
-TOKEN(Number)
-TOKEN(Identifier)
-
-/**
  * Grouping.
  */
 SYMBOL_TOKEN(LBrace, "{")

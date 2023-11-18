@@ -1,0 +1,20 @@
+#include "../core/token_begin.def"
+
+/*================================*/
+/*                                */
+/*        TOKENS DEFINITION.      */
+/*                                */
+/*================================*/
+
+/**
+ * Keywords.
+ */
+KEYWORD_TOKEN(Need,   "need")
+KEYWORD_TOKEN(Create, "create")
+KEYWORD_TOKEN(In,     "input")
+KEYWORD_TOKEN(Out,    "output")
+KEYWORD_TOKEN(Add,    "add")
+KEYWORD_TOKEN(Wire,   "wire")
+KEYWORD_TOKEN(Save,   "save")
+
+#include "../core/token_end.def"
