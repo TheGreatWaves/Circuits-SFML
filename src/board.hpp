@@ -37,10 +37,10 @@ class Board
 public:
   Board()
   {
-    auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "Nand", true);
+    auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
     auto nandp = nandc.get();
-    components["Nand"] = std::move(nandc);
-    auto nand = components["Nand"].get();
+    components["nand"] = std::move(nandc);
+    auto nand = components["nand"].get();
     nand->get_pin(0)->parent = nandp;
     nand->get_pin(1)->parent = nandp;
     nand->serialize();

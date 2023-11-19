@@ -58,7 +58,7 @@ class BaseParser
         if (type == Type::File)
         {
             if (!scanner.read_source(input))
-                throw std::invalid_argument("File: " + input + " not found!");
+                has_error = true;
         }
         else
         {
@@ -66,10 +66,12 @@ class BaseParser
         }
     }
 
-    /**
-     * Default Ctor prohibted.
-     */
     constexpr BaseParser() {}
+
+    auto error_occured() const noexcept -> bool 
+    {
+     return has_error;
+    }
 
     /**
      * Protected methods.

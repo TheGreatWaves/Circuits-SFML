@@ -27,6 +27,7 @@
 #include <string_view>
 #include <sstream>
 #include <filesystem>
+#include <optional>
 
 #include "common.hpp" 
 #include "board.hpp"
@@ -50,7 +51,7 @@ void greet()
 {
 	std::cout << BLOCK << " DIGITAL LOGIC " << BLOCK << '\n';
 	info("Simulator starting...");
-	info("`h` for help.");
+	info("`help` to show commands.");
 	newline();
 }
 
@@ -113,6 +114,12 @@ void compile(RawParser& parser)
 
 	auto hdl_parser = hdl::HDLParser(hdl_file(name));
 
+	if (hdl_parser.error_occured())
+	{
+		error("Failed to open file '" + name + "'.");
+		return;
+	}
+
 	if (!hdl_parser.parse())
 	{
 		error("Failed to parse file '" + name + "'.");
@@ -142,6 +149,40 @@ void compile(RawParser& parser)
   };
 	meta_file << result.meta();
 	meta_file.close();
+
+	log("Successfully compiled '", name, "'.");
+}
+
+void load(RawParser& parser)
+{
+	const auto token = parser.advance_token();
+
+	if (token.type != RawTokenType::Identifier)
+	{
+		error("Please input a valid component name.");
+		return;
+	}
+
+	// Get the component name.
+	const std::string& name = token.lexeme;
+
+	const auto component_names = Board::instance()->get_names();
+	auto found = std::find(component_names.begin(), component_names.end(), name);
+
+	if (found != component_names.end())
+	{
+		log("Chip '", name, "' already loaded.");
+		return;
+	}
+
+	// Attemp to load the chip.
+	if (!runFile(GATE_RECIPE_DIRECTORY + name + GATE_EXTENSION))
+	{
+		error("Failed to load file '" + name + "'.");
+		return;
+	}
+
+	log("Sucessfully loaded '", name, "'.");
 }
 
 void handle_input(RawParser& parser, std::string_view str)
@@ -151,22 +192,25 @@ void handle_input(RawParser& parser, std::string_view str)
 
 	MATCH(parser.get_current().lexeme)
 		info("Invalid command. Try 'help'.");
+	CASE("compile")
+		compile(parser);
 	CASE("help")
 		desc("gui               ", "Start GUI mode.");
 		desc("list              ", "List all components.");
 		desc("info              ", "Display general information.");
-		desc("table  <component>", "Display truth table of the specified component.");
-		desc("compile     <file>", "Display truth table of the specified component.");
-	CASE("gui")
-		run_gui();
-	CASE("list")
-		show_list(parser);
+		desc("table       <chip>", "Display truth table of the specified chip.");
+		desc("load        <chip>", "Load the specified chip.");
+		desc("compile     <file>", "Compile the hdl file with the given name.");
 	CASE("info")
 		log("Gate Recipe Directory: ", GATE_RECIPE_DIRECTORY);
 	CASE("table")
 		show_truth_table(parser);
-	CASE("compile")
-		compile(parser);
+	CASE("gui")
+		run_gui();
+	CASE("list")
+		show_list(parser);
+	CASE("load")
+		load(parser);
   ENDMATCH;
 
 	// switch (command.at(0))
@@ -609,9 +653,6 @@ bool runFile(const std::string& file_path)
 			{
 				const auto next = scanner.scan_token();
 				const auto chip_name = next.lexeme;
-
-				log("Next type: ", chip_name);
-
 
 				if (next.type != AssemTokenType::Identifier)
 				{
