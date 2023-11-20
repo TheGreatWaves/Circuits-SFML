@@ -111,6 +111,22 @@ struct Meta
 [[nodiscard]] inline auto Meta::get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>
 {
     auto meta = std::make_unique<Meta>();
+
+    if (component_name == "nand")
+    {
+        meta->name = "nand";
+        meta->input_count = 2;
+        meta->output_count = 1;
+        meta->input_pins = {PinEntry("a", 0), PinEntry("b", 1)};
+        meta->output_pins = {PinEntry("out", MAX_INPUT_PINS)};
+
+        meta->trie.insert("a");
+        meta->trie.insert("b");
+        meta->trie.insert("out");
+        return meta;
+    }
+
+
     try
     {
         auto parser = RawParser(SCRIPTS_DIR + "/" + std::string(component_name) + ".meta");
