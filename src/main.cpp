@@ -46,6 +46,7 @@ void create_component(std::string_view name);
 void run_gui();
 
 Board board;
+bool running = true;
 
 void greet()
 {
@@ -207,6 +208,8 @@ void handle_input(RawParser& parser, std::string_view str)
 		show_truth_table(parser);
 	CASE("gui")
 		run_gui();
+	CASE("quit")
+		running = false;
 	CASE("list")
 		show_list(parser);
 	CASE("load")
@@ -610,6 +613,7 @@ void init()
 	// }
 }
 
+
 void run_cli()
 {
 	std::string line;
@@ -618,7 +622,7 @@ void run_cli()
 
 	RawParser parser;	
 
-	while(prompt() && std::getline(std::cin, line))
+	while(running && prompt() && std::getline(std::cin, line))
 	{
 		if (line.empty()) continue;
 		handle_input(parser, line);
