@@ -26,8 +26,6 @@
 #ifndef HDL_PARSER
 #define HDL_PARSER
 
-// #define DEBUG
-
 #include <exception>
 #include <iostream>
 #include <stdexcept>
@@ -137,6 +135,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
             // Add the bus meta information.
             builder.add_bus(input_name, input_pin_offset, count);
+            bus_numbers[input_name] = {input_pin_offset, count};
 
             for (int i = 0; i < count; i++)
             {
@@ -155,7 +154,6 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             pin_numbers[input_name] = input_pin_offset++;
         }
 
-
         while (match(HDLTokenType::Comma))
         {
             consume(HDLTokenType::Identifier, "Expected identifier, found '" + current.lexeme + "'.");
@@ -169,6 +167,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
                 // Add the bus meta information.
                 builder.add_bus(input_name, input_pin_offset, count);
+                bus_numbers[input_name] = {input_pin_offset, count};
 
                 for (int i = 0; i < count; i++)
                 {
@@ -211,6 +210,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
             // Add the bus meta information.
             builder.add_bus(output_name, MAX_INPUT_PINS + output_pin_offset, count);
+            bus_numbers[output_name] = { MAX_INPUT_PINS + output_pin_offset, count};
 
             for (int i = 0; i < count; i++)
             {
@@ -243,6 +243,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
                 // Add the bus meta information.
                 builder.add_bus(output_name, MAX_INPUT_PINS + output_pin_offset, count);
+                bus_numbers[output_name] = { MAX_INPUT_PINS + output_pin_offset, count};
 
                 for (int i = 0; i < count; i++)
                 {
@@ -415,7 +416,9 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         // We expect ATLEAST one linkage.
         consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
         const auto subgate_input_pin = previous.lexeme;
+
         consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
+
         consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
         auto subgate_output_name = previous.lexeme;
 
@@ -433,8 +436,18 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             {
                 const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
                 const auto bus_entry_count = bus_entry->size;
+                const auto offset = is_output ? output_pin_offset : input_pin_offset;
 
-                log("Found BUS " + bus_entry->bus_name + " " + std::to_string(bus_entry->start) + " " + std::to_string(bus_entry->size));
+                for (auto i = 0; i < bus_entry_count; i++)
+                {
+                    const auto pin_number = bus_entry->start + i + offset;
+                    const auto linkage_entry = Meta::PinEntry{subgate_output_name + "[" + std::to_string(i) + "]", pin_number};
+                    log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
+
+                    const auto output_bus_not_found = (bus_numbers.count(subgate_output_name));
+
+                    linkages.emplace_back(linkage_entry, is_output);
+                }
             }
             else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
             {
@@ -480,7 +493,25 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
             if (subgate_added)
             {
-                if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
+                // Handling bus.
+                if (auto bus_entry = context_gate_metadata->get_bus(subgate_input_pin); bus_entry.has_value())
+                {
+                    const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
+                    const auto bus_entry_count = bus_entry->size;
+                    const auto offset = is_output ? output_pin_offset : input_pin_offset;
+
+                    for (auto i = 0; i < bus_entry_count; i++)
+                    {
+                        const auto pin_number = bus_entry->start + i + offset;
+                        const auto linkage_entry = Meta::PinEntry{subgate_output_name + "[" + std::to_string(i) + "]", pin_number};
+                        log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
+
+                        const auto output_bus_not_found = (bus_numbers.count(subgate_output_name));
+
+                        linkages.emplace_back(linkage_entry, is_output);
+                    }
+                }
+                else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
                 {
                     const auto is_output = (*pin).pin_number >= MAX_INPUT_PINS;
                     const auto offset = is_output ? output_pin_offset : input_pin_offset;
@@ -634,13 +665,14 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
     /**
      * Members.
      */
-    RecipeBuilder                                      builder{};
-    std::size_t                                        input_pin_offset{};
-    std::size_t                                        output_pin_offset{};
-    const Meta*                                        context_gate_metadata{};
-    std::vector<std::pair<Meta::PinEntry, bool>>       linkages{};
-    std::map<std::string, std::size_t>                 pin_numbers{};
-    std::map<std::string, std::unique_ptr<const Meta>> subgate_metadata{};
+    RecipeBuilder                                              builder{};
+    std::size_t                                                input_pin_offset{};
+    std::size_t                                                output_pin_offset{};
+    const Meta*                                                context_gate_metadata{};
+    std::vector<std::pair<Meta::PinEntry, bool>>               linkages{};
+    std::map<std::string, std::size_t>                         pin_numbers{};
+    std::map<std::string, std::pair<std::size_t, std::size_t>> bus_numbers{};
+    std::map<std::string, std::unique_ptr<const Meta>>         subgate_metadata{};
 };
 
 } /* namespace hdl */
