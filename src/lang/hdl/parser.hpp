@@ -127,10 +127,32 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         log("Parsing IN statement.");
         // We expect at least one identifier.
         consume(HDLTokenType::Identifier, "IN statement expects atleast one identifier.");
-        builder.add_input_pin(previous.lexeme);
-        pin_numbers[previous.lexeme] = input_pin_offset++;
+        const std::string input_name { previous.lexeme };
 
-        log("Parsing identifier: " + previous.lexeme + ".");
+        // Multiple inputs.
+        if (match(HDLTokenType::LSqaure))
+        {
+            consume(HDLTokenType::Number, "Expected number for input size, found '" + current.lexeme + "'.");
+
+            const int count = std::stoi(previous.lexeme);
+
+            for (int i = 0; i < count; i++)
+            {
+                const auto input_name_index = input_name + "[" + std::to_string(i) + "]";
+                builder.add_input_pin(input_name_index);
+                pin_numbers[input_name_index] = input_pin_offset++;
+            }
+
+            consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+
+            log("Added multiple input " + input_name + " with size " + std::to_string(count));
+        }
+        else // Single input.
+        {
+            builder.add_input_pin(input_name);
+            pin_numbers[input_name] = input_pin_offset++;
+        }
+
 
         while (match(HDLTokenType::Comma))
         {

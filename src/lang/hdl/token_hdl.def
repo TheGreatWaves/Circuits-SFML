@@ -9,10 +9,12 @@
 /**
  * Grouping.
  */
-SYMBOL_TOKEN(LBrace, "{")
-SYMBOL_TOKEN(RBrace, "}")
-SYMBOL_TOKEN(LParen, "(")
-SYMBOL_TOKEN(RParen, ")")
+SYMBOL_TOKEN(LBrace,  "{")
+SYMBOL_TOKEN(RBrace,  "}")
+SYMBOL_TOKEN(LParen,  "(")
+SYMBOL_TOKEN(RParen,  ")")
+SYMBOL_TOKEN(LSqaure, "[")
+SYMBOL_TOKEN(RSquare, "]")
 
 SYMBOL_TOKEN(Comma,      ",")
 SYMBOL_TOKEN(Semicolon,  ";")
