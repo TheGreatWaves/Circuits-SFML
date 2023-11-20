@@ -308,7 +308,43 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
         if (subgate_added)
         {
-            if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
+
+            // Handling bus.
+            if (auto bus_entry = context_gate_metadata->get_bus(subgate_input_pin); bus_entry.has_value())
+            {
+                const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
+                const auto bus_entry_count = bus_entry->size;
+                const auto offset = is_output ? output_pin_offset : input_pin_offset;
+                const auto output_bus_not_found = (bus_numbers.count(subgate_output_name) == 0);
+
+                if (output_bus_not_found)
+                {
+                    bus_numbers[subgate_output_name] = {bus_entry->start + offset, bus_entry_count};
+                }
+                else if (auto count = bus_numbers[subgate_output_name].second; count != bus_entry_count)
+                {
+                    report_error("Mismatch bus size found in '" + subgate_name + "', found " + subgate_output_name + "[" + std::to_string(count) + "], " + subgate_input_pin + "["+ std::to_string(bus_entry_count) +"].");
+                }
+
+                for (auto i = 0; i < bus_entry_count; i++)
+                {
+                    const auto pin_number = bus_entry->start + i + offset;
+                    const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                    const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
+                    log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
+
+                    if (output_bus_not_found)
+                    {
+                        log("WHAT WHAT WHAT WHAT");
+                        pin_numbers[output_name_location] = pin_number;
+                    }
+                    else
+                    {
+                        linkages.emplace_back(linkage_entry, is_output);
+                    }
+                }
+            }
+            else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
             {
                 log("PIN NUMBER: " + std::to_string((*pin).pin_number));
                 const auto is_output = (*pin).pin_number >= MAX_INPUT_PINS;
@@ -348,7 +384,43 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
             if (subgate_added)
             {
-                if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
+
+                // Handling bus.
+                if (auto bus_entry = context_gate_metadata->get_bus(subgate_input_pin); bus_entry.has_value())
+                {
+                    const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
+                    const auto bus_entry_count = bus_entry->size;
+                    const auto offset = is_output ? output_pin_offset : input_pin_offset;
+                    const auto output_bus_not_found = (bus_numbers.count(subgate_output_name) == 0);
+
+                    if (output_bus_not_found)
+                    {
+                        bus_numbers[subgate_output_name] = {bus_entry->start + offset, bus_entry_count};
+                    }
+                    else if (auto count = bus_numbers[subgate_output_name].second; count != bus_entry_count)
+                    {
+                        report_error("Mismatch bus size found in '" + subgate_name + "', found " + subgate_output_name + "[" + std::to_string(count) + "], " + subgate_input_pin + "["+ std::to_string(bus_entry_count) +"].");
+                    }
+
+                    for (auto i = 0; i < bus_entry_count; i++)
+                    {
+                        const auto pin_number = bus_entry->start + i + offset;
+                        const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                        const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
+                        log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
+
+                        if (output_bus_not_found)
+                        {
+                            log("WHAT WHAT WHAT WHAT");
+                            pin_numbers[output_name_location] = pin_number;
+                        }
+                        else
+                        {
+                            linkages.emplace_back(linkage_entry, is_output);
+                        }
+                    }
+                }
+                else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
                 {
                     const auto is_output = (*pin).pin_number >= MAX_INPUT_PINS;
                     const auto offset = is_output ? output_pin_offset : input_pin_offset;
@@ -437,16 +509,33 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
                 const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
                 const auto bus_entry_count = bus_entry->size;
                 const auto offset = is_output ? output_pin_offset : input_pin_offset;
+                const auto output_bus_not_found = (bus_numbers.count(subgate_output_name) == 0);
+
+                if (output_bus_not_found)
+                {
+                    bus_numbers[subgate_output_name] = {bus_entry->start + offset, bus_entry_count};
+                }
+                else if (auto count = bus_numbers[subgate_output_name].second; count != bus_entry_count)
+                {
+                    report_error("Mismatch bus size found in '" + subgate_name + "', found " + subgate_output_name + "[" + std::to_string(count) + "], " + subgate_input_pin + "["+ std::to_string(bus_entry_count) +"].");
+                }
 
                 for (auto i = 0; i < bus_entry_count; i++)
                 {
                     const auto pin_number = bus_entry->start + i + offset;
-                    const auto linkage_entry = Meta::PinEntry{subgate_output_name + "[" + std::to_string(i) + "]", pin_number};
+                    const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                    const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
                     log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
 
-                    const auto output_bus_not_found = (bus_numbers.count(subgate_output_name));
-
-                    linkages.emplace_back(linkage_entry, is_output);
+                    if (output_bus_not_found)
+                    {
+                        log("WHAT WHAT WHAT WHAT");
+                        pin_numbers[output_name_location] = pin_number;
+                    }
+                    else
+                    {
+                        linkages.emplace_back(linkage_entry, is_output);
+                    }
                 }
             }
             else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
@@ -499,16 +588,33 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
                     const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
                     const auto bus_entry_count = bus_entry->size;
                     const auto offset = is_output ? output_pin_offset : input_pin_offset;
+                    const auto output_bus_not_found = (bus_numbers.count(subgate_output_name) == 0);
+
+                    if (output_bus_not_found)
+                    {
+                        bus_numbers[subgate_output_name] = {bus_entry->start + offset, bus_entry_count};
+                    }
+                    else if (auto count = bus_numbers[subgate_output_name].second; count != bus_entry_count)
+                    {
+                        report_error("Mismatch bus size found in '" + subgate_name + "', found " + subgate_output_name + "[" + std::to_string(count) + "], " + subgate_input_pin + "["+ std::to_string(bus_entry_count) +"].");
+                    }
 
                     for (auto i = 0; i < bus_entry_count; i++)
                     {
                         const auto pin_number = bus_entry->start + i + offset;
-                        const auto linkage_entry = Meta::PinEntry{subgate_output_name + "[" + std::to_string(i) + "]", pin_number};
+                        const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                        const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
                         log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
 
-                        const auto output_bus_not_found = (bus_numbers.count(subgate_output_name));
-
-                        linkages.emplace_back(linkage_entry, is_output);
+                        if (output_bus_not_found)
+                        {
+                            log("WHAT WHAT WHAT WHAT");
+                            pin_numbers[output_name_location] = pin_number;
+                        }
+                        else
+                        {
+                            linkages.emplace_back(linkage_entry, is_output);
+                        }
                     }
                 }
                 else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
@@ -534,7 +640,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             }
             else
             {
-                report_error("Pin '" + subgate_input_pin + "' not found in '" + subgate_name + "'.");
+                report_error("OHYES, Pin '" + subgate_input_pin + "' not found in '" + subgate_name + "'.");
             }
         }
 
