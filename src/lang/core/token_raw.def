@@ -1,2 +1,6 @@
 #include "../core/token_begin.def"
+
+SYMBOL_TOKEN(LSqaure, "[")
+SYMBOL_TOKEN(RSquare, "]")
+
 #include "../core/token_end.def"

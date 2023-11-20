@@ -37,6 +37,20 @@
 
 constexpr std::size_t MAX_INPUT_PINS = 100;
 
+struct BusEntry
+{
+    std::string bus_name;       
+    std::size_t start;
+    std::size_t size;
+
+    BusEntry(const std::string& name, std::size_t start, std::size_t size)
+        : bus_name(name)
+        , start(start)
+        , size(size)
+    {
+    }
+};
+
 namespace hdl
 {
 
@@ -122,6 +136,16 @@ class RecipeBuilder
         comment(ss, "GATE NAME.");
         writeln(ss, name);
 
+        // Defining buses.
+        ln(ss);
+        comment(ss, "BUSES DECLARATION.");
+        writeln(ss, "BUSES " + std::to_string(bus.size()));
+        for (const auto b : bus)
+        {
+            const auto declaration = b.bus_name + " " + std::to_string(b.start) + " " + std::to_string(b.size);
+            writeln(ss, declaration);
+        }
+
         // Defining inputs.
         ln(ss);
         comment(ss, "GLOBAL INPUT PINS.");
@@ -159,6 +183,14 @@ class RecipeBuilder
     auto add_input_pin(const std::string& name) noexcept -> void
     {
         input_pins[input_pins.size()] = name;
+    }
+
+    /**
+     * Add bus.
+     */
+    auto add_bus(const std::string& name, std::size_t start, std::size_t size) noexcept -> void
+    {
+        bus.emplace_back(name, start, size);
     }
 
     /**
@@ -261,11 +293,12 @@ class RecipeBuilder
     }
 
   private:
-    std::string                        name;
-    std::vector<std::string>           dependencies;
-    std::map<std::size_t, std::string> input_pins;
-    std::map<std::size_t, std::string> output_pins;
-    std::vector<WireInfo>              wire_linkages;
+    std::string                           name;
+    std::vector<std::string>              dependencies;
+    std::map<std::size_t, std::string>    input_pins;
+    std::map<std::size_t, std::string>    output_pins;
+    std::vector<BusEntry>                 bus;
+    std::vector<WireInfo>                 wire_linkages;
 };
 } /* namespace hdl */
 

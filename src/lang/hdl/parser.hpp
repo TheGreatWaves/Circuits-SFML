@@ -133,8 +133,10 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         if (match(HDLTokenType::LSqaure))
         {
             consume(HDLTokenType::Number, "Expected number for input size, found '" + current.lexeme + "'.");
-
             const int count = std::stoi(previous.lexeme);
+
+            // Add the bus meta information.
+            builder.add_bus(input_name, input_pin_offset, count);
 
             for (int i = 0; i < count; i++)
             {
@@ -163,8 +165,10 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             if (match(HDLTokenType::LSqaure))
             {
                 consume(HDLTokenType::Number, "Expected number for input size, found '" + current.lexeme + "'.");
-
                 const int count = std::stoi(previous.lexeme);
+
+                // Add the bus meta information.
+                builder.add_bus(input_name, input_pin_offset, count);
 
                 for (int i = 0; i < count; i++)
                 {
@@ -203,8 +207,10 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         if (match(HDLTokenType::LSqaure))
         {
             consume(HDLTokenType::Number, "Expected number for output size, found '" + current.lexeme + "'.");
-
             const int count = std::stoi(previous.lexeme);
+
+            // Add the bus meta information.
+            builder.add_bus(output_name, MAX_INPUT_PINS + output_pin_offset, count);
 
             for (int i = 0; i < count; i++)
             {
@@ -233,8 +239,10 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             if (match(HDLTokenType::LSqaure))
             {
                 consume(HDLTokenType::Number, "Expected number for output size, found '" + current.lexeme + "'.");
-
                 const int count = std::stoi(previous.lexeme);
+
+                // Add the bus meta information.
+                builder.add_bus(output_name, MAX_INPUT_PINS + output_pin_offset, count);
 
                 for (int i = 0; i < count; i++)
                 {
@@ -420,7 +428,15 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
         if (subgate_added)
         {
-            if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
+            // Handling bus.
+            if (auto bus_entry = context_gate_metadata->get_bus(subgate_input_pin); bus_entry.has_value())
+            {
+                const auto is_output = bus_entry->start >= MAX_INPUT_PINS;
+                const auto bus_entry_count = bus_entry->size;
+
+                log("Found BUS " + bus_entry->bus_name + " " + std::to_string(bus_entry->start) + " " + std::to_string(bus_entry->size));
+            }
+            else if (auto pin = context_gate_metadata->get_pin(subgate_input_pin); pin.has_value())
             {
                 log("PIN NUMBER: " + std::to_string((*pin).pin_number));
                 const auto is_output = (*pin).pin_number >= MAX_INPUT_PINS;
