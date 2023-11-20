@@ -197,16 +197,62 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         log("Parsing OUT statement.");
         // We expect at least one identifier.
         consume(HDLTokenType::Identifier, "OUT statement expects atleast one identifier.");
-        builder.add_output_pin(previous.lexeme);
-        pin_numbers[previous.lexeme] = MAX_INPUT_PINS + output_pin_offset++;
-        log("Parsing identifier: " + previous.lexeme + ".");
+        const std::string output_name { previous.lexeme };
+
+        // Multiple outputs.
+        if (match(HDLTokenType::LSqaure))
+        {
+            consume(HDLTokenType::Number, "Expected number for output size, found '" + current.lexeme + "'.");
+
+            const int count = std::stoi(previous.lexeme);
+
+            for (int i = 0; i < count; i++)
+            {
+                const auto output_name_index = output_name + "[" + std::to_string(i) + "]";
+                builder.add_output_pin(output_name_index);
+                pin_numbers[output_name_index] = MAX_INPUT_PINS + output_pin_offset++;
+            }
+
+            consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+
+            log("Added multiple output " + output_name + " with size " + std::to_string(count));
+        }
+        else // Single input.
+        {
+            builder.add_output_pin(previous.lexeme);
+            pin_numbers[previous.lexeme] = MAX_INPUT_PINS + output_pin_offset++;
+        }
 
         while (match(HDLTokenType::Comma))
         {
             consume(HDLTokenType::Identifier, "Expected identifier, found '" + current.lexeme + "'.");
-            builder.add_output_pin(previous.lexeme);
-            pin_numbers[previous.lexeme] = MAX_INPUT_PINS + output_pin_offset++;
-            log("Parsing identifier: " + previous.lexeme + ".");
+
+            const std::string output_name { previous.lexeme };
+
+            // Multiple outputs.
+            if (match(HDLTokenType::LSqaure))
+            {
+                consume(HDLTokenType::Number, "Expected number for output size, found '" + current.lexeme + "'.");
+
+                const int count = std::stoi(previous.lexeme);
+
+                for (int i = 0; i < count; i++)
+                {
+                    const auto output_name_index = output_name + "[" + std::to_string(i) + "]";
+                    builder.add_output_pin(output_name_index);
+                    pin_numbers[output_name_index] = MAX_INPUT_PINS + output_pin_offset++;
+                }
+
+                consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+
+                log("Added multiple output " + output_name + " with size " + std::to_string(count));
+            }
+            else // Single input.
+            {
+                builder.add_output_pin(previous.lexeme);
+                pin_numbers[previous.lexeme] = MAX_INPUT_PINS + output_pin_offset++;
+            }
+
         }
         consume(HDLTokenType::Semicolon,
                 "Expected ';' at the end of an OUT statement, found '" + current.lexeme + "'.");
