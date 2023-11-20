@@ -31,6 +31,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "../../wire_info.hpp"
 
@@ -198,7 +199,9 @@ class RecipeBuilder
   private:
     auto compile_dependencies(std::stringstream& ss) const noexcept -> void
     {
-        for (const auto& dependency : dependencies)
+        std::set<std::string> unique_dependencies( dependencies.begin(), dependencies.end() );
+
+        for (const auto& dependency : unique_dependencies)
         {
             ss << "need " << dependency << '\n';
         }
