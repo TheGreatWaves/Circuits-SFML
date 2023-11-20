@@ -157,9 +157,31 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         while (match(HDLTokenType::Comma))
         {
             consume(HDLTokenType::Identifier, "Expected identifier, found '" + current.lexeme + "'.");
-            builder.add_input_pin(previous.lexeme);
-            pin_numbers[previous.lexeme] = input_pin_offset++;
-            log("Parsing identifier: " + previous.lexeme + ".");
+            const std::string input_name { previous.lexeme };
+
+            // Multiple inputs.
+            if (match(HDLTokenType::LSqaure))
+            {
+                consume(HDLTokenType::Number, "Expected number for input size, found '" + current.lexeme + "'.");
+
+                const int count = std::stoi(previous.lexeme);
+
+                for (int i = 0; i < count; i++)
+                {
+                    const auto input_name_index = input_name + "[" + std::to_string(i) + "]";
+                    builder.add_input_pin(input_name_index);
+                    pin_numbers[input_name_index] = input_pin_offset++;
+                }
+
+                consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+
+                log("Added multiple input " + input_name + " with size " + std::to_string(count));
+            }
+            else // Single input.
+            {
+                builder.add_input_pin(input_name);
+                pin_numbers[input_name] = input_pin_offset++;
+            }
         }
         consume(HDLTokenType::Semicolon,
                 "Expected ';' at the end of an IN statement, found '" + current.lexeme + "'.");
@@ -220,7 +242,14 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         const auto subgate_input_pin = previous.lexeme;
         consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
         consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
-        const auto subgate_output_name = previous.lexeme;
+        auto subgate_output_name = previous.lexeme;
+
+        if (match(HDLTokenType::LSqaure))
+        {
+            consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+            subgate_output_name = subgate_output_name + "[" + previous.lexeme + "]";
+            consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+        }
 
         if (subgate_added)
         {
@@ -253,7 +282,14 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             const auto subgate_input_pin = previous.lexeme;
             consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
             consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
-            const auto subgate_output_name = previous.lexeme;
+            auto subgate_output_name = previous.lexeme;
+
+            if (match(HDLTokenType::LSqaure))
+            {
+                consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+                subgate_output_name = subgate_output_name + "[" + previous.lexeme + "]";
+                consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+            }
 
             if (subgate_added)
             {
@@ -307,6 +343,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         auto subgate_name = previous.lexeme;
         builder.add_dependency(subgate_name);
         auto subgate_added = add_subgate_metadata(previous.lexeme);
+
         if (!subgate_added)
         {
             report_error("Could not retrieve metadata for '" + previous.lexeme + "'.");
@@ -315,7 +352,6 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         {
             this->context_gate_metadata = subgate_metadata.at(previous.lexeme).get();
         }
-
 
         log("Parsing identifier: " + previous.lexeme + ".");
 
@@ -327,7 +363,14 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         const auto subgate_input_pin = previous.lexeme;
         consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
         consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
-        const auto subgate_output_name = previous.lexeme;
+        auto subgate_output_name = previous.lexeme;
+
+        if (match(HDLTokenType::LSqaure))
+        {
+            consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+            subgate_output_name = subgate_output_name + "[" + previous.lexeme + "]";
+            consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+        }
 
         if (subgate_added)
         {
@@ -364,7 +407,14 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
             const auto subgate_input_pin = previous.lexeme;
             consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
             consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
-            const auto subgate_output_name = previous.lexeme;
+            auto subgate_output_name = previous.lexeme;
+
+            if (match(HDLTokenType::LSqaure))
+            {
+                consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+                subgate_output_name = subgate_output_name + "[" + previous.lexeme + "]";
+                consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+            }
 
             if (subgate_added)
             {
