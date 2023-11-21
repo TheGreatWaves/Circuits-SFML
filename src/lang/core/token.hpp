@@ -28,15 +28,42 @@
 
 #include <string>
 
+/**
+ * A basic token. Used to classify text.
+ */
 template<typename TokenType>
 struct Token
 {
- /**
-  * Members.
-  */
- TokenType   type{};
- std::string lexeme{};
- std::size_t line{};
+    /**
+     * METHODS.
+     */
+
+    /**
+     * Constructor.
+     */
+    [[nodiscard]] Token(TokenType t, std::string_view l, std::size_t line_num) noexcept
+        : type{t}
+        , lexeme{l}
+        , line{line_num}
+    {
+    }
+
+    /**
+     * Default constructor, return EOF.
+     */
+    [[nodiscard]] Token() noexcept
+        : type{TokenType::EndOfFile}
+        , lexeme{"\0"}
+    {
+    }
+
+    /**
+     * MEMBERS.
+     */
+    TokenType   type{};
+    std::string lexeme{};
+    std::size_t line{};
 };
+
 
 #endif /* TOKEN_H */
