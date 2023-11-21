@@ -36,6 +36,7 @@ constexpr const char* DEFAULT_RECIPE_SAVE_DIRECTORY{ "sketches" };
 constexpr const char* GATE_EXTENSION{ ".gate" };
 constexpr const char* META_EXTENSION{ ".meta" };
 constexpr const char* HDL_EXTENSION{ ".hdl" };
+constexpr const char* TEST_EXTENSION{ ".tst" };
 
 const std::string SCRIPTS_DIR{ "scripts" };
 

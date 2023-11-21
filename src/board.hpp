@@ -26,16 +26,18 @@
 #ifndef BOARD
 #define BOARD
 
-#include "gate.hpp"
-#include "utils.hpp"
 #include <memory>
 #include <map>
+
+#include "lang/assem/token_assem.hpp"
+#include "gate.hpp"
+#include "utils.hpp"
 
 // We have a single static instance of the board (this will have the lifetime of the program)
 class Board
 {
 public:
-  Board()
+  Board(bool is_singleton = true)
   {
     auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
     auto nandp = nandc.get();
@@ -45,7 +47,10 @@ public:
     nand->get_pin(1)->parent = nandp;
     nand->serialize();
 
-    singleton = this;
+    if (is_singleton)
+    {
+      singleton = this;
+    }
   }
 
   ~Board()
@@ -101,7 +106,8 @@ public:
 
     if (it != components.end())
     {
-      return it->second.get();
+        auto p = it->second.get();
+        return p;
     }
 
     return nullptr;
@@ -117,6 +123,167 @@ public:
     }
 
     return res;
+  }
+
+  bool load_file(const std::string& file_path)
+  {
+    AssemTokenTypeScanner scanner{};
+
+  	if (!scanner.read_source(std::string(file_path)))
+  	{
+  		return false;
+  	}
+
+  	auto board = this;
+
+  	while (!scanner.is_at_end())
+  	{
+  		const auto token = scanner.scan_token();		
+
+  		switch(token.type)
+  		{
+  			break; case AssemTokenType::EndOfFile: {}
+  			break; case AssemTokenType::Number: 
+  			       case AssemTokenType::Identifier:
+  			       case AssemTokenType::Error:
+  			{ 
+  				return false; 
+  			}
+        break; case AssemTokenType::Need: 
+  			{
+  				const auto next = scanner.scan_token();
+  				const auto chip_name = next.lexeme;
+
+  				if (next.type != AssemTokenType::Identifier)
+  				{
+  					log("Error: Invalid argument to need, not an identifier.");
+  					return false;
+  				}
+				
+  				if (!board->found(chip_name) && !load_file(GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION))
+  				{
+  					log("Error: Needed component with given name `", chip_name, "` not found!");
+  					exit(1);
+  				}
+  			}
+        break; case AssemTokenType::Create: 
+  			{
+  				const auto next = scanner.scan_token();
+  				const auto name = next.lexeme;
+
+  				if (next.type != AssemTokenType::Identifier)
+  				{
+  					log("Error: Please provide a valid component name to create.");
+  					return false;	
+  				}
+
+        	board->create_new(name);
+        	board->set_context(name);
+
+  				if (board->context().second == nullptr)
+  				{
+  					log("Create: Error: Failed to create context.");
+  				}
+
+  			}
+        break; case AssemTokenType::In: 
+  			{
+  				auto current = board->context().second;
+
+  				if (current == nullptr)
+  				{
+  					log("IN: Error: Current context is empty, please select a configuration.");
+  					return false;
+  				}
+
+  				const auto next = scanner.scan_token();
+
+  				if (next.type != AssemTokenType::Number)
+  				{
+  					error("Input count is not a number.");
+  					return false;
+  				}
+
+  				current->add_input_pin(std::stoi(next.lexeme));
+  			}
+        break; case AssemTokenType::Out:
+  			{
+  				auto current = board->context().second;
+
+  				if (current == nullptr)
+  				{
+  					log("OUT: Error: Current context is empty, please select a configuration.");
+  					return false;
+  				}
+
+  				const auto next = scanner.scan_token();
+
+  				if (next.type != AssemTokenType::Number)
+  				{
+  					error("Output count is not a number.");
+  					return false;
+  				}
+
+  				current->add_output_pin(std::stoi(next.lexeme));
+  			}
+        break; case AssemTokenType::Add: 
+  			{
+  				auto current = board->context();
+
+  				if (current.second == nullptr)
+  				{
+  					error("Add: Current context is empty, please select a configuration\n");
+  					return false;
+  				}
+
+  				const auto next = scanner.scan_token();
+  				const auto chip_name = next.lexeme;
+
+  				if (auto component = board->get_component(chip_name); component != nullptr)
+  				{
+  					current.second->add_subgate(component, this);
+  				}
+  				else
+  				{
+  					error("Component with given name `" + chip_name + "` not found!");
+  					return false;
+  				}
+  			}
+        break; case AssemTokenType::Wire: 
+  			{
+  				auto current = board->context().second;		
+
+  				if (current == nullptr)
+  				{
+  					error("Current context is empty, please select a configuration");
+  					return false;
+  				}
+
+  				auto pin1 = scanner.scan_token();
+  				auto pin2 = scanner.scan_token();
+
+  				if (pin1.type != AssemTokenType::Number 
+  				&& pin2.type != AssemTokenType::Number)
+  				{
+  					error("Pin 1/2 not a number.");
+  					return false;
+  				}
+
+  				if (!current->wire_pins(std::stoi(pin1.lexeme), std::stoi(pin2.lexeme)))
+  				{
+  					error("Failed to wire pin " + pin1.lexeme + " and pin " + pin2.lexeme);
+  					return false;
+  				}
+  			}
+        break; case AssemTokenType::Save: 
+  			{
+  				// Simply get out of context.
+  				board->reset_context();
+  			}
+      }
+  	}
+
+  	return true;
   }
 
 private:

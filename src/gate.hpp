@@ -47,6 +47,8 @@ enum class GateType
   CUSTOM
 };
 
+class Board;
+
 /**
  * A Gate represents a component board. Each component board consists of I/O ports,
  * subgates and wires. The gate also contains its wire construction recipe for the
@@ -397,14 +399,14 @@ struct Gate
     return true;
   }
 
-  std::size_t add_subgate(Gate* gate)
+  std::size_t add_subgate(Gate* gate, Board* board = nullptr)
   {
-  	return add_subgate(gate->name);
+  	return add_subgate(gate->name, board);
   }
 
-  std::size_t add_subgate(std::string_view gate_name);
+  std::size_t add_subgate(std::string_view gate_name, Board* board = nullptr);
 
-  std::unique_ptr<Gate> duplicate()
+  std::unique_ptr<Gate> duplicate(Board* board = nullptr)
   {
     auto g = std::make_unique<Gate>(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
 
@@ -420,7 +422,7 @@ struct Gate
       // Add the subgates and copy the wiring.
       for (std::size_t i = 0; i < subgate_count; i++)
       {
-        g->add_subgate(subgates.at(i)->name);
+        g->add_subgate(subgates.at(i)->name, board);
       }
 
       g->construct_wire(this->wire_construction_recipe);
