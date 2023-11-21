@@ -1,0 +1,39 @@
+#include "../core/token_begin.def"
+
+/*================================*/
+/*                                */
+/*        TOKENS DEFINITION.      */
+/*                                */
+/*================================*/
+
+/**
+ * Grouping.
+ */
+SYMBOL_TOKEN(LBrace,  "{")
+SYMBOL_TOKEN(RBrace,  "}")
+SYMBOL_TOKEN(LParen,  "(")
+SYMBOL_TOKEN(RParen,  ")")
+SYMBOL_TOKEN(LSqaure, "[")
+SYMBOL_TOKEN(RSquare, "]")
+SYMBOL_TOKEN(Quote,   "'")
+
+SYMBOL_TOKEN(Comma,      ",")
+SYMBOL_TOKEN(Semicolon,  ";")
+SYMBOL_TOKEN(colon,      ":")
+SYMBOL_TOKEN(Dot,        ".")
+SYMBOL_TOKEN(Equal,      "=")
+
+/**
+ * Keywords.
+ */
+KEYWORD_TOKEN(Require, "REQUIRE")
+KEYWORD_TOKEN(Var,     "VAR")
+KEYWORD_TOKEN(Set,     "SET")
+KEYWORD_TOKEN(Load,    "LOAD")
+KEYWORD_TOKEN(Eval,    "EVAL")
+KEYWORD_TOKEN(And,     "AND")
+KEYWORD_TOKEN(Test,    "TEST")
+KEYWORD_TOKEN(Is,      "IS")
+KEYWORD_TOKEN(Not,     "NOT")
+
+#include "../core/token_end.def"
