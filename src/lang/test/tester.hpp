@@ -185,12 +185,19 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
     {
         std::stringstream val{};
 
-        while (match(TestTokenType::Identifier))
+        while (!match(TestTokenType::Quote))
         {
-            val << previous.lexeme << " ";
-        }
+            if (current.type == TestTokenType::LBrace)
+            {
+                const auto test_name = val.str();
+                report_error("Invalid test name: " + test_name);
+                return "";
+            }
 
-        consume(TestTokenType::Quote, "String not terminated.");
+            advance();
+            val << previous.lexeme << " ";
+
+        }
 
         return val.str();
     }
@@ -565,7 +572,8 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
     auto parse_TEST_body() noexcept -> void
     {
         log("Parsing TEST body");
-        consume(TestTokenType::LBrace, "Expected '{'.");
+
+        consume(TestTokenType::LBrace, "Expected '{' at the beginning of TEST body.");
 
         while (!match(TestTokenType::RBrace))
         {
