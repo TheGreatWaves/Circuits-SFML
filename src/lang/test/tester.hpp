@@ -28,8 +28,8 @@
 
 #include <map>
 #include <string>
-
 #include <algorithm>
+
 #include "../../common.hpp"
 #include "../../board.hpp"
 #include "../core/parser_base.hpp"
@@ -38,6 +38,14 @@
 
 namespace test
 {
+
+namespace _priv
+{
+    inline std::size_t pow2(std::size_t n) noexcept
+    {
+        return (1 << n);
+    }
+}
 
 struct ChipInfo 
 {
@@ -203,7 +211,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         ChipInfo* image = &chip_images.at(type);
 
         std::map<std::string, int> values{};
-        auto add_value = [&](const auto pin) { values[pin.pin_name] = 0; };
+        auto add_value = [&](const auto& pin) { values[pin.pin_name] = 0; };
 
         std::for_each(image->meta->input_pins.begin(), 
                       image->meta->input_pins.end(), 
@@ -212,6 +220,10 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         std::for_each(image->meta->output_pins.begin(), 
                       image->meta->output_pins.end(), 
                       add_value);
+
+        std::for_each(image->meta->bus.begin(), 
+                      image->meta->bus.end(), 
+                      [&](const auto& bus) { values[bus.bus_name] = 0; });
 
         const auto key = board.context().second->add_subgate(image->gate, &board);
         auto chip = board.context().second->subgates[key].get();
@@ -245,13 +257,32 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         log("RUNNING EVAL!!!");
         for (auto& [_, variable] : variables)
         {
-            variable.chip->simulate();
+            int sim_count = 1;
+            while (sim_count --> 0)
+            {
+                variable.chip->simulate();
+            }
 
             for (const auto& [name, number] : variable.chip_info->meta->output_pins)
             {
-                const auto state = (variable.chip->get_pin(number)->state == PinState::ACTIVE) ? 1 : 0;
+                const auto state = (variable.chip->get_pin(number)->is_active()) ? 1 : 0;
                 variable.values[name] = state;
                 log("Setting " + name + " to " + std::to_string(state));
+            }
+            for (const auto& [name, start, size] : variable.chip_info->meta->bus)
+            {
+                // We only want outputs.
+                if (start < MAX_INPUT_PINS) 
+                    continue;
+
+                std::size_t so = 0;
+                for (std::size_t offset = 0; offset < size; offset++)
+                {
+                  so <<= 1;
+                  so |= (variable.chip->output_pins.at(start + (size-1) - offset - MAX_INPUT_PINS).is_active() ? 1 : 0);
+                }
+                variable.values[name] = so;
+                log("Setting bus " + name + " to " + std::to_string(so));
             }
         }
     }
@@ -260,8 +291,6 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
     {
         // Simulate...
         EVAL_impl();
-
-
         expect_semicolon("Expected semicolon for EVAL statement.");
     }
 
@@ -379,8 +408,26 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
         // Now we get the pin number and set it. 
         const auto& pin = variable.chip_info->meta->get_pin(var.member);
+        const auto& bus = variable.chip_info->meta->get_bus(var.member);
 
-        if (pin.has_value())
+        if (bus.has_value())
+        {
+            const auto& [name, start, size] = bus.value();
+            auto& pins = variable.chip->input_pins;
+
+            if ((int_val >> size) > 0)
+            {
+                report_error("Bus overflow. Max: " + std::to_string(_priv::pow2(size)-1) + ", got: " + std::to_string(int_val));
+                return;
+            }
+
+            for (std::size_t offset = 0; offset < size; offset++)
+            {
+                pins[start + offset].state = (((int_val >> offset ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
+                log("Setting " + name + "[" + std::to_string(start+offset) + "] = " + std::to_string(((int_val >> offset ) & 1) == 1 ? 1 : 0));
+            }
+        }
+        else if (pin.has_value())
         {
             const auto pin_number = pin.value().pin_number;
 
@@ -538,6 +585,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
     auto TEST_impl(const std::string& test) noexcept -> void
     {
         test_failed = false;
+        purge_variables();
         board.reset_context();
         board.create_new(test);
         board.set_context(test);
@@ -557,7 +605,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         // Parsing body.
         parse_TEST_body();
 
-        const auto status = (test_failed) ? "Failed" : "Success";
+        const auto status = (test_failed || has_error) ? "Failed" : "Success";
         std::cout << "Test: " << test_name << "\nStatus: " << status << ".\n";
 
         log("Finished parsing TEST statement.");
@@ -586,6 +634,11 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
             }
             this->advance();
         }
+    }
+
+    auto purge_variables() noexcept -> void
+    {
+        variables.clear();   
     }
 
 private:

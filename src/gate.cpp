@@ -58,25 +58,12 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
     return;
   }
 
-  /**
-   * Basic BFS.
-   */
   std::vector<Pin> to_explore{ input_pins };
   std::vector<Gate*> gates{};
   std::size_t n {0};
 
-  // std::cout << "\n\n\nHandling: [" << this->name << "] " << this << "\n";
-  
   while( !to_explore.empty() )
   {
-  //   std::cout << "Number of pins to explore: " << to_explore.size() << '\n';
-  //   std::cout << "Input State: 0b";
-
-    for (auto& p : to_explore)
-    {
-  //     std::cout << p.is_active();
-    }
-  //   std::cout << '\n';
     std::vector<Pin> exploring = to_explore;
     to_explore.clear();
 
@@ -90,10 +77,30 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
       exploring.pop_back();
 
       // Add the pins it is connected to.
-
       for (auto conn : pin.connections)
       {
+        bool changed = false;
+        PinState original_state = PinState::INACTIVE;
+
+        if (conn->output != nullptr)
+        {
+          original_state = conn->output->state;          
+        }
+
         conn->simulate();
+
+        if (conn->output != nullptr)
+        {
+          changed = conn->output->state != original_state;          
+        }
+
+        if (changed 
+        && conn->output->parent != nullptr 
+        && was_visited.contains(conn->output->parent))
+        {
+          was_visited.erase(conn->output->parent);
+        }
+
         if (conn->output != nullptr)
         {
           if (conn->output->parent == nullptr)
@@ -108,29 +115,20 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
         }
       }
     }
-  //   std::cout << "\n=== Adding gates ===\n";
     for (auto gate : gates)
     {
       if (was_visited.count(gate) == 0)
       {
-  //       std::cout << "|> " << gate->name << '\n';
         was_visited.insert(gate);
-
         gate->simulate(was_visited);
-
-  //       std::cout << "|Output pins: 0b";
         for (auto& output_pins : gate->output_pins)
         {
-  //         std::cout << output_pins.is_active();
           to_explore.push_back(output_pins);
         }
-  //       std::cout << '\n';
       }
     }
-  //   std::cout << '\n';
     gates.clear();
   }
-  // std::cout << "Finished handling: [" << this->name << "] " << this << "\n";
 }
 
 bool Gate::connect_pins(Pin* input, Pin* output)

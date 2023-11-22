@@ -66,9 +66,19 @@ struct Pin
     return state == PinState::ACTIVE;
   }
 
-  void reset()
+  void set_on()
+  {
+    state = PinState::ACTIVE;
+  }
+
+  void set_off()
   {
     state = PinState::INACTIVE;
+  }
+
+  void reset()
+  {
+    set_off();
   }
 
   void flip()
