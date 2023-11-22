@@ -130,6 +130,55 @@ class Trie
     }
 
     /**
+     * Fuzzy search.
+     */
+    std::vector<std::string> fuzzy(const std::string& word) noexcept 
+    {
+        TrieNode* current = this->root;
+
+        for (auto i = 0; word[i] != '\0'; i++)
+        {
+            const char letter = word[i];
+            auto index = static_cast<unsigned int>(letter);
+
+            /**
+             * If the current character's branch does not exist, not found.
+             */
+            if (current->children[index] == nullptr)
+            {
+                return {};
+            }
+            current = current->children[index];
+        }
+
+        std::vector<std::string> found;
+
+        fuzzySearchHelper(current, word, found);
+
+        return found;
+    }
+
+    /**
+     * Helper function for fuzzy search.
+     */
+    void fuzzySearchHelper(TrieNode* node, std::string current_word, std::vector<std::string>& found) {
+        if (node->end_of_word) {
+            found.push_back(current_word);
+        }
+
+        for (std::size_t i = 0; i < ASCII_COUNT; i++)
+        {
+            if (node->children[i] != nullptr) {
+                char ch = static_cast<char>(i);
+                std::string new_word = current_word + ch;
+
+                // Recursive call for adjacent nodes
+                fuzzySearchHelper(node->children[i], new_word, found);
+            }
+        }
+    }
+
+    /**
      * Clean up tree.
      */
     void clean_up(TrieNode* node) noexcept

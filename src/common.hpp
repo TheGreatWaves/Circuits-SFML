@@ -37,6 +37,9 @@ constexpr const char* GATE_EXTENSION{ ".gate" };
 constexpr const char* META_EXTENSION{ ".meta" };
 constexpr const char* HDL_EXTENSION{ ".hdl" };
 constexpr const char* TEST_EXTENSION{ ".tst" };
+constexpr const std::size_t TOOLBOX_WIDTH = 150;
+constexpr const std::size_t TOOLBOX_X_MARGIN = 7.f;
+constexpr const std::size_t TOOLBOX_TOP_MARGIN = 20.f;
 
 const std::string SCRIPTS_DIR{ "scripts" };
 

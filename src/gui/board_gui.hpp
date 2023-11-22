@@ -32,6 +32,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
+#include "toolbox.hpp"
 #include "pin_gui.hpp"
 #include "text_box.hpp"
 #include "pin_port_gui.hpp"
@@ -46,6 +47,7 @@ public:
   BoardGui(const sf::Vector2f& size)
   : m_mode_text_box("Normal mode", false)
   , m_belt(size)
+  , m_toolbox(sf::Vector2f{TOOLBOX_WIDTH/2.f, 50.f})
   {
     // TODO: Yes this is bad.
     Context::instance()->board = this;
@@ -58,8 +60,8 @@ public:
     m_prototype.setFillColor(sf::Color(30, 30, 46));
     m_prototype.setOutlineColor(sf::Color(49, 50, 68));
     m_prototype.setOutlineThickness(2.f);
-    m_prototype.setSize({size.x/1.1f, size.y/1.2f});
-    m_prototype.setPosition((m_background.getSize() - m_prototype.getSize()) / 2.f);
+    m_prototype.setSize({(size.x - TOOLBOX_WIDTH)/1.1f, size.y/1.2f});
+    m_prototype.setPosition((sf::Vector2f{m_background.getSize().x + TOOLBOX_WIDTH, m_background.getSize().y} - m_prototype.getSize()) / 2.f);
 
     m_name_text_box.set_position({m_prototype.getPosition().x, 20.f});
     m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
@@ -85,7 +87,8 @@ public:
       Context::instance()->current_component_name = m_name_text_box.get_string();
     }
 
-    m_belt.update(dt);
+    // m_belt.update(dt);
+    m_toolbox.update(dt);
 
     for (auto& wire : m_wires)
     {
@@ -124,7 +127,7 @@ public:
       wire.draw(target, states);
     }
 
-    m_belt.draw(target, states);
+    m_toolbox.draw(target, states);
   }
 
   void handle_keyboard(const sf::Event& event)
@@ -161,48 +164,48 @@ public:
   }
 
 
-  // returns the PIN ID and the pin.
-  std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
+// returns the PIN ID and the pin.
+std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
+{
+  std::size_t input_pid_acc = 0;
+  std::size_t output_pid_acc = 0;
+
+  // Query main input pins.
+  auto [pid, pin] = m_input_pin_port.get_pin(pos);
+
+  // Return if found from main input port.
+  if (pin != nullptr) return {pid, pin};
+  input_pid_acc += m_input_pin_port.size();
+
+  // Query main output pins.
+  std::tie(pid, pin) = m_output_pin_port.get_pin(pos);
+
+  // Return if found from main output port.
+  if (pin != nullptr) return {pid + INPUT_PIN_LIMIT, pin};
+  output_pid_acc += m_output_pin_port.size();
+
+  // Query from components (this is where it gets messy).
+  for (auto& component : m_components)
   {
-    std::size_t input_pid_acc = 0;
-    std::size_t output_pid_acc = 0;
+    // Search the input port.
+    std::tie(pid, pin) = component->get_input_pin_port()->get_pin(pos);
 
-    // Query main input pins.
-    auto [pid, pin] = m_input_pin_port.get_pin(pos);
+    // Return if found from input port.
+    if (pin != nullptr) return {input_pid_acc + pid, pin};
 
-    // Return if found from main input port.
-    if (pin != nullptr) return {pid, pin};
-    input_pid_acc += m_input_pin_port.size();
+    // Search the output port.
+    std::tie(pid, pin) = component->get_output_pin_port()->get_pin(pos);
 
-    // Query main output pins.
-    std::tie(pid, pin) = m_output_pin_port.get_pin(pos);
+    // Return if found from output port.
+    if (pin != nullptr) return {output_pid_acc + pid + INPUT_PIN_LIMIT, pin};
 
-    // Return if found from main output port.
-    if (pin != nullptr) return {pid + INPUT_PIN_LIMIT, pin};
-    output_pid_acc += m_output_pin_port.size();
-
-    // Query from components (this is where it gets messy).
-    for (auto& component : m_components)
-    {
-      // Search the input port.
-      std::tie(pid, pin) = component->get_input_pin_port()->get_pin(pos);
-
-      // Return if found from input port.
-      if (pin != nullptr) return {input_pid_acc + pid, pin};
-
-      // Search the output port.
-      std::tie(pid, pin) = component->get_output_pin_port()->get_pin(pos);
-
-      // Return if found from output port.
-      if (pin != nullptr) return {output_pid_acc + pid + INPUT_PIN_LIMIT, pin};
-
-      // If we reached here it means that we haven't found them. We add to the i/o accumulators.
-      input_pid_acc += component->get_input_pin_port()->size();
-      output_pid_acc += component->get_output_pin_port()->size();
-    }
-
-    return {0, nullptr};
+    // If we reached here it means that we haven't found them. We add to the i/o accumulators.
+    input_pid_acc += component->get_input_pin_port()->size();
+    output_pid_acc += component->get_output_pin_port()->size();
   }
+
+  return {0, nullptr};
+}
 
   void handle_wiring_mode(const sf::Event& event)
   {
@@ -250,7 +253,8 @@ public:
     auto* context = Context::instance();
 
     m_name_text_box.handle_events(event);
-    m_belt.handle_events(event);
+    // m_belt.handle_events(event);
+    m_toolbox.handle_events(event);
 
     for (auto& component : m_components)
     {
@@ -337,6 +341,8 @@ private:
   PinPortGui m_output_pin_port;
 
   BeltGui m_belt;
+
+  ToolBox m_toolbox;
 
   std::vector<WireGui> m_wires;
   std::vector<std::unique_ptr<ComponentGui>> m_components;

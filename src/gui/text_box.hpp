@@ -26,6 +26,7 @@
 #ifndef TEXT_BOX
 #define TEXT_BOX
 
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -93,12 +94,27 @@ public:
 		m_text->setPosition(pos);
 	}
 
+	sf::Vector2f get_position()
+	{
+		return m_text->getPosition();
+	}
+
 	void set_string(const std::string& str)
 	{
 		m_text->setString(str);
 	}
 
-	void handle_events(const sf::Event& event)
+	void toggle_edit_mode() 
+	{
+		m_edit_mode = true;
+	}
+
+	void untoggle_edit_mode() 
+	{
+		m_edit_mode = false;
+	}
+
+	void handle_events(const sf::Event& event, bool no_box = true)
 	{
 		if (!m_can_edit) return;
 
@@ -112,9 +128,11 @@ public:
 			m_text->setFillColor(sf::Color::White);
 		}
 
-		if (event.type == sf::Event::MouseButtonPressed)
+		const auto inside = (m_text->getGlobalBounds().contains(sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)}));
+
+		if (no_box && event.type == sf::Event::MouseButtonPressed)
 		{
-			m_edit_mode = (m_text->getGlobalBounds().contains(sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)}));
+			m_edit_mode = inside;
 		}
 		else if (m_edit_mode && event.type == sf::Event::TextEntered)
 		{
@@ -152,7 +170,7 @@ public:
 		{
 			m_text->setString(m_default_str);
 		}
-	}
+}
 
 	const std::string& get_string()
 	{
@@ -170,6 +188,11 @@ public:
 		m_updated = false;
 		return updated;
 	}
+
+	bool edited()
+	{
+		return m_edited;
+	}
 	
 	float get_height()
 	{
@@ -180,6 +203,11 @@ public:
 	{
 		m_text->setString(m_default_str);
 		m_input_text = "";
+	}
+
+	void move(const sf::Vector2f& offset)
+	{
+		m_text->move(offset);
 	}
 
 private:

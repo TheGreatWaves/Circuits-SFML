@@ -30,6 +30,7 @@
 #include <map>
 
 #include "lang/assem/token_assem.hpp"
+#include "lang/core/trie.hpp"
 #include "gate.hpp"
 #include "utils.hpp"
 
@@ -46,6 +47,7 @@ public:
     nand->get_pin(0)->parent = nandp;
     nand->get_pin(1)->parent = nandp;
     nand->serialize();
+    search_trie.insert("nand");
 
     if (is_singleton)
     {
@@ -72,6 +74,10 @@ public:
 
   void reset_context()
   {
+    if (!current.first.empty())
+    {
+      search_trie.insert(current.first);
+    }
     current = std::pair{"", nullptr};
   }
 
@@ -92,6 +98,19 @@ public:
   auto context()
   {
     return current;
+  }
+
+  std::vector<Gate*> search(const std::string& name) 
+  {
+      std::vector<Gate*> res;
+      const auto entries = search_trie.fuzzy(name);
+
+      for (const auto& entry : entries)
+      {
+        res.push_back(get_component(entry));
+      }
+
+      return res;
   }
 
   void save_sketch(std::unique_ptr<Gate> sketch)
@@ -287,6 +306,7 @@ public:
   }
 
 private:
+  Trie                                         search_trie;
   static Board*                                singleton;
   std::pair<std::string, Gate*>                current;
   std::map<std::string, std::unique_ptr<Gate>> components;

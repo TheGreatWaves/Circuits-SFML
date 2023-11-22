@@ -32,12 +32,14 @@
 /**
  * SFML Dependencies.
  */
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
 /**
  * Simulator related dependencies.
  */
+#include "../common.hpp"
 #include "context.hpp"
 #include "board_gui.hpp"
 
@@ -105,7 +107,7 @@ private:
 };
 
 inline Program::Program()
-: m_window(sf::VideoMode(1000, 800), "Workspace")
+: m_window(sf::VideoMode(1000 + TOOLBOX_WIDTH, 800), "Workspace")
 , TIME_PER_FRAME(sf::seconds(1.f/144.f))
 , m_board(static_cast<sf::Vector2f>(m_window.getSize()))
 {

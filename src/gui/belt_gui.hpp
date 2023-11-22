@@ -141,7 +141,6 @@ public:
     {
       m_active_index = -3;
     }
-
     int count = 0;
     for (auto name : names)
     {

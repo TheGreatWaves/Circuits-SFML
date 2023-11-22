@@ -33,6 +33,7 @@
 #include "board.hpp"
 #include "gui/driver.hpp"
 
+#include "lang/core/trie.hpp"
 #include "lang/test/tester.hpp"
 #include "lang/core/comptrie.hpp"
 #include "lang/core/raw_parser.hpp"
@@ -684,4 +685,14 @@ int main()
 {
 	init();
 	run_cli();
+	// Trie trie;
+	// trie.insert("hello");
+	// trie.insert("hello bob");
+	// trie.insert("hello joe");
+	// trie.insert("hello lol");
+
+	// for (const auto v : trie.fuzzy("hello"))
+	// {
+	// 	std::cout << "Value: " << v << '\n';
+	// }
 }
