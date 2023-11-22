@@ -229,7 +229,7 @@ void handle_input(RawParser& parser, std::string_view str)
 		desc("gui               ", "Start GUI mode.");
 		desc("list              ", "List all components.");
 		desc("info              ", "Display general information.");
-		desc("test        <chip>", "Display truth table of the specified chip.");
+		desc("test        <chip>", "Run test file.");
 		desc("load        <chip>", "Load the specified chip.");
 		desc("compile     <file>", "Compile the hdl file with the given name.");
 	CASE("info")
