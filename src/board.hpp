@@ -171,7 +171,7 @@ public:
   				const auto next = scanner.scan_token();
   				const auto name = next.lexeme;
 
-  				if (next.type != AssemTokenType::Identifier)
+  				if (next.type != AssemTokenType::Identifier && !next.type.is_keyword())
   				{
   					log("Error: Please provide a valid component name to create.");
   					return false;	
