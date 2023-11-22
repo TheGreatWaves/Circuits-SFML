@@ -511,7 +511,25 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
             {
               test_failed = true;
               auto cond_op = cond.type == ConditionType::IS ? "==" : "!=";
-              std::cout << "Require Failed: " + get_representation(cond.a) + " " + cond_op + " " + get_representation(cond.b) << '\n';
+              std::stringstream ss;
+
+              ss << "[ Line " << std::to_string(current.line) << " ] REQUIRE " 
+                 << get_representation(cond.a) 
+                 << " " 
+                 << cond_op 
+                 << " "
+                 << get_representation(cond.b)
+                 << " -> "
+                 << "\033[1;31m"
+                 << "REQUIRE "
+                 << get_value(cond.a) 
+                 << " " 
+                 << cond_op 
+                 << " "
+                 << get_value(cond.b)
+                 << "\033[0m";
+
+              failed_messages.emplace_back(ss.str());
               return;
             }
         }
@@ -605,8 +623,19 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         // Parsing body.
         parse_TEST_body();
 
-        const auto status = (test_failed || has_error) ? "Failed" : "Success";
-        std::cout << "Test: " << test_name << "\nStatus: " << status << ".\n";
+        const auto passed = !(test_failed || has_error);
+        const auto status = passed ? "\033[1;32mPASSED \033[0m" : "\033[1;31mFAILED \033[0m";
+        std::cout << "[ Test: " << test_name << "] " << status << '\n';
+
+        if (!failed_messages.empty())
+        {
+            std::cout << "    [ Required Failed ]\n";
+            for (const auto& message : failed_messages)
+            {
+                std::cout << "    " << message << '\n';
+            }
+            failed_messages.clear();
+        }
 
         log("Finished parsing TEST statement.");
     }
@@ -646,6 +675,7 @@ private:
     bool                            test_failed;
     std::map<std::string, ChipInfo> chip_images;
     std::map<std::string, Variable> variables; 
+    std::vector<std::string>        failed_messages;
 };
 
 } /* namespace test */

@@ -33,6 +33,7 @@
 #include "board.hpp"
 #include "gui/driver.hpp"
 
+#include "lang/test/tester.hpp"
 #include "lang/core/comptrie.hpp"
 #include "lang/core/raw_parser.hpp"
 #include "lang/assem/token_assem.hpp"
@@ -41,7 +42,7 @@
 /**
  * Function prototypes.
  */
-bool runFile(const std::string& filePath);
+bool run_file(const std::string& filePath);
 void create_component(std::string_view name);
 void run_gui();
 
@@ -67,7 +68,7 @@ void show_truth_table(RawParser& parser)
 	auto board = Board::instance();
 	const auto token = parser.advance_token();
 
-	if (token.type != RawTokenType::Identifier)
+	if (token.type != RawTokenType::Identifier && !token.type.is_keyword())
 	{
 		error("Please input a valid component name.");
 		return;
@@ -104,7 +105,7 @@ void compile(RawParser& parser)
 {
 	const auto token = parser.advance_token();
 
-	if (token.type != RawTokenType::Identifier)
+	if (token.type != RawTokenType::Identifier && !token.type.is_keyword())
 	{
 		error("Please input a valid component name.");
 		return;
@@ -151,14 +152,22 @@ void compile(RawParser& parser)
 	meta_file << result.meta();
 	meta_file.close();
 
-	log("Successfully compiled '", name, "'.");
+
+	// Attemp to load the chip.
+	if (!run_file(GATE_RECIPE_DIRECTORY + name + GATE_EXTENSION))
+	{
+		error("Failed to load file '" + name + "'.");
+		return;
+	}
+
+	log("Successfully compiled and loaded '", name, "'.");
 }
 
 void load(RawParser& parser)
 {
 	const auto token = parser.advance_token();
 
-	if (token.type != RawTokenType::Identifier)
+	if (token.type != RawTokenType::Identifier && !token.type.is_keyword())
 	{
 		error("Please input a valid component name.");
 		return;
@@ -177,13 +186,34 @@ void load(RawParser& parser)
 	}
 
 	// Attemp to load the chip.
-	if (!runFile(GATE_RECIPE_DIRECTORY + name + GATE_EXTENSION))
+	if (!run_file(GATE_RECIPE_DIRECTORY + name + GATE_EXTENSION))
 	{
 		error("Failed to load file '" + name + "'.");
 		return;
 	}
 
 	log("Sucessfully loaded '", name, "'.");
+}
+
+void run_test(RawParser& parser) 
+{
+	const auto token = parser.advance_token();
+
+	if (token.type != RawTokenType::Identifier && !token.type.is_keyword())
+	{
+		error("Please input a valid component name.");
+		return;
+	}
+
+	// Get the component name.
+	const std::string& name = token.lexeme;
+
+	
+	test::Tester tester(SCRIPTS_DIR + SEPERATOR + name + TEST_EXTENSION);
+	if (!tester.parse())
+	{
+		std::cout << "Something went very wrong!\n";
+	}
 }
 
 void handle_input(RawParser& parser, std::string_view str)
@@ -199,13 +229,13 @@ void handle_input(RawParser& parser, std::string_view str)
 		desc("gui               ", "Start GUI mode.");
 		desc("list              ", "List all components.");
 		desc("info              ", "Display general information.");
-		desc("table       <chip>", "Display truth table of the specified chip.");
+		desc("test        <chip>", "Display truth table of the specified chip.");
 		desc("load        <chip>", "Load the specified chip.");
 		desc("compile     <file>", "Compile the hdl file with the given name.");
 	CASE("info")
 		log("Gate Recipe Directory: ", GATE_RECIPE_DIRECTORY);
-	CASE("table")
-		show_truth_table(parser);
+	CASE("test")
+		run_test(parser);
 	CASE("gui")
 		run_gui();
 	CASE("quit")
@@ -254,7 +284,7 @@ void handle_input(RawParser& parser, std::string_view str)
 
 	// 			if (!board->found(name))
 	// 			{
-	// 				if (!runFile(GATE_RECIPE_DIRECTORY + name + GATE_EXTENSION))
+	// 				if (!run_file(GATE_RECIPE_DIRECTORY + name + GATE_EXTENSION))
 	// 				{
 	// 					log("Error: Needed component with given name `", name, "` not found!\n");
 	// 					exit(1);
@@ -304,7 +334,7 @@ void handle_input(RawParser& parser, std::string_view str)
 	// 		{
 	// 			auto file = std::string(str.substr(id+1));
 	// 			log("Running file ", file, "\n");
-	// 			runFile(file);
+	// 			run_file(file);
 	// 			log("Finished running file.\n");
 	// 		}
 	// 		else
@@ -599,7 +629,7 @@ void init()
 	// Load init files.
 	auto init_file = DEFAULT_GATE_DIRECTORY + std::string("/init") + GATE_EXTENSION;
 	auto _ = std::ofstream { init_file  };
-	runFile( init_file  );
+	run_file( init_file  );
 
 	// Load sketches. (Temporary)
 	// using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
@@ -608,7 +638,7 @@ void init()
  //  {
 	// 	if (gate.path().extension() == GATE_EXTENSION)
 	// 	{
-	// 		runFile(gate.path());
+	// 		run_file(gate.path());
 	// 	}
 	// }
 }
@@ -630,164 +660,10 @@ void run_cli()
 	}
 }
 
-bool runFile(const std::string& file_path)
+bool run_file(const std::string& file_path)
 {
-	AssemTokenTypeScanner scanner;
-	if (!scanner.read_source(std::string(file_path)))
-	{
-		return false;
-	}
-
-	auto board = Board::instance();
-
-	while (!scanner.is_at_end())
-	{
-		const auto token = scanner.scan_token();		
-
-		switch(token.type)
-		{
-			break; case AssemTokenType::EndOfFile: {}
-			break; case AssemTokenType::Number: 
-			       case AssemTokenType::Identifier:
-			       case AssemTokenType::Error:
-			{ 
-				return false; 
-			}
-      break; case AssemTokenType::Need: 
-			{
-				const auto next = scanner.scan_token();
-				const auto chip_name = next.lexeme;
-
-				if (next.type != AssemTokenType::Identifier)
-				{
-					log("Error: Invalid argument to need, not an identifier.");
-					return false;
-				}
-				
-				if (!board->found(chip_name) && !runFile(GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION))
-				{
-					log("Error: Needed component with given name `", chip_name, "` not found!");
-					exit(1);
-				}
-			}
-      break; case AssemTokenType::Create: 
-			{
-				const auto next = scanner.scan_token();
-				const auto name = next.lexeme;
-
-				if (next.type != AssemTokenType::Identifier)
-				{
-					log("Error: Please provide a valid component name to create.");
-					return false;	
-				}
-
-				create_component(name);
-
-				if (board->context().second == nullptr)
-				{
-					log("Create: Error: Failed to create context.");
-				}
-
-			}
-      break; case AssemTokenType::In: 
-			{
-				auto current = board->context().second;
-
-				if (current == nullptr)
-				{
-					log("IN: Error: Current context is empty, please select a configuration.");
-					return false;
-				}
-
-				const auto next = scanner.scan_token();
-
-				if (next.type != AssemTokenType::Number)
-				{
-					error("Input count is not a number.");
-					return false;
-				}
-
-				current->add_input_pin(std::stoi(next.lexeme));
-			}
-      break; case AssemTokenType::Out:
-			{
-				auto current = board->context().second;
-
-				if (current == nullptr)
-				{
-					log("OUT: Error: Current context is empty, please select a configuration.");
-					return false;
-				}
-
-				const auto next = scanner.scan_token();
-
-				if (next.type != AssemTokenType::Number)
-				{
-					error("Output count is not a number.");
-					return false;
-				}
-
-				current->add_output_pin(std::stoi(next.lexeme));
-			}
-      break; case AssemTokenType::Add: 
-			{
-				auto current = board->context();
-
-				if (current.second == nullptr)
-				{
-					error("Add: Current context is empty, please select a configuration\n");
-					return false;
-				}
-
-				const auto next = scanner.scan_token();
-				const auto chip_name = next.lexeme;
-
-				
-				if (auto component = board->get_component(chip_name); component != nullptr)
-				{
-					current.second->add_subgate(component);
-				}
-				else
-				{
-					error("Component with given name `" + chip_name + "` not found!");
-					return false;
-				}
-			}
-      break; case AssemTokenType::Wire: 
-			{
-				auto current = board->context().second;		
-
-				if (current == nullptr)
-				{
-					error("Current context is empty, please select a configuration");
-					return false;
-				}
-
-				auto pin1 = scanner.scan_token();
-				auto pin2 = scanner.scan_token();
-
-				if (pin1.type != AssemTokenType::Number 
-				&& pin2.type != AssemTokenType::Number)
-				{
-					error("Pin 1/2 not a number.");
-					return false;
-				}
-
-				if (!current->wire_pins(std::stoi(pin1.lexeme), std::stoi(pin2.lexeme)))
-				{
-					error("Failed to wire pin " + pin1.lexeme + " and pin " + pin2.lexeme);
-					return false;
-				}
-			}
-      break; case AssemTokenType::Save: 
-			{
-				// Simply get out of context.
-				board->reset_context();
-			}
-    }
-	}
-
-	return true;
+	auto instance = Board::instance();
+	return instance->load_file(file_path);
 }
 
 void create_component(std::string_view name)
