@@ -103,7 +103,6 @@ public:
     m_interactable = interactable;
   }
 
-
   bool is_on() const 
   {
     return on;

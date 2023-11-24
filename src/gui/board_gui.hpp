@@ -248,6 +248,8 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
     }
   }
 
+  
+
   void handle_events(const sf::Event& event)
 	{
     auto* context = Context::instance();

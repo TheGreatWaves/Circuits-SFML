@@ -1,0 +1,66 @@
+// THIS META FILE IS AUTO GENERATED. DO NOT EDIT MANUALLY.
+
+// GATE NAME.
+nand_16
+
+// BUSES DECLARATION.
+BUSES 3
+a 0 16
+b 16 16
+out 100 16
+
+// GLOBAL INPUT PINS.
+INPUTS 32
+a[0]
+a[1]
+a[2]
+a[3]
+a[4]
+a[5]
+a[6]
+a[7]
+a[8]
+a[9]
+a[10]
+a[11]
+a[12]
+a[13]
+a[14]
+a[15]
+b[0]
+b[1]
+b[2]
+b[3]
+b[4]
+b[5]
+b[6]
+b[7]
+b[8]
+b[9]
+b[10]
+b[11]
+b[12]
+b[13]
+b[14]
+b[15]
+
+// GLOBAL OUTPUT PINS.
+OUTPUTS 16
+out[0]
+out[1]
+out[2]
+out[3]
+out[4]
+out[5]
+out[6]
+out[7]
+out[8]
+out[9]
+out[10]
+out[11]
+out[12]
+out[13]
+out[14]
+out[15]
+
+// END OF FILE.

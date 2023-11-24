@@ -107,9 +107,12 @@ private:
 };
 
 inline Program::Program()
-: m_window(sf::VideoMode(1000 + TOOLBOX_WIDTH, 800), "Workspace")
-, TIME_PER_FRAME(sf::seconds(1.f/144.f))
-, m_board(static_cast<sf::Vector2f>(m_window.getSize()))
+// Initialize the window
+: m_window(sf::VideoMode(1000 + TOOLBOX_WIDTH, 800), "Workspace") 
+// Sets the FPS of the window to 144
+, TIME_PER_FRAME(sf::seconds(1.f/144.f)) 
+// Initializes the BoardGui
+, m_board(static_cast<sf::Vector2f>(m_window.getSize())) 
 {
   // WARNING!
   // Yes, frown at me. I deserve it.

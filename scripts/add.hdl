@@ -1,0 +1,10 @@
+CHIP add {
+    IN a, b, carry_in;
+    OUT sum, carry;
+    PARTS:
+    xor(a=a, b=b, out=xor_to_and_xor_to_xor); // Don't judge my naming >:(
+    xor(a=xor_to_and_xor_to_xor, b=carry_in, out=sum);
+    and(a=xor_to_and_xor_to_xor, b=carry_in, out=and_to_or_0);
+    and(a=a, b=b, out=and_to_or_1);
+    or(a=and_to_or_0, b=and_to_or_1, out=carry);
+}
