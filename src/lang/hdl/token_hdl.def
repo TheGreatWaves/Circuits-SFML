@@ -24,9 +24,10 @@ SYMBOL_TOKEN(Assignment, "=")
 /**
  * Keywords.
  */
-KEYWORD_TOKEN(Chip,  "CHIP")
-KEYWORD_TOKEN(In,    "IN")
-KEYWORD_TOKEN(Out,   "OUT")
-KEYWORD_TOKEN(Parts, "PARTS")
+KEYWORD_TOKEN(Chip,      "CHIP")
+KEYWORD_TOKEN(In,        "IN")
+KEYWORD_TOKEN(Out,       "OUT")
+KEYWORD_TOKEN(Parts,     "PARTS")
+KEYWORD_TOKEN(Serialize, "SERIALIZE")
 
 #include "../core/token_end.def"

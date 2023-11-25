@@ -110,6 +110,10 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         {
             CHIP();
         }
+        else if (match(HDLTokenType::Serialize))
+        {
+            builder.set_serializable();
+        }
 
         if (this->panic)
         {

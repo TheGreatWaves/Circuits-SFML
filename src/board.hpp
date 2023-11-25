@@ -39,6 +39,7 @@ class Board
 {
 public:
   Board(bool is_singleton = true)
+   : is_singleton(is_singleton)
   {
     auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
     auto nandp = nandc.get();
@@ -57,7 +58,10 @@ public:
 
   ~Board()
   {
-    singleton = nullptr;
+    if (is_singleton)
+    {
+      singleton = nullptr;
+    }
   }
 
   static Board* instance()
@@ -185,6 +189,18 @@ public:
   					exit(1);
   				}
   			}
+        break; case AssemTokenType::Precompute:
+        {
+  				auto current = board->context().second;		
+
+  				if (current == nullptr)
+  				{
+  					error("Current context is empty, please select a configuration");
+  					return false;
+  				}
+
+          current->serialize();
+        }
         break; case AssemTokenType::Create: 
   			{
   				const auto next = scanner.scan_token();
@@ -310,6 +326,7 @@ private:
   static Board*                                singleton;
   std::pair<std::string, Gate*>                current;
   std::map<std::string, std::unique_ptr<Gate>> components;
+  bool                                         is_singleton = false;
 };
 
 inline Board* Board::singleton = nullptr;

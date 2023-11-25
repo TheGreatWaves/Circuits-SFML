@@ -97,19 +97,26 @@ class RecipeBuilder
         ln(ss);
 
         // Adding subgates.
-        comment(ss, "SUBGATES");
+        comment(ss, "SUBGATES.");
         compile_subgates(ss);
         ln(ss);
 
-        comment(ss, "LINKAGES");
+        comment(ss, "LINKAGES.");
         compile_linkage(ss);
         ln(ss);
+
+        if (serializable)
+        {
+            comment(ss, "SERIALIZATION.");
+            writeln(ss, "precompute");
+            ln(ss);
+        }
 
         comment(ss, "DEFINITION COMPLETE.");
         writeln(ss, "save");
         ln(ss);
 
-        writeln(ss, "// END OF FILE.");
+        comment(ss, "END OF FILE.");
 
         return ss.str();
     }
@@ -120,6 +127,11 @@ class RecipeBuilder
     auto set_gate_name(const std::string& name) noexcept -> void
     {
          this->name = name;   
+    }
+
+    auto set_serializable() noexcept 
+    {
+         serializable = true;       
     }
 
     /**
@@ -165,7 +177,7 @@ class RecipeBuilder
         }
         ln(ss);
 
-        writeln(ss, "// END OF FILE.");
+        comment(ss, "END OF FILE.");
         return ss.str();
     }
 
@@ -292,6 +304,7 @@ class RecipeBuilder
         ss << '\n';
     }
 
+
   private:
     std::string                           name;
     std::vector<std::string>              dependencies;
@@ -299,6 +312,7 @@ class RecipeBuilder
     std::map<std::size_t, std::string>    output_pins;
     std::vector<BusEntry>                 bus;
     std::vector<WireInfo>                 wire_linkages;
+    bool                                  serializable = false;
 };
 } /* namespace hdl */
 
