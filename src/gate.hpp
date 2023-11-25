@@ -165,14 +165,15 @@ struct Gate
 
   void serialize()
   {
-    std::size_t indicies = (2 << (input_pins.size() - 1));
-    for (std::size_t i = 0; i < indicies; i++)
+    uint64_t indicies = (2ULL << (static_cast<uint64_t>(input_pins.size()) - 1));
+
+    for (uint64_t i = 0; i < indicies; i++)
     {
-      apply_input(input_pins.size(), i);
+      apply_input(input_pins.size(), static_cast<std::size_t>(i));
       simulate();
       serialized_computation.push_back(serialize_output());
     }
-    serialized = true;
+    this->serialized = true;
   }
 
   std::size_t serialize_output()

@@ -653,16 +653,10 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         // Reset panic flag, since now we can report a new error for a different part.
         this->panic = false;
 
-        // log("Restabilizing...");
-        std::cout << "Restabilizing...\n";
+        log("Restabilizing...");
 
         while (this->current.type != TestTokenType::EndOfFile)
         {
-            auto token = "Token: " + current.lexeme + ", " + std::string(current.type.name());
-            log(token);
-            if (this->previous.type == TestTokenType::Semicolon)
-                return;
-
             switch (this->current.type)
             {
                 case TestTokenType::Test:
