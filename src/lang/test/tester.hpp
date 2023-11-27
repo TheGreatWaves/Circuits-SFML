@@ -318,13 +318,22 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
             consume(TestTokenType::Dot, "Expected '.' after variable name to access member.");
 
             consume(TestTokenType::Identifier, "Expected variable member name.");
-            const auto member = previous.lexeme;
+            auto member = previous.lexeme;
+
+            if (match(TestTokenType::LSqaure))
+            {
+                consume(TestTokenType::Number, "Expected bus index, found '" + current.lexeme + "'.");
+                const auto bus_index = previous.lexeme;
+
+                consume(TestTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+
+                member = member + "[" + bus_index + "]";
+            }
 
             log("Varname: " + varname);
             log("Member: " + member);
             log("Finished parsing VARIABLE.");
         
-            // TODO.
             return { .type=ValueType::Member, .value=varname, .member=member };
         }
         else
