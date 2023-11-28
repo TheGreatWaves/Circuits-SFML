@@ -10,7 +10,7 @@ FetchContent_Declare(SFML
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML)
 
-file(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/*.cpp" "src/gui/*.cpp")
+file(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "src/gui/*.cpp" "src/*.cpp" )
 add_executable(Sim ${SOURCES})
 
 target_link_libraries(Sim PRIVATE sfml-graphics)

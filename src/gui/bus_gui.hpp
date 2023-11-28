@@ -5,11 +5,9 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "wire_gui.hpp"
 #include <string> 
+#include "../common.hpp"
 
-const sf::Color ON_COLOR = sf::Color(220,20,60);
-const sf::Color OFF_COLOR = sf::Color(88, 91, 112);
 constexpr float BUS_HEIGHT = 15.f;
 constexpr float BUS_WIDTH = 15.f;
 constexpr int DEFAULT_BITS = 16;

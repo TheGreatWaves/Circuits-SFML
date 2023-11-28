@@ -10,11 +10,14 @@
 #include <iostream>
 #include <vector>
 #include "connection_gui.hpp"
+#include "context.hpp"
 
 class ConnectionPortGui
 {
 public:
-    ConnectionPortGui(){
+    ConnectionPortGui(float pin_radius)
+    : m_pin_rad(pin_radius)
+    {
         m_strip.setFillColor(sf::Color::Transparent);
     }
 
@@ -23,12 +26,68 @@ public:
         m_interactable = interactable;
     }
 
+    std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
+    {
+        std::size_t index = 0;
+        for (auto& p : m_connections)
+        {
+            // Ugly and wasteful but it has to be done.
+            if (p.contains(pos))
+            {
+                return {index, &p};
+            }
+            index++;
+        }
+        return {0, nullptr};
+    }
+
+    std::size_t get_bits()
+    {
+        std::size_t bits = 0;
+        for (auto& pin : m_connections)
+        {
+        bits <<= 1;
+        bits |= (pin.is_on() ? 1 : 0);
+        }
+        return bits;
+    }
+
+      void clear_port()
+    {
+        m_connections.clear();
+    }
+
+    void apply_bits(std::size_t bits)
+    {
+        auto count = m_connections.size();
+        std::size_t index = 0;
+        while (count --> 0)
+        {
+        if ((bits >> count ) & 1) 
+        {
+            m_connections[index].toggle_on();
+        }
+        else
+        {
+            m_connections[index].toggle_off();
+        }
+        index++;
+        }
+    }
+
+    std::size_t size()
+    {
+      return m_connections.size();
+    }
+
     void handle_events(const sf::Event& event, bool is_input = true)
 	{
         if (Context::instance()->edit_mode == Mode::WIRING)
         {
             return;
         }
+        /* TODO: Add a Bus mode context such that we can add busses 
+        once the user presses "B" */
 
         bool pressed_connection = false;
 
@@ -56,11 +115,11 @@ public:
         }
 	}
 
-    void add_connection(const sf::Vector2f& pos, bool is_input, Connection connection = PIN, int bits = 0);
+    void add_connection(const sf::Vector2f& pos, bool is_input, Connection connection = Connection::Pin, int bits = 0);
 
-    void add_pin(bool is_input);
+    void add_pin(const sf::Vector2f& pos, bool is_input);
 
-    void add_bus(bool is_input, int bits = 0);
+    void add_bus(const sf::Vector2f& pos, bool is_input, int bits = 0);
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) 
     {
@@ -81,10 +140,61 @@ public:
         return m_strip.getSize();
     }
 
+    void set_size(const sf::RectangleShape& parent)
+    {
+        m_strip.setSize({10.f, parent.getSize().y});
+    }
+
+    void setup_port(std::size_t size)
+    {
+        // Start from a blank slate.
+        m_connections.clear();
+
+        auto segments = static_cast<float>(size + 1);
+        auto segment_size = m_strip.getSize().y / segments;
+
+        for (std::size_t i = 0; i < size; i++)
+        {
+            m_connections.emplace_back(m_pin_rad);
+            auto& pin = m_connections.back();
+            auto strip_pos = m_strip.getPosition();
+            auto strip_size = m_strip.getSize();
+            pin.set_position({strip_pos.x + (strip_size.x / 2.f), strip_pos.y + ((i + 1) * segment_size)});
+        }
+    }
+
+    void anchor(const sf::RectangleShape& base, bool lhs = true)
+    {
+        this->set_size(base);
+        auto base_gbounds = base.getGlobalBounds();
+
+        if (lhs)
+        {
+        this->set_position({base_gbounds.left-(this->get_size().x / 2.f), base_gbounds.top});
+        }
+        else
+        {
+        this->set_position({base_gbounds.left + base_gbounds.width - (this->get_size().x / 2.f), base_gbounds.top});
+        }
+
+        auto size = m_connections.size();
+        auto segments = static_cast<float>(size + 1);
+        auto segment_size = m_strip.getSize().y / segments;
+
+        for (std::size_t i = 0; i < size; i++)
+        {
+        auto& pin = m_connections[i];
+        auto strip_pos = m_strip.getPosition();
+        auto strip_size = m_strip.getSize();
+        pin.set_position({strip_pos.x + (strip_size.x / 2.f), strip_pos.y + ((i + 1) * segment_size)});
+        }
+    }
+
+
 
 private:
     bool m_interactable = false;
-    float m_pin_rad = PIN_RADIUS;
+    float m_pin_rad;
     sf::RectangleShape  m_strip;
     std::vector<ConnectionGui> m_connections;
 };

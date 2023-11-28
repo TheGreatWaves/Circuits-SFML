@@ -34,6 +34,7 @@
 #include <iostream>
 #include <vector>
 #include "pin_gui.hpp"
+#include "context.hpp"
 
 class PinPortGui 
 {

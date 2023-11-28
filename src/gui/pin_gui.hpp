@@ -29,16 +29,13 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "wire_gui.hpp"
+// #include "wire_gui.hpp"
+#include "../common.hpp"
 
-const sf::Color ON_COLOR = sf::Color(220,20,60);
-const sf::Color OFF_COLOR = sf::Color(88, 91, 112);
 constexpr float PIN_RADIUS = 15.f;
 
 class PinGui 
 {
-private:
-  
 public:
 
   PinGui(float pin_radius = PIN_RADIUS)
@@ -102,6 +99,7 @@ public:
   {
     m_interactable = interactable;
   }
+
 
   bool is_on() const 
   {

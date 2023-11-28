@@ -41,6 +41,7 @@ enum class Mode
  IDLE,
  WIRING,
  TEXT,
+ BUS,
 };
 
 // Forwarding wire class

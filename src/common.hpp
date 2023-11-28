@@ -27,6 +27,7 @@
 #define COMMON
 
 #include <string>
+#include <SFML/Graphics/Color.hpp>
 
 /**
  * Attributes related to saving gate information.
@@ -61,5 +62,11 @@ constexpr std::size_t INPUT_PIN_LIMIT{ 100 };
  * GUI wire's signal speed.
  */
 constexpr float WIRE_GROWTH_RATE = 900.f;
+
+/**
+ * GUI port colors
+*/
+const sf::Color ON_COLOR = sf::Color(220,20,60);
+const sf::Color OFF_COLOR = sf::Color(88, 91, 112);
 
 #endif /* COMMON */

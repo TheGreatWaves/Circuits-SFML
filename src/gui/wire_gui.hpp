@@ -38,7 +38,7 @@
 #include "context.hpp"
 #include "../common.hpp"
 
-class PinGui;
+#include "connection_gui.hpp"
 
 inline float lerp(float a, float b, float f)
 {
@@ -94,7 +94,7 @@ public:
 
   void update(const sf::Time& dt);
 
-  void set_src_pin(PinGui* src)
+  void set_src_pin(ConnectionGui* src)
   {
     m_src = src;
   }
@@ -118,7 +118,7 @@ public:
     return m_dest_idx;
   }
 
-  void set_dest_pin(PinGui* dest)
+  void set_dest_pin(ConnectionGui* dest)
   {
     m_dest_pins = dest;
   }
@@ -165,12 +165,12 @@ public:
     }
   }
 
-  PinGui* get_src_pin()
+  ConnectionGui* get_src_pin()
   {
     return m_src;
   }
   
-  PinGui* get_dest_pin()
+  ConnectionGui* get_dest_pin()
   {
     return m_dest_pins;
   }
@@ -183,8 +183,8 @@ private:
   std::vector<sf::Vector2f> m_points{};
   sf::CircleShape           m_pole{};
   sf::CircleShape           m_circle{};
-  PinGui*                   m_dest_pins{};
-  PinGui*                   m_src{};
+  ConnectionGui*                   m_dest_pins{};
+  ConnectionGui*                   m_src{};
 
   std::size_t m_src_idx{};
   std::size_t m_dest_idx{};

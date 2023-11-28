@@ -37,6 +37,8 @@
 #include "text_box.hpp"
 #include "pin_port_gui.hpp"
 
+#include "connection_port_gui.hpp"
+
 constexpr float NAME_PADDING = 10.f;
 constexpr float COMPONENT_PIN_RADIUS = 8.f;
 const sf::Color BODY_COLOR = sf::Color(180, 190, 254);
@@ -127,12 +129,12 @@ public:
     m_output_pins.handle_events(event);
 	}
 
-  PinPortGui* get_input_pin_port()
+  ConnectionPortGui* get_input_pin_port()
   {
     return &m_input_pins;
   }
 
-  PinPortGui* get_output_pin_port()
+  ConnectionPortGui* get_output_pin_port()
   {
     return &m_output_pins;
   }
@@ -146,8 +148,8 @@ private:
   std::unique_ptr<Gate> m_component;
   sf::RectangleShape    m_body;
   TextBoxGui            m_name;
-  PinPortGui            m_input_pins;
-  PinPortGui            m_output_pins;
+  ConnectionPortGui            m_input_pins;
+  ConnectionPortGui            m_output_pins;
   std::string           m_component_name;
 };
 

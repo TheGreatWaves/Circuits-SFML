@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <iostream>
+
 
 #include "wire_gui.hpp"
 #include "pin_gui.hpp"
-
-#include <iostream>
+#include "connection_gui.hpp"
 
 void WireGui::update(const sf::Time& dt)
 {

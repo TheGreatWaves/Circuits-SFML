@@ -32,12 +32,14 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
-#include "toolbox.hpp"
 #include "pin_gui.hpp"
 #include "text_box.hpp"
-#include "pin_port_gui.hpp"
+#include "toolbox.hpp"
 #include "wire_gui.hpp"
-#include "belt_gui.hpp"
+
+
+// #include "pin_port_gui.hpp"
+#include "connection_port_gui.hpp"
 #include "component_gui.hpp"
 #include "../component_recipe.hpp"
 
@@ -46,8 +48,9 @@ class BoardGui
 public:
   BoardGui(const sf::Vector2f& size)
   : m_mode_text_box("Normal mode", false)
-  , m_belt(size)
   , m_toolbox(sf::Vector2f{TOOLBOX_WIDTH/2.f, 50.f})
+  , m_input_pin_port(PIN_RADIUS)
+  , m_output_pin_port(PIN_RADIUS)
   {
     // TODO: Yes this is bad.
     Context::instance()->board = this;
@@ -87,8 +90,6 @@ public:
       Context::instance()->current_component_name = m_name_text_box.get_string();
     }
 
-    // m_belt.update(dt);
-    m_toolbox.update(dt);
 
     for (auto& wire : m_wires)
     {
@@ -137,21 +138,43 @@ public:
     {
       auto ctx = Context::instance();
 
-      if (ctx->edit_mode == Mode::WIRING)
+      // TODO: Make the wiring mode actually work
+      switch (ctx->edit_mode)
       {
-        ctx->edit_mode = Mode::IDLE;
-        m_mode_text_box.set_string("Normal mode");
-        ctx->active_wire = nullptr;
+        break; case Mode::IDLE: 
+        {
+          ctx->edit_mode = Mode::WIRING;
+          m_mode_text_box.set_string("Normal mode");
+          ctx->active_wire = nullptr;
+        }
+        break; case Mode::WIRING:
+        {
+          ctx->edit_mode = Mode::BUS;
+          m_mode_text_box.set_string("Wiring mode");
+        }
+        break; case Mode::BUS:
+        {
+          ctx->edit_mode = Mode::IDLE;
+          m_mode_text_box.set_string("Bus mode");
+        }
+        default:
+        {}
       }
-      else
-      {
-        ctx->edit_mode = Mode::WIRING;
-        m_mode_text_box.set_string("Wiring mode");
-      }
+      // if (ctx->edit_mode == Mode::WIRING)
+      // {
+      //   ctx->edit_mode = Mode::IDLE;
+      //   m_mode_text_box.set_string("Normal mode");
+      //   ctx->active_wire = nullptr;
+      // }
+      // else
+      // {
+      //   ctx->edit_mode = Mode::WIRING;
+      //   m_mode_text_box.set_string("Wiring mode");
+      // }
 
       m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
     }
-    else if (event.key.code == sf::Keyboard::C)
+    /*else*/ if (event.key.code == sf::Keyboard::C)
     {
       clear();
     }
@@ -165,7 +188,7 @@ public:
 
 
 // returns the PIN ID and the pin.
-std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
+std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
 {
   std::size_t input_pid_acc = 0;
   std::size_t output_pid_acc = 0;
@@ -248,14 +271,18 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
     }
   }
 
-  
+  void handle_bus_mode(const sf::Event& event)
+  {
+    // TODO: write the code for this
+    m_input_pin_port.handle_events(event);
+    m_output_pin_port.handle_events(event, false);
+  }
 
   void handle_events(const sf::Event& event)
 	{
     auto* context = Context::instance();
 
     m_name_text_box.handle_events(event);
-    // m_belt.handle_events(event);
     m_toolbox.handle_events(event);
 
     for (auto& component : m_components)
@@ -270,6 +297,7 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
     break; case Mode::TEXT:
     break; case Mode::IDLE: handle_edit_mode(event);
     break; case Mode::WIRING: handle_wiring_mode(event);
+    break; case Mode::BUS: handle_bus_mode(event);
     }
 	}
 
@@ -339,10 +367,13 @@ private:
   TextBoxGui         m_name_text_box;
   TextBoxGui         m_mode_text_box;
 
-  PinPortGui m_input_pin_port;
-  PinPortGui m_output_pin_port;
+  // PinPortGui m_input_pin_port;
+  // PinPortGui m_output_pin_port;
 
-  BeltGui m_belt;
+  ConnectionPortGui m_input_pin_port;
+  ConnectionPortGui m_output_pin_port;
+
+
 
   ToolBox m_toolbox;
 
