@@ -80,19 +80,16 @@ public:
       return m_connections.size();
     }
 
-    void handle_events(const sf::Event& event, bool is_input = true)
+    void handle_events(const sf::Event& event, bool is_input = true, int bits = 1)
 	{
         if (Context::instance()->edit_mode == Mode::WIRING)
         {
             return;
         }
-        /* TODO: Add a Bus mode context such that we can add busses 
-        once the user presses "B" */
 
         bool pressed_connection = false;
 
         sf::Vector2f mouse_pos = {static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)};
-
 
         for (auto& p : m_connections)
         {
@@ -110,16 +107,25 @@ public:
 
         if (pressed)
         {
-            add_connection(mouse_pos, is_input);
+            std::cout << "Pressed \n";
+            if (Context::instance()->edit_mode == Mode::IDLE)
+            {
+                add_connection(mouse_pos, is_input, Connection::Pin, bits);
+            }
+            else 
+            {
+                std::cout << "Adding bus at handle_events \n";
+                add_connection(mouse_pos, is_input, Connection::Bus, bits);
+            }
         }
         }
 	}
 
-    void add_connection(const sf::Vector2f& pos, bool is_input, Connection connection = Connection::Pin, int bits = 0);
+    void add_connection(const sf::Vector2f& pos, bool is_input, Connection connection, int bits);
 
-    void add_pin(const sf::Vector2f& pos, bool is_input);
+    void add_pin(const sf::Vector2f& pos, bool is_input, bool is_bus_member);
 
-    void add_bus(const sf::Vector2f& pos, bool is_input, int bits = 0);
+    void add_bus(const sf::Vector2f& pos, bool is_input, int bits = 1);
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) 
     {
@@ -127,7 +133,7 @@ public:
         for (auto& p : m_connections)
         {
             p.draw(target, states);
-        }
+        }   
     }
 
     void set_position(const sf::Vector2f& pos)

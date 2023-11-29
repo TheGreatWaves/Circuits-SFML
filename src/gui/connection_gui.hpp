@@ -15,6 +15,7 @@
 enum class Connection {
     Pin,
     Bus,
+    BusMember, // Essentially a pin
 };
 
 
@@ -23,17 +24,20 @@ class ConnectionGui
 public:
 
     // Pin constructor
-    ConnectionGui(float pin_radius = PIN_RADIUS)
-    : connection_type(Connection::Pin)
+    ConnectionGui(float pin_radius = PIN_RADIUS, bool bus_member = false)
     {
         m_pin = PinGui(pin_radius);
-}
+        if (bus_member)
+        {
+            connection_type = Connection::BusMember;
+        }
+    }
 
     // Bus constructor
-    ConnectionGui(int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH)
+    ConnectionGui(int front_index, int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH)
     : connection_type(Connection::Bus)
     {
-        m_bus = BusGui(bus_height, bus_width, m_bits);
+        m_bus = BusGui(front_index, m_bits, bus_height, bus_width);
     }
 
     // Checks whether the position is within the connection
@@ -41,7 +45,9 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.contains(pos);
             }
@@ -65,6 +71,8 @@ public:
             {
                 return m_bus.handle_events(event);
             }
+            break; default:
+            {}
         }
     }
 
@@ -79,8 +87,12 @@ public:
             }
             break; case Connection::Bus:
             {
+                std::cout << "Calling bus draw\n";
                 return m_bus.draw(target, states);
+                std::cout << "Done calling bus draw\n";
             }
+            break; default:
+            {}
         }
     }
         
@@ -89,7 +101,9 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.set_position(pos);
             }
@@ -97,6 +111,8 @@ public:
             {
                 return m_bus.set_position(pos);
             }
+            break; default:
+            {}
         }
     }
 
@@ -105,7 +121,9 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.get_position();
             }
@@ -122,6 +140,7 @@ public:
         switch (connection_type)
         {
             break; case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.get_radius();
             }
@@ -136,7 +155,9 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.set_interactability(interactable);
             }
@@ -144,6 +165,8 @@ public:
             {
                 return m_bus.set_interactability(interactable);
             }
+            break; default:
+            {}
         }
     }
 
@@ -151,13 +174,19 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.is_on();
             }
             break; case Connection::Bus:
             {
                 return m_bus.is_on();
+            }
+            break; default:
+            {
+                return false;
             }
         }
     }
@@ -166,7 +195,9 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.toggle_on();
             }
@@ -174,6 +205,8 @@ public:
             {
                 return m_bus.toggle_on();
             }
+            break; default:
+            {}
         }
     }
 
@@ -181,7 +214,9 @@ public:
     {
         switch (connection_type)
         {
-            break; case Connection::Pin:
+            break; 
+            case Connection::Pin:
+            case Connection::BusMember:
             {
                 return m_pin.toggle_off();
             }
@@ -189,6 +224,8 @@ public:
             {
                 return m_bus.toggle_off();
             }
+            break; default:
+            {}
         }
     }
 

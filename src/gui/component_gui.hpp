@@ -148,8 +148,8 @@ private:
   std::unique_ptr<Gate> m_component;
   sf::RectangleShape    m_body;
   TextBoxGui            m_name;
-  ConnectionPortGui            m_input_pins;
-  ConnectionPortGui            m_output_pins;
+  ConnectionPortGui     m_input_pins;
+  ConnectionPortGui     m_output_pins;
   std::string           m_component_name;
 };
 

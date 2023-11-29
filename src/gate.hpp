@@ -73,13 +73,6 @@ struct Gate
   std::size_t                                  pin_count{};
 
   /**
-   * Input/Output bus
-  */
-  // To get the number of busses just add the len of both input and output busses.
-  std::vector<BusEntry>                        input_buses{};
-  std::vector<BusEntry>                        output_buses{};
-
-  /**
    * Subgates.
    */
   std::vector<std::unique_ptr<Gate>> subgates;
@@ -349,16 +342,6 @@ struct Gate
     }
 
     return nullptr;
-  }
-
-  void add_input_bus(int bits){
-    add_input_pin(bits);
-    input_buses.emplace_back(BusEntry(std::to_string(input_buses.size() + output_buses.size()), pin_count, bits));
-  }
-
-  void add_output_bus(int bits){
-    add_output_pin(bits);
-    output_buses.emplace_back(BusEntry(std::to_string(input_buses.size() + output_buses.size()), pin_count, bits));
   }
 
   void clear_wires()

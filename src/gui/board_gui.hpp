@@ -144,18 +144,18 @@ public:
         break; case Mode::IDLE: 
         {
           ctx->edit_mode = Mode::WIRING;
-          m_mode_text_box.set_string("Normal mode");
+          m_mode_text_box.set_string("Wiring mode");
           ctx->active_wire = nullptr;
         }
         break; case Mode::WIRING:
         {
           ctx->edit_mode = Mode::BUS;
-          m_mode_text_box.set_string("Wiring mode");
+          m_mode_text_box.set_string("Bus mode");
         }
         break; case Mode::BUS:
         {
           ctx->edit_mode = Mode::IDLE;
-          m_mode_text_box.set_string("Bus mode");
+          m_mode_text_box.set_string("Normal mode");
         }
         default:
         {}
@@ -182,7 +182,7 @@ public:
 
   void handle_edit_mode(const sf::Event& event)
   {
-    m_input_pin_port.handle_events(event);
+    m_input_pin_port.handle_events(event, true);
     m_output_pin_port.handle_events(event, false);
   }
 
@@ -273,9 +273,8 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
 
   void handle_bus_mode(const sf::Event& event)
   {
-    // TODO: write the code for this
-    m_input_pin_port.handle_events(event);
-    m_output_pin_port.handle_events(event, false);
+    m_input_pin_port.handle_events(event, true, 1);
+    m_output_pin_port.handle_events(event, false, 1);
   }
 
   void handle_events(const sf::Event& event)

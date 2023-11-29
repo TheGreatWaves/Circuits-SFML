@@ -15,9 +15,11 @@ constexpr int DEFAULT_BITS = 16;
 class BusGui
 {
 public:
-    BusGui(float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH, int m_bits = DEFAULT_BITS)
+    BusGui(int front_index = 0, int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH)
     : m_bus(sf::Vector2(BUS_WIDTH, bus_height))
     , on { false }
+    , m_bits { m_bits }
+    , front_index { front_index }
     {
         m_bus.setFillColor(OFF_COLOR);
         m_bus.setOrigin({bus_width, bus_height});
@@ -56,8 +58,11 @@ public:
         {
             m_bus.setFillColor(OFF_COLOR);
         }
+        std::cout << "Target.draw #1\n";
         target.draw(m_bus, states);
-        target.draw(*m_bits_text, states);
+        // std::cout << "Target.draw #2\n";
+        // target.draw(*m_bits_text, states);
+        // std::cout << "Target.draw #2 completed\n";
 
     }
 
@@ -93,11 +98,22 @@ public:
         on = false;
     }    
 
+    bool contains_pin_at_index(int index)
+    {
+        return ((front_index <= index) & ((front_index+m_bits-1) >= index));
+    }
+
+    bool is_first_pin(int index)
+    {
+        return front_index == index;
+    }
+
 private:
-    sf::RectangleShape m_bus;
+    sf::RectangleShape m_bus{};
     bool on = false;
     bool m_interactable;
     int m_bits = 0;
+    int front_index = 0;
     sf::Font m_font;
 	std::unique_ptr<sf::Text> m_bits_text;
 };
