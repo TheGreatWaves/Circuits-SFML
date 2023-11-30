@@ -16,6 +16,7 @@ constexpr int DEFAULT_BITS = 16;
 class BusGui
 {
 public:
+
     BusGui(int front_index = 0, int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH)
     : m_bus(sf::Vector2(BUS_WIDTH, bus_height))
     , on { false }
@@ -30,6 +31,12 @@ public:
         m_bus.setFillColor(OFF_COLOR);
         m_bus.setOrigin({(bus_width - 2), bus_height});
         std::cout << "bus bits in constructor: " << bits_text << "\n";
+        sf::Font m_font{};
+        m_font.loadFromFile("resources/HelveticaNeueLTStd-It.otf");
+        sf::Text temp_m_bits_text(bits_text, m_font);
+        m_bits_text = temp_m_bits_text;
+        m_bits_text.setCharacterSize(15);
+		m_bits_text.setFillColor(sf::Color::White);
     }
 
     bool contains(const sf::Vector2f& pos)
@@ -67,13 +74,15 @@ public:
             m_bus.setFillColor(OFF_COLOR);
         }
         target.draw(m_bus, states);
-        m_total_bits_text_box.draw(target, states);
+        // target.draw(m_bits_text, states);
+        // m_total_bits_text_box.draw(target, states);
     }
 
     void set_position(const sf::Vector2f& pos)
     {
         m_bus.setPosition(pos);
-        m_total_bits_text_box.set_position({pos.x - 20, pos.y - 25});
+        // m_total_bits_text_box.set_position({pos.x - 20, pos.y - 25});
+        m_bits_text.setPosition({pos.x - 20, pos.y - 25});
     }
 
     [[ nodiscard ]] sf::Vector2f get_position() const
@@ -120,6 +129,7 @@ private:
     bool m_interactable;
     int m_bits = 0;
     int front_index = 0;
+    sf::Text m_bits_text;
 };
 
 #endif /* BUS__GUI */
