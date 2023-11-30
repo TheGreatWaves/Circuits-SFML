@@ -23,6 +23,7 @@
  */
 
 #pragma once
+#include "lang/hdl/parser.hpp"
 #ifndef BOARD
 #define BOARD
 
@@ -185,8 +186,51 @@ public:
 				
   				if (!board->found(chip_name) && !load_file(GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION))
   				{
-  					log("Error: Needed component with given name `", chip_name, "` not found!");
-  					exit(1);
+          	auto hdl_parser = hdl::HDLParser(hdl_file(chip_name));
+            
+          	if (hdl_parser.error_occured())
+          	{
+          		error("Failed to open file '" + chip_name + "'.");
+          		return false;
+          	}
+
+            const bool success = hdl_parser.parse();
+
+          	if (!success)
+          	{
+    					log("Error: Needed component with given name `", chip_name, "` not found!");
+    					exit(1);
+          	}
+
+          	const auto result = hdl_parser.result();
+
+          	// Gate file.
+            std::ofstream gate_file { 
+              DEFAULT_GATE_DIRECTORY + 
+              std::string("/") +  
+              DEFAULT_RECIPE_SAVE_DIRECTORY + 
+              std::string("/") +  
+              chip_name + 
+              GATE_EXTENSION 
+            };
+          	gate_file << result.compile();
+          	gate_file.close();
+
+          	// Meta file.
+            std::ofstream meta_file { 
+              SCRIPTS_DIR + 
+              std::string("/") +  
+              chip_name + 
+              META_EXTENSION 
+            };
+          	meta_file << result.meta();
+          	meta_file.close();
+
+            if (!load_file(GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION))
+            {
+    					log("Error: Failed to load component with given name `", chip_name, "`.");
+    					exit(1);
+            }
   				}
   			}
         break; case AssemTokenType::Precompute:

@@ -34,8 +34,9 @@
 #include <set>
 
 #include "../../wire_info.hpp"
+#include "../../common.hpp"
 
-constexpr std::size_t MAX_INPUT_PINS = 100;
+constexpr std::size_t MAX_INPUT_PINS = INPUT_PIN_LIMIT;
 
 struct BusEntry
 {
