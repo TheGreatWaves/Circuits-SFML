@@ -119,7 +119,7 @@ public:
     target.draw(m_body, states);
     m_input_pins.draw(target, states);
     m_output_pins.draw(target, states);
-    target.draw(m_name, states);
+    m_name.draw(target, states);
   }
 
   void handle_events(const sf::Event& event)

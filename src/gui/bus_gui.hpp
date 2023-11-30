@@ -7,6 +7,7 @@
 
 #include <string> 
 #include "../common.hpp"
+#include "text_box.hpp"
 
 constexpr float BUS_HEIGHT = 30.f;
 constexpr float BUS_WIDTH = 30.f;
@@ -21,38 +22,24 @@ public:
     , m_bits { m_bits }
     , front_index { front_index }
     {
+        std::cout << "Creating bus\n";
+        std::cout << "int bits: " << m_bits << "\n";
+        const std::string bits_text = std::to_string(m_bits);
+        m_total_bits_text_box.set_string(bits_text);
+        m_total_bits_text_box.set_font_size(15);
         m_bus.setFillColor(OFF_COLOR);
         m_bus.setOrigin({(bus_width - 2), bus_height});
-        m_font.loadFromFile("resources/HelveticaNeueLTStd-It.otf");
-
-        /*
-        if (!m_font.loadFromFile("resources/HelveticaNeueLTStd-It.otf")) {
-        // Font loading failed
-        // You can handle this situation, e.g., by using a default font or logging an error
-        std::cerr << "Failed to load font file!" << std::endl;
-        // Consider loading a default font or handling the error gracefully
-        }
-        std::cout << "m_bits_text address after allocation: " << m_bits_text.get() << std::endl;
-        if (m_bits_text) {
-        // Log a message indicating successful initialization
-        std::cout << "m_bits_text successfully initialized." << std::endl;
-        } else {
-            // Log an error message if initialization failed
-            std::cerr << "Failed to initialize m_bits_text!" << std::endl;
-        }
-        */
-
-        const std::string& default_str = std::to_string(m_bits);
-        m_bits_text = std::make_unique<sf::Text>();
-        m_bits_text->setFont(m_font);
-        m_bits_text->setString(default_str);
-        m_bits_text->setCharacterSize(10);
-		m_bits_text->setFillColor(sf::Color::Black);
+        std::cout << "bus bits in constructor: " << bits_text << "\n";
     }
 
     bool contains(const sf::Vector2f& pos)
     {
         return m_bus.getGlobalBounds().contains(pos);
+    }
+
+    float get_width()
+    {
+        return BUS_WIDTH;
     }
 
     void handle_events(const sf::Event& event)
@@ -79,17 +66,14 @@ public:
         {
             m_bus.setFillColor(OFF_COLOR);
         }
-        std::cout << "Target.draw #1\n";
         target.draw(m_bus, states);
-        // std::cout << "Target.draw #2\n";
-        // target.draw(*m_bits_text, states);
-        // std::cout << "Target.draw #2 completed\n";
+        m_total_bits_text_box.draw(target, states);
     }
 
     void set_position(const sf::Vector2f& pos)
     {
         m_bus.setPosition(pos);
-        m_bits_text->setPosition(pos);
+        m_total_bits_text_box.set_position({pos.x - 20, pos.y - 25});
     }
 
     [[ nodiscard ]] sf::Vector2f get_position() const
@@ -129,9 +113,9 @@ public:
     }
 
 private:
-    sf::RectangleShape m_bus{};
-	std::unique_ptr<sf::Text> m_bits_text;
-    sf::Font m_font;
+    sf::RectangleShape m_bus;
+	TextBoxGui m_on_bits_text_box; // TODO: Might switch to an interactable textbox
+    TextBoxGui m_total_bits_text_box;
     bool on = false;
     bool m_interactable;
     int m_bits = 0;

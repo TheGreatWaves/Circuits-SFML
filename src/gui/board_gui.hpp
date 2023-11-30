@@ -125,12 +125,16 @@ public:
   {
     target.draw(m_background, states);
     target.draw(m_prototype, states);
-    target.draw(m_name_text_box, states);
-    target.draw(m_mode_text_box, states);
-    target.draw(m_bus_bits_text_box, states);
+    m_name_text_box.draw(target, states);
+    m_mode_text_box.draw(target, states);
+    m_bus_bits_text_box.draw(target, states);
 
+    std::cout << "Drawing input ports"  << std::endl;
     m_input_pin_port.draw(target, states);
+    std::cout << "Done drawing input ports"  << std::endl;
+    std::cout << "Drawing output ports"  << std::endl;
     m_output_pin_port.draw(target, states);
+    std::cout << "Done drawing output ports"  << std::endl;
 
     for (auto& component : m_components)
     {
@@ -276,15 +280,20 @@ void handle_wiring_mode(const sf::Event& event)
 
   void handle_bus_mode(const sf::Event& event)
   {
-    m_input_pin_port.handle_events(event, true, 1);
-    m_output_pin_port.handle_events(event, false, 1);
+    m_input_pin_port.handle_events(event, true, Context::instance()->bus_bits);
+    m_output_pin_port.handle_events(event, false, Context::instance()->bus_bits);
   }
 
   void update_bus_bits()
   {
+    // std::cout << "Updating bus bits to: " << Context::instance()->bus_bits << "\n";
     int intValue;
     std::istringstream iss(m_bus_bits_text_box.get_string());
     iss >> intValue;
+    if (intValue < 2){
+      intValue = 2;
+      m_bus_bits_text_box.set_string("2");
+    }
     Context::instance()->bus_bits = intValue;
   }
 
@@ -380,7 +389,7 @@ private:
   sf::RectangleShape m_background;
   sf::RectangleShape m_prototype;
   TextBoxGui         m_name_text_box;
-  TextBoxGui         m_bus_bits_text_box = TextBoxGui("No bits", true);
+  TextBoxGui         m_bus_bits_text_box = TextBoxGui("Default: 2", true);
   TextBoxGui         m_mode_text_box;
 
   ConnectionPortGui m_input_pin_port;

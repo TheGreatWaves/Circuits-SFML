@@ -120,12 +120,12 @@ public:
             std::cout << "Pressed To Add Connection\n";
             if (Context::instance()->edit_mode == Mode::IDLE)
             {
-                add_connection(mouse_pos, is_input, Connection::Pin, bits);
+                add_connection(mouse_pos, is_input, Connection::Pin, 1);
             }
             else 
             {
                 std::cout << "Adding bus at handle_events \n";
-                add_connection(mouse_pos, is_input, Connection::Bus, bits);
+                add_connection(mouse_pos, is_input, Connection::Bus, Context::instance()->bus_bits);
             }
         }
         }

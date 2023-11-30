@@ -58,7 +58,7 @@ inline float get_text_max_height(const sf::Text& l_text)
 	return max;
 }
 
-class TextBoxGui : public sf::Drawable
+class TextBoxGui
 {
 public:
 
@@ -79,9 +79,11 @@ public:
 		m_text->setFillColor(color);
 	}
 
-	void draw(sf::RenderTarget &target, sf::RenderStates states) const override
+	void draw(sf::RenderTarget &target, sf::RenderStates states)
 	{
+		std::cout << "Text box text: " << std::string(m_text->getString()) << std::endl;
 		target.draw(*m_text, states);
+		std::cout << "Drawn the text" << std::endl;
 	}
 
 	void set_font_size(unsigned int size)
@@ -113,7 +115,7 @@ public:
 	{
 		m_edit_mode = false;
 	}
-	
+
 	void handle_events(const sf::Event& event, bool no_box = true, 
 					   const std::function<bool(const std::string&)>& condition = [](const std::string&) {return true;})
 	{

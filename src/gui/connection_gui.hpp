@@ -22,22 +22,31 @@ enum class Connection {
 class ConnectionGui
 {
 public:
+    // Connection constructor
+    ConnectionGui(){}
 
     // Pin constructor
     ConnectionGui(float pin_radius = PIN_RADIUS, bool bus_member = false)
     {
+        std::cout << "Pin constructor called" << std::endl;
         m_pin = PinGui(pin_radius);
         if (bus_member)
         {
             m_connection_type = Connection::BusMember;
         }
+        std::cout << "Pin created" << std::endl;
     }
 
     // Bus constructor
-    ConnectionGui(int front_index, int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH)
-    : m_connection_type(Connection::Bus)
+    ConnectionGui(int front_index, int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH, Connection connection_type = Connection::Pin)
     {
+        if (connection_type != Connection::Bus){
+            return;
+        }
+        m_connection_type = Connection::Bus;
+        std::cout << "Bus constructor called" << std::endl;
         m_bus = BusGui(front_index, m_bits, bus_height, bus_width);
+        std::cout << "Bus constructor created" << std::endl;
     }
 
     // Checks whether the position is within the connection
@@ -49,11 +58,11 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.contains(pos);
+                return m_pin->contains(pos);
             }
             break; case Connection::Bus:
             {
-                return m_bus.contains(pos);
+                return m_bus->contains(pos);
             }
         }
     }
@@ -65,11 +74,11 @@ public:
         {
             break; case Connection::Pin:
             {
-                return m_pin.handle_events(event);
+                return m_pin->handle_events(event);
             }
             break; case Connection::Bus:
             {
-                return m_bus.handle_events(event);
+                return m_bus->handle_events(event);
             }
             break; default:
             {}
@@ -83,14 +92,16 @@ public:
         {
             break; case Connection::Pin:
             {
-                return m_pin.draw(target, states);
+                std::cout << "Pin drawing" << std::endl;
+                return m_pin->draw(target, states);
+                std::cout << "Pin drawn" << std::endl;
             }
             break; case Connection::Bus:
             {
-                std::cout << "Calling bus draw\n";
-                return m_bus.draw(target, states);
-                std::cout << "Done calling bus draw\n";
-            }
+                std::cout << "Bus drawing" << std::endl;
+                return m_bus->draw(target, states);
+                std::cout << "Bus drawn" << std::endl;
+            } 
             break; default:
             {}
         }
@@ -105,15 +116,25 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.set_position(pos);
+                return m_pin->set_position(pos);
             }
             break; case Connection::Bus:
             {
-                return m_bus.set_position(pos);
+                return m_bus->set_position(pos);
             }
             break; default:
             {}
         }
+    }
+
+    // Returns the width of the bus
+    float get_bus_width()
+    {
+        return m_bus->get_width();
+    }
+
+    void apply_bus_bits(){
+        // TODO: Go to bus connection and then apply on the busmembers
     }
 
     // Returns the postiion of the connection
@@ -125,11 +146,11 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.get_position();
+                return m_pin->get_position();
             }
             break; case Connection::Bus:
             {
-                return m_bus.get_position();
+                return m_bus->get_position();
             }
         }
     }
@@ -142,7 +163,7 @@ public:
             break; case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.get_radius();
+                return m_pin->get_radius();
             }
             break; case Connection::Bus:
             {
@@ -159,11 +180,11 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.set_interactability(interactable);
+                return m_pin->set_interactability(interactable);
             }
             break; case Connection::Bus:
             {
-                return m_bus.set_interactability(interactable);
+                return m_bus->set_interactability(interactable);
             }
             break; default:
             {}
@@ -178,11 +199,11 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.is_on();
+                return m_pin->is_on();
             }
             break; case Connection::Bus:
             {
-                return m_bus.is_on();
+                return m_bus->is_on();
             }
             break; default:
             {
@@ -199,11 +220,11 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.toggle_on();
+                return m_pin->toggle_on();
             }
             break; case Connection::Bus:
             {
-                return m_bus.toggle_on();
+                return m_bus->toggle_on();
             }
             break; default:
             {}
@@ -218,21 +239,26 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin.toggle_off();
+                return m_pin->toggle_off();
             }
             break; case Connection::Bus:
             {
-                return m_bus.toggle_off();
+                return m_bus->toggle_off();
             }
             break; default:
             {}
         }
     }
 
+    void set_connection_type(Connection connection)
+    {
+        m_connection_type = connection;
+    }
+
 private:
     Connection m_connection_type = Connection::Pin;
-    BusGui m_bus;
-    PinGui m_pin;
+    std::optional<BusGui> m_bus;
+    std::optional<PinGui> m_pin;
 };
 
 #endif /* CONNECTION_GUI */
