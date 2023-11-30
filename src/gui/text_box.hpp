@@ -81,9 +81,9 @@ public:
 
 	void draw(sf::RenderTarget &target, sf::RenderStates states)
 	{
-		std::cout << "Text box text: " << std::string(m_text->getString()) << std::endl;
+		// std::cout << "Text box text: " << std::string(m_text->getString()) << std::endl;
 		target.draw(*m_text, states);
-		std::cout << "Drawn the text" << std::endl;
+		// std::cout << "Drawn the text" << std::endl;
 	}
 
 	void set_font_size(unsigned int size)

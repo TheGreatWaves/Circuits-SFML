@@ -24,13 +24,34 @@ void ConnectionPortGui::add_bus(const sf::Vector2f& pos, bool is_input, int bits
     /* TODO: Essentially store bit_0 - bit_n as normal pins and then keep track of the values
     where the bits start and end to define the bus */ 
     m_connections.emplace_back(m_connections.size(), bits, BUS_HEIGHT, BUS_WIDTH, Connection::Bus);
-    m_connections.back().set_interactability(m_interactable);
-    m_connections.back().set_position({m_strip.getPosition().x + (m_connections.back().get_bus_width()/2.f) + (m_strip.getSize().x/2.f), pos.y});
+    auto& latest_connection = m_connections.back();
+    latest_connection.set_interactability(m_interactable);
+    latest_connection.set_position({m_strip.getPosition().x + (latest_connection.get_bus_width()/2.f) + (m_strip.getSize().x/2.f), pos.y + 2*latest_connection.get_bus_height()/bits});
     bits += -1;
+    // TODO: Make sure the head of the bus is compatible with other pins
+    if (is_input)
+    {
+        Context::instance()->sketch->add_input_pin();
+    }
+	else
+	{
+		Context::instance()->sketch->add_output_pin();
+	}
+
     std::cout << "Added bus to m_connections" << std::endl;
     while (bits --> 0)
     {
         add_pin(pos, is_input, true);
+        latest_connection.add_bus_member(m_connections.back().get_pin_on());
+        if (m_connections.back().get_pin_on() == nullptr)
+        {
+            std::cout << "NULL ptr at connect_port\n";
+        }
+        else
+        {
+            std::cout << "ptr: " << m_connections.back().get_pin_on() << "\n";
+        }
+        std::cout << "Added bus member \n";
     }
 }
 

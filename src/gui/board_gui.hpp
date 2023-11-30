@@ -121,20 +121,42 @@ public:
    
   }
 
+  void update_mode_text_box_string()
+  {
+    switch (Context::instance()->edit_mode)
+      {
+        break; case Mode::IDLE: 
+        {
+          m_mode_text_box.set_string("Normal mode");
+        }
+        break; case Mode::WIRING:
+        {
+          m_mode_text_box.set_string("Wiring mode");
+        }
+        break; case Mode::BUS:
+        {
+          m_mode_text_box.set_string("Bus mode");
+        }
+        default:
+        {}
+      }
+  }
+
   void draw(sf::RenderTarget &target, sf::RenderStates states)
   {
     target.draw(m_background, states);
     target.draw(m_prototype, states);
     m_name_text_box.draw(target, states);
+    update_mode_text_box_string();
     m_mode_text_box.draw(target, states);
     m_bus_bits_text_box.draw(target, states);
 
-    std::cout << "Drawing input ports"  << std::endl;
+    // std::cout << "Drawing input ports"  << std::endl;
     m_input_pin_port.draw(target, states);
-    std::cout << "Done drawing input ports"  << std::endl;
-    std::cout << "Drawing output ports"  << std::endl;
+    // std::cout << "Done drawing input ports"  << std::endl;
+    // std::cout << "Drawing output ports"  << std::endl;
     m_output_pin_port.draw(target, states);
-    std::cout << "Done drawing output ports"  << std::endl;
+    // std::cout << "Done drawing output ports"  << std::endl;
 
     for (auto& component : m_components)
     {
@@ -160,24 +182,20 @@ public:
         break; case Mode::IDLE: 
         {
           ctx->edit_mode = Mode::WIRING;
-          m_mode_text_box.set_string("Wiring mode");
           ctx->active_wire = nullptr;
         }
         break; case Mode::WIRING:
         {
           ctx->edit_mode = Mode::BUS;
-          m_mode_text_box.set_string("Bus mode");
         }
         break; case Mode::BUS:
         {
           ctx->edit_mode = Mode::IDLE;
-          m_mode_text_box.set_string("Normal mode");
           ctx->active_wire = nullptr;
         }
         default:
         {}
       }
-      // m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
     }
     else if (event.key.code == sf::Keyboard::C)
     {
@@ -198,7 +216,7 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
   std::size_t input_pid_acc = 0;
   std::size_t output_pid_acc = 0;
 
-  std::cout << "Finding pin. If there's no other printout then it found it lol\n";
+  // std::cout << "Finding pin. If there's no other printout then it found it lol\n";
 
   // Query main input pins.
   auto [pid, pin] = m_input_pin_port.get_pin(pos);
@@ -233,7 +251,7 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
     input_pid_acc += component->get_input_pin_port()->size();
     output_pid_acc += component->get_output_pin_port()->size();
   }
-  std::cout << "Pin not found\n";
+  // std::cout << "Pin not found\n";
   return {0, nullptr};
 }
 

@@ -28,13 +28,13 @@ public:
     // Pin constructor
     ConnectionGui(float pin_radius = PIN_RADIUS, bool bus_member = false)
     {
-        std::cout << "Pin constructor called" << std::endl;
+        // std::cout << "Pin constructor called" << std::endl;
         m_pin = PinGui(pin_radius);
         if (bus_member)
         {
             m_connection_type = Connection::BusMember;
         }
-        std::cout << "Pin created" << std::endl;
+        // std::cout << "Pin created" << std::endl;
     }
 
     // Bus constructor
@@ -92,15 +92,15 @@ public:
         {
             break; case Connection::Pin:
             {
-                std::cout << "Pin drawing" << std::endl;
+                // std::cout << "Pin drawing" << std::endl;
                 return m_pin->draw(target, states);
-                std::cout << "Pin drawn" << std::endl;
+                // std::cout << "Pin drawn" << std::endl;
             }
             break; case Connection::Bus:
             {
-                std::cout << "Bus drawing" << std::endl;
+                // std::cout << "Bus drawing" << std::endl;
                 return m_bus->draw(target, states);
-                std::cout << "Bus drawn" << std::endl;
+                // std::cout << "Bus drawn" << std::endl;
             } 
             break; default:
             {}
@@ -133,8 +133,22 @@ public:
         return m_bus->get_width();
     }
 
-    void apply_bus_bits(){
-        // TODO: Go to bus connection and then apply on the busmembers
+    // Returns the height of the bus
+    float get_bus_height()
+    {
+        return m_bus->get_height();
+    }
+
+    // Adds a pin to the bus as its member
+    void add_bus_member(std::shared_ptr<bool> on_val)
+    {
+        return m_bus->add_member_pin(on_val);
+    }
+
+    // Returns the pin of a connection
+    std::shared_ptr<bool> get_pin_on()
+    {
+        return m_pin.value().get_on();
     }
 
     // Returns the postiion of the connection

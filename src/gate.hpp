@@ -107,8 +107,42 @@ struct Gate
     , serialized{ is_serialized }
   {
     // TODO: Get bus details using meta and then use that to render the busses when bringing in a component from toolbox.
-    auto gate_meta = hdl::Meta::get_meta(name);
-    // std::cout << gate_meta->bus.
+    auto gate_meta = hdl::Meta::get_meta(gate_name);
+    std::cout << "Found val \n";
+    if (gate_meta != nullptr)
+    {
+      auto all_busses = gate_meta->bus;
+      std::cout << "Got all busses. Size: " << all_busses.size() << "\n";
+      if (all_busses.size() > 0)
+      {
+        for (int index = 0; index < all_busses.size(); index++)
+        {
+          std::cout << "Bus Name: " << all_busses[index].bus_name << "\n";
+          std::cout << "Start: " << all_busses[index].start << "Size: " << all_busses[index].size << "\n";
+        }
+        std::cout << "Input pins \n";
+        for (hdl::Meta::PinEntry p: gate_meta->input_pins)
+        {
+          std::cout << "Pin Name: " << p.pin_name << "\n";
+          std::cout << "Pin Number" << p.pin_number << "\n";
+        }
+        std::cout << "Output pins \n";
+        for (hdl::Meta::PinEntry p: gate_meta->output_pins)
+        {
+          std::cout << "Pin Name: " << p.pin_name << "\n";
+          std::cout << "Pin Number" << p.pin_number << "\n";
+        }
+
+      }
+      else
+      {
+        std::cout << "Empty vector\n";
+      }
+    }
+    else
+    {
+      std::cout << "Null meta\n";
+    }
   }
 
   void print_truth_table()

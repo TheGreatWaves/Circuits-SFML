@@ -34,6 +34,8 @@ public:
             // Ugly and wasteful but it has to be done.
             if (p.contains(pos))
             {
+                // TODO: go to bus_gui and set it such that
+                // we can return true for the bus head
                 return {index, &p};
             }
             index++;

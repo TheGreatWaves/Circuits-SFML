@@ -43,10 +43,10 @@ void ToolBox::select_belt()
   m_active_component = std::make_unique<ComponentGui>(chosen);
 }
 
-void ToolBox::set_idle()
+void ToolBox::revert_mode()
 {
   auto& edit_mode = Context::instance()->edit_mode;
 
   if (edit_mode == Mode::TEXT)
-    edit_mode = Mode::IDLE;
+  edit_mode = m_last_mode;
 }

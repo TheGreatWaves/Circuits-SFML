@@ -58,7 +58,7 @@ class ToolBox
 
     void set_string(const std::string& name)
     {
-        std::cout << "Tool box string: " << name << '\n';
+        // std::cout << "Tool box string: " << name << '\n';
         m_result_text.set_string(name);
     }
 
@@ -160,12 +160,13 @@ class ToolBox
         {
             if (inside_box)
             {
+                m_last_mode = Context::instance()->edit_mode;
                 m_search_text.toggle_edit_mode();
             }
             else
             {
+                revert_mode();
                 m_search_text.untoggle_edit_mode();
-                set_idle();
             }
 
             if (m_active_component != nullptr)
@@ -201,7 +202,7 @@ class ToolBox
     void select_belt();
 
     // WARNING: This is bad.
-    void set_idle();
+    void revert_mode();
 
   private:
     TextBoxGui                      m_search_text;
@@ -211,6 +212,7 @@ class ToolBox
     int                             m_active_index = -1;
     const sf::Vector2f              m_root_pos;
     std::unique_ptr<ComponentGui>   m_active_component{};
+    Mode m_last_mode;
 };
 
 #endif /* TOOLBOX_H */

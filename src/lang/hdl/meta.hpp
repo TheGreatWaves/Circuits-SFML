@@ -82,7 +82,7 @@ struct Meta
         return {};
     }
 
-    [[nodiscard]] auto get_bus(std::string_view name) const noexcept -> const std::optional<BusEntry>
+    auto get_bus(std::string_view name) const noexcept -> const std::optional<BusEntry>
     {
         auto bus_name = std::string(name);
         for (const auto& bus_entry : bus)
