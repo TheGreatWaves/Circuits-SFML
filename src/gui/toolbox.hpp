@@ -58,6 +58,7 @@ class ToolBox
 
     void set_string(const std::string& name)
     {
+        std::cout << "Tool box string: " << name << '\n';
         m_result_text.set_string(name);
     }
 
@@ -159,7 +160,6 @@ class ToolBox
         {
             if (inside_box)
             {
-                std::cout << "Selected component\n";
                 m_search_text.toggle_edit_mode();
             }
             else

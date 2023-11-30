@@ -297,6 +297,7 @@ void handle_wiring_mode(const sf::Event& event)
         return this->bus_bits_textbox_condition(inputString);
     });
     update_bus_bits();
+    m_toolbox.handle_events(event);
 
     for (auto& component : m_components)
     {
