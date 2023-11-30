@@ -52,7 +52,7 @@ public:
         return bits;
     }
 
-      void clear_port()
+    void clear_port()
     {
         m_connections.clear();
     }
@@ -63,16 +63,26 @@ public:
         std::size_t index = 0;
         while (count --> 0)
         {
-        if ((bits >> count ) & 1) 
+            if ((bits >> count ) & 1) 
+            {
+                m_connections[index].toggle_on();
+            }
+            else
+            {
+                m_connections[index].toggle_off();
+            }
+            index++;
+        }
+    }
+
+    void info()
+    {
+        std::cout << "=== Pins ===\n";
+        for (std::size_t i = 0; i < m_connections.size(); i++)
         {
-            m_connections[index].toggle_on();
+        std::cout << "Pin[" << i << "]: " << (m_connections[i].is_on() ? 1 : 0) << '\n';
         }
-        else
-        {
-            m_connections[index].toggle_off();
-        }
-        index++;
-        }
+        std::cout << '\n';
     }
 
     std::size_t size()
@@ -107,7 +117,7 @@ public:
 
         if (pressed)
         {
-            std::cout << "Pressed \n";
+            std::cout << "Pressed To Add Connection\n";
             if (Context::instance()->edit_mode == Mode::IDLE)
             {
                 add_connection(mouse_pos, is_input, Connection::Pin, bits);

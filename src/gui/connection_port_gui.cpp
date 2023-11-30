@@ -58,8 +58,6 @@ void ConnectionPortGui::add_connection(const sf::Vector2f& pos, bool is_input, C
         break; default: 
         {}
     }
-    m_connections.back().set_interactability(m_interactable);
-    m_connections.back().set_position({m_strip.getPosition().x + (m_strip.getSize().x/2.f), pos.y});
 }
 
 // void ConnectionPortGui::add_pin(const sf::Vector2f& pos, bool is_input)

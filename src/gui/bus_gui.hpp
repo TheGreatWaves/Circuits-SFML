@@ -8,8 +8,8 @@
 #include <string> 
 #include "../common.hpp"
 
-constexpr float BUS_HEIGHT = 15.f;
-constexpr float BUS_WIDTH = 15.f;
+constexpr float BUS_HEIGHT = 30.f;
+constexpr float BUS_WIDTH = 30.f;
 constexpr int DEFAULT_BITS = 16;
 
 class BusGui
@@ -22,11 +22,32 @@ public:
     , front_index { front_index }
     {
         m_bus.setFillColor(OFF_COLOR);
-        m_bus.setOrigin({bus_width, bus_height});
+        m_bus.setOrigin({(bus_width - 2), bus_height});
         m_font.loadFromFile("resources/HelveticaNeueLTStd-It.otf");
-        m_bits_text = std::make_unique<sf::Text>(std::to_string(m_bits), m_font);
+
+        /*
+        if (!m_font.loadFromFile("resources/HelveticaNeueLTStd-It.otf")) {
+        // Font loading failed
+        // You can handle this situation, e.g., by using a default font or logging an error
+        std::cerr << "Failed to load font file!" << std::endl;
+        // Consider loading a default font or handling the error gracefully
+        }
+        std::cout << "m_bits_text address after allocation: " << m_bits_text.get() << std::endl;
+        if (m_bits_text) {
+        // Log a message indicating successful initialization
+        std::cout << "m_bits_text successfully initialized." << std::endl;
+        } else {
+            // Log an error message if initialization failed
+            std::cerr << "Failed to initialize m_bits_text!" << std::endl;
+        }
+        */
+
+        const std::string& default_str = std::to_string(m_bits);
+        m_bits_text = std::make_unique<sf::Text>();
+        m_bits_text->setFont(m_font);
+        m_bits_text->setString(default_str);
         m_bits_text->setCharacterSize(10);
-		m_bits_text->setFillColor(sf::Color::White);
+		m_bits_text->setFillColor(sf::Color::Black);
     }
 
     bool contains(const sf::Vector2f& pos)
@@ -63,7 +84,6 @@ public:
         // std::cout << "Target.draw #2\n";
         // target.draw(*m_bits_text, states);
         // std::cout << "Target.draw #2 completed\n";
-
     }
 
     void set_position(const sf::Vector2f& pos)
@@ -110,12 +130,12 @@ public:
 
 private:
     sf::RectangleShape m_bus{};
+	std::unique_ptr<sf::Text> m_bits_text;
+    sf::Font m_font;
     bool on = false;
     bool m_interactable;
     int m_bits = 0;
     int front_index = 0;
-    sf::Font m_font;
-	std::unique_ptr<sf::Text> m_bits_text;
 };
 
 #endif /* BUS__GUI */

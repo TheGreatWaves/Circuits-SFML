@@ -53,7 +53,7 @@ public:
 
   void handle_events(const sf::Event& event)
 	{
-    if (!m_interactable) return;
+    // if (!m_interactable) return;
 
     if (event.type == sf::Event::MouseButtonPressed)
     {

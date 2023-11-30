@@ -73,6 +73,12 @@ struct Gate
   std::size_t                                  pin_count{};
 
   /**
+   * Input/Output busses
+  */
+  std::vector<BusEntry> input_busses{};
+  std::vector<BusEntry> output_busses{};
+
+  /**
    * Subgates.
    */
   std::vector<std::unique_ptr<Gate>> subgates;
@@ -100,6 +106,9 @@ struct Gate
     , name{ gate_name }
     , serialized{ is_serialized }
   {
+    // TODO: Get bus details using meta and then use that to render the busses when bringing in a component from toolbox.
+    auto gate_meta = hdl::Meta::get_meta(name);
+    // std::cout << gate_meta->bus.
   }
 
   void print_truth_table()

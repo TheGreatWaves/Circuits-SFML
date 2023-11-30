@@ -113,8 +113,9 @@ public:
 	{
 		m_edit_mode = false;
 	}
-
-	void handle_events(const sf::Event& event, bool no_box = true)
+	
+	void handle_events(const sf::Event& event, bool no_box = true, 
+					   const std::function<bool(const std::string&)>& condition = [](const std::string&) {return true;})
 	{
 		if (!m_can_edit) return;
 
@@ -140,6 +141,10 @@ public:
 			{
 				m_input_text += event.text.unicode;
 				m_edited = true;
+				if (!condition(m_input_text))
+				{
+					m_input_text.pop_back();
+				}
 			}
 		}
 		else if (m_edit_mode && event.type == sf::Event::KeyPressed)
@@ -170,7 +175,7 @@ public:
 		{
 			m_text->setString(m_default_str);
 		}
-}
+	}
 
 	const std::string& get_string()
 	{

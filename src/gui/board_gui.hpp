@@ -32,14 +32,12 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
+#include "toolbox.hpp"
 #include "pin_gui.hpp"
 #include "text_box.hpp"
-#include "toolbox.hpp"
+#include "pin_port_gui.hpp"
 #include "wire_gui.hpp"
-
-
-// #include "pin_port_gui.hpp"
-#include "connection_port_gui.hpp"
+#include "belt_gui.hpp"
 #include "component_gui.hpp"
 #include "../component_recipe.hpp"
 
@@ -67,7 +65,8 @@ public:
     m_prototype.setPosition((sf::Vector2f{m_background.getSize().x + TOOLBOX_WIDTH, m_background.getSize().y} - m_prototype.getSize()) / 2.f);
 
     m_name_text_box.set_position({m_prototype.getPosition().x, 20.f});
-    m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
+    m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width()*2, 20.f});
+    m_bus_bits_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_bus_bits_text_box.get_width(), 20.f}); // I am sorry
 
     auto prototype_position = m_prototype.getPosition();
 
@@ -83,6 +82,18 @@ public:
     m_components.push_back(std::move(component));
   }
 
+  bool bus_bits_textbox_condition(const std::string& inputString) {
+    int& updatedVariable = Context::instance()->bus_bits;
+    for (int i = 0; i < inputString.length(); i++)
+    {
+      if (isdigit(inputString[i]) == false)
+      {
+        return false;
+      }
+    }
+    return true;
+}
+
   void update(const sf::Time& dt)
   {
     if (m_name_text_box.was_edited())
@@ -90,6 +101,8 @@ public:
       Context::instance()->current_component_name = m_name_text_box.get_string();
     }
 
+    // m_belt.update(dt);
+    m_toolbox.update(dt);
 
     for (auto& wire : m_wires)
     {
@@ -114,6 +127,7 @@ public:
     target.draw(m_prototype, states);
     target.draw(m_name_text_box, states);
     target.draw(m_mode_text_box, states);
+    target.draw(m_bus_bits_text_box, states);
 
     m_input_pin_port.draw(target, states);
     m_output_pin_port.draw(target, states);
@@ -137,8 +151,6 @@ public:
     if (event.key.code == sf::Keyboard::E)
     {
       auto ctx = Context::instance();
-
-      // TODO: Make the wiring mode actually work
       switch (ctx->edit_mode)
       {
         break; case Mode::IDLE: 
@@ -156,25 +168,14 @@ public:
         {
           ctx->edit_mode = Mode::IDLE;
           m_mode_text_box.set_string("Normal mode");
+          ctx->active_wire = nullptr;
         }
         default:
         {}
       }
-      // if (ctx->edit_mode == Mode::WIRING)
-      // {
-      //   ctx->edit_mode = Mode::IDLE;
-      //   m_mode_text_box.set_string("Normal mode");
-      //   ctx->active_wire = nullptr;
-      // }
-      // else
-      // {
-      //   ctx->edit_mode = Mode::WIRING;
-      //   m_mode_text_box.set_string("Wiring mode");
-      // }
-
-      m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
+      // m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
     }
-    /*else*/ if (event.key.code == sf::Keyboard::C)
+    else if (event.key.code == sf::Keyboard::C)
     {
       clear();
     }
@@ -182,7 +183,7 @@ public:
 
   void handle_edit_mode(const sf::Event& event)
   {
-    m_input_pin_port.handle_events(event, true);
+    m_input_pin_port.handle_events(event);
     m_output_pin_port.handle_events(event, false);
   }
 
@@ -192,6 +193,8 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
 {
   std::size_t input_pid_acc = 0;
   std::size_t output_pid_acc = 0;
+
+  std::cout << "Finding pin. If there's no other printout then it found it lol\n";
 
   // Query main input pins.
   auto [pid, pin] = m_input_pin_port.get_pin(pos);
@@ -226,11 +229,11 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
     input_pid_acc += component->get_input_pin_port()->size();
     output_pid_acc += component->get_output_pin_port()->size();
   }
-
+  std::cout << "Pin not found\n";
   return {0, nullptr};
 }
 
-  void handle_wiring_mode(const sf::Event& event)
+void handle_wiring_mode(const sf::Event& event)
   {
     if (event.type == sf::Event::MouseButtonPressed)
     {
@@ -277,12 +280,23 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
     m_output_pin_port.handle_events(event, false, 1);
   }
 
+  void update_bus_bits()
+  {
+    int intValue;
+    std::istringstream iss(m_bus_bits_text_box.get_string());
+    iss >> intValue;
+    Context::instance()->bus_bits = intValue;
+  }
+
   void handle_events(const sf::Event& event)
 	{
     auto* context = Context::instance();
 
     m_name_text_box.handle_events(event);
-    m_toolbox.handle_events(event);
+    m_bus_bits_text_box.handle_events(event, true, [this](const std::string& inputString) {
+        return this->bus_bits_textbox_condition(inputString);
+    });
+    update_bus_bits();
 
     for (auto& component : m_components)
     {
@@ -293,10 +307,10 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
 
     switch (context->edit_mode)
     {
-    break; case Mode::TEXT:
-    break; case Mode::IDLE: handle_edit_mode(event);
-    break; case Mode::WIRING: handle_wiring_mode(event);
-    break; case Mode::BUS: handle_bus_mode(event);
+      break; case Mode::TEXT:
+      break; case Mode::IDLE: handle_edit_mode(event);
+      break; case Mode::WIRING: handle_wiring_mode(event);
+      break; case Mode::BUS: handle_bus_mode(event);
     }
 	}
 
@@ -307,6 +321,7 @@ std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
     m_input_pin_port.clear_port();
     m_output_pin_port.clear_port();
     m_name_text_box.reset();
+    m_bus_bits_text_box.reset();
 
     m_sketch = nullptr;
     m_sketch = std::make_unique<Gate>();
@@ -364,15 +379,11 @@ private:
   sf::RectangleShape m_background;
   sf::RectangleShape m_prototype;
   TextBoxGui         m_name_text_box;
+  TextBoxGui         m_bus_bits_text_box = TextBoxGui("No bits", true);
   TextBoxGui         m_mode_text_box;
-
-  // PinPortGui m_input_pin_port;
-  // PinPortGui m_output_pin_port;
 
   ConnectionPortGui m_input_pin_port;
   ConnectionPortGui m_output_pin_port;
-
-
 
   ToolBox m_toolbox;
 

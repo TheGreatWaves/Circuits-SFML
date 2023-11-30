@@ -159,6 +159,7 @@ class ToolBox
         {
             if (inside_box)
             {
+                std::cout << "Selected component\n";
                 m_search_text.toggle_edit_mode();
             }
             else

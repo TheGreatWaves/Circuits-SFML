@@ -57,6 +57,7 @@ struct Context
    */
   std::string_view              current_component_name;
   Mode                          edit_mode = Mode::IDLE;
+  int                           bus_bits = 2;
   WireGui*                      active_wire = nullptr;
   sf::RenderWindow*             window = nullptr;
   BoardGui*                     board = nullptr;
