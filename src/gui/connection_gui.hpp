@@ -62,7 +62,7 @@ public:
             }
             break; case Connection::Bus:
             {
-                return m_bus->contains(pos);
+                return m_bus->contains(0, pos);
             }
         }
     }

@@ -119,6 +119,14 @@ struct Gate
         {
           std::cout << "Bus Name: " << all_busses[index].bus_name << "\n";
           std::cout << "Start: " << all_busses[index].start << "Size: " << all_busses[index].size << "\n";
+          if (all_busses[index].start > INPUT_PIN_LIMIT)
+          {
+            output_busses.push_back(all_busses[index]);
+          }
+          else
+          {
+            input_busses.push_back(all_busses[index]);
+          }
         }
         std::cout << "Input pins \n";
         for (hdl::Meta::PinEntry p: gate_meta->input_pins)

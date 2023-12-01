@@ -47,9 +47,13 @@ public:
         member_pins_on_vals.emplace_back(&on);
     }
 
-    bool contains(const sf::Vector2f& pos)
+    bool contains(int index, const sf::Vector2f& pos)
     {
-        return m_bus.getGlobalBounds().contains(pos);
+        if (index > bus_pins.size())
+        {
+            return false;
+        }
+        return bus_pins[index].getGlobalBounds().contains(pos);
     }
 
     float get_width()
@@ -69,11 +73,17 @@ public:
         if (event.type == sf::Event::MouseButtonPressed)
         {
             // TODO: Update this so that member pins are switched on/off
-            auto pressed = contains(sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
-            if (pressed)
+            for (int index = 0; index < m_bits; index++)
             {
-                on = !on;
+                std::cout << "Handle event\n";
+                auto pressed = contains(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
+                if (pressed)
+                {
+                    *member_pins_on_vals[index] = !(*member_pins_on_vals[index]);
+                    std::cout << "Bus_pin pressed\n";
+                }
             }
+
         }
     }
 
@@ -92,7 +102,7 @@ public:
 
         auto bus_pos = m_bus.getPosition();
 
-        for (int index = 1; index < m_bits; index++)
+        for (int index = 0; index < m_bits; index++)
         {
             // std::cout << "getting pin\n";
             auto current_pin = bus_pins[index];
@@ -188,8 +198,8 @@ private:
     int front_index = 0;
     sf::Text m_bits_text;
     std::vector<sf::RectangleShape> bus_pins;
-    std::vector<bool> m_on_bits {};
-    std::vector<std::shared_ptr<bool>> member_pins_on_vals {};
+    std::vector<bool> m_on_bits{};
+    std::vector<std::shared_ptr<bool>> member_pins_on_vals{};
 };
 
 #endif /* BUS__GUI */
