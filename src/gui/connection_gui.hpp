@@ -27,26 +27,26 @@ public:
 
     // Pin constructor
     ConnectionGui(float pin_radius = PIN_RADIUS, bool bus_member = false)
+    : m_pin{std::make_unique<PinGui>(pin_radius)}
     {
-        // std::cout << "Pin constructor called" << std::endl;
-        m_pin = PinGui(pin_radius);
+        std::cout << "Pin constructor called\n";
         if (bus_member)
         {
             m_connection_type = Connection::BusMember;
         }
-        // std::cout << "Pin created" << std::endl;
+        std::cout << "Pin created\n";
     }
 
     // Bus constructor
     ConnectionGui(int front_index, int m_bits = DEFAULT_BITS, float bus_height = BUS_HEIGHT, float bus_width = BUS_WIDTH, Connection connection_type = Connection::Pin)
+    : m_bus{std::make_unique<BusGui>(front_index, m_bits, bus_height, bus_width)}  
     {
         if (connection_type != Connection::Bus){
             return;
         }
         m_connection_type = Connection::Bus;
-        std::cout << "Bus constructor called" << std::endl;
-        m_bus = BusGui(front_index, m_bits, bus_height, bus_width);
-        std::cout << "Bus constructor created" << std::endl;
+        std::cout << "Bus constructor called\n";
+        std::cout << "Bus created in constructor: " << m_bus << "\n";
     }
 
     // Checks whether the position is within the connection
@@ -92,13 +92,13 @@ public:
         {
             break; case Connection::Pin:
             {
-                // std::cout << "Pin drawing" << std::endl;
+                std::cout << "Pin drawing: " << this << '\n';
                 return m_pin->draw(target, states);
                 // std::cout << "Pin drawn" << std::endl;
             }
             break; case Connection::Bus:
             {
-                // std::cout << "Bus drawing" << std::endl;
+                std::cout << "Bus drawing: " << this << '\n';
                 return m_bus->draw(target, states);
                 // std::cout << "Bus drawn" << std::endl;
             } 
@@ -130,25 +130,50 @@ public:
     // Returns the width of the bus
     float get_bus_width()
     {
-        return m_bus->get_width();
+        if (m_connection_type == Connection::Bus)
+        {
+            return m_bus->get_width();
+        }
+        else
+        {
+            return 0.f;
+        }
     }
 
     // Returns the height of the bus
     float get_bus_height()
     {
-        return m_bus->get_height();
+        if (m_connection_type == Connection::Bus)
+        {
+            return m_bus->get_height();
+        }
+        else
+        {
+            return 0.f;
+        }
     }
 
     // Adds a pin to the bus as its member
-    void add_bus_member(std::shared_ptr<bool> on_val)
+    void add_bus_member(PinGui* pin)
     {
-        return m_bus->add_member_pin(on_val);
+        if (m_connection_type == Connection::Bus)
+        {
+            m_bus->add_member_pin(pin);
+        }
+        return;
     }
 
     // Returns the pin of a connection
-    std::shared_ptr<bool> get_pin_on()
+    PinGui* get_pin()
     {
-        return m_pin.value().get_on();
+        if (m_connection_type != Connection::Bus)
+        {
+            return m_pin.get();
+        }
+        else
+        {
+            return nullptr;
+        }
     }
 
     // Returns the postiion of the connection
@@ -194,11 +219,17 @@ public:
             case Connection::Pin:
             case Connection::BusMember:
             {
-                return m_pin->set_interactability(interactable);
+                if (m_pin != nullptr)
+                {
+                    return m_pin->set_interactability(interactable);
+                }
             }
             break; case Connection::Bus:
             {
-                return m_bus->set_interactability(interactable);
+                if (m_bus != nullptr)
+                {
+                    return m_bus->set_interactability(interactable);
+                }
             }
             break; default:
             {}
@@ -269,10 +300,16 @@ public:
         m_connection_type = connection;
     }
 
-private:
+    int get_bus_member_size()
+    {
+        return m_bus->get_member_size();
+    }
+    
+    
     Connection m_connection_type = Connection::Pin;
-    std::optional<BusGui> m_bus;
-    std::optional<PinGui> m_pin;
+private:
+    std::unique_ptr<BusGui> m_bus;
+    std::unique_ptr<PinGui> m_pin;
 };
 
 #endif /* CONNECTION_GUI */

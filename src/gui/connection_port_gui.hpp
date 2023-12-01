@@ -124,9 +124,10 @@ public:
             {
                 add_connection(mouse_pos, is_input, Connection::Pin, 1);
             }
-            else 
+            else if (Context::instance()->edit_mode == Mode::BUS)
             {
                 std::cout << "Adding bus at handle_events \n";
+                std::cout << "Context bus bits: " << Context::instance()->bus_bits << "\n";
                 add_connection(mouse_pos, is_input, Connection::Bus, Context::instance()->bus_bits);
             }
         }
@@ -142,8 +143,16 @@ public:
     void draw(sf::RenderTarget &target, sf::RenderStates states) 
     {
         target.draw(m_strip, states);
+
+        for (auto& p : m_connections) 
+        {
+            std::cout << "Type: " << static_cast<int>(p.m_connection_type) << " " << &p << "\n";
+        }
+
+
         for (auto& p : m_connections)
         {
+            
             p.draw(target, states);
         }   
     }

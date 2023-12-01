@@ -40,10 +40,10 @@ public:
 
   PinGui(float pin_radius = PIN_RADIUS)
   : m_pin(pin_radius)
+  , on { false }
   {
     m_pin.setFillColor(OFF_COLOR);
     m_pin.setOrigin({m_pin.getRadius(), m_pin.getRadius()});
-    on =  std::make_shared<bool>(false);
   }
   
   bool contains(const sf::Vector2f& pos)
@@ -61,7 +61,7 @@ public:
 
       if (pressed)
       {
-        *on = !(*on);
+        on = !on;
       }
     }
 
@@ -69,7 +69,7 @@ public:
 
   void draw(sf::RenderTarget &target, sf::RenderStates states)
   {
-    if (*on)
+    if (on)
     {
       // std::cout << "Pin gui constructs with pin on\n";
       m_pin.setFillColor(ON_COLOR);
@@ -104,27 +104,27 @@ public:
 
   bool is_on() const 
   {
-    return *on;
+    return on;
   }
 
   void toggle_on() 
   {
-    *on = true;
+    on = true;
   }
 
   void toggle_off() 
   {
-    *on = false;
+    on = false;
   }
 
-  std::shared_ptr<bool> get_on()
+  bool get_on()
   {
     return on;
   }
 
 private:
   sf::CircleShape m_pin;
-  std::shared_ptr<bool> on;
+  bool on;
   bool            m_interactable;
 };
 

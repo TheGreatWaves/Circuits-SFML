@@ -23,28 +23,18 @@ public:
     , m_bus_height { m_bits*bus_height/4 }
     , on { false }
     , front_index { front_index }
+    , member_pins{}
     {
         m_bus = sf::RectangleShape(sf::Vector2(BUS_WIDTH, m_bus_height));
         // std::cout << "Creating bus\n";
         std::cout << "int bits: " << m_bits << "\n";
-        const std::string bits_text = std::to_string(m_bits);
-        m_total_bits_text_box.set_string(bits_text);
-        m_total_bits_text_box.set_font_size(15);
         m_bus.setFillColor(OFF_COLOR);
         m_bus.setOrigin({(bus_width - 2), bus_height});
         // std::cout << "bus bits in constructor: " << bits_text << "\n";
-        sf::Font m_font{};
-        m_font.loadFromFile("resources/HelveticaNeueLTStd-It.otf");
-        sf::Text temp_m_bits_text(bits_text, m_font);
-        m_bits_text = temp_m_bits_text;
-        m_bits_text.setCharacterSize(15);
-		m_bits_text.setFillColor(sf::Color::White);
         for (int index = 0; index < m_bits; index++)
         {
-            m_on_bits.emplace_back(false);
             bus_pins.emplace_back(sf::RectangleShape(sf::Vector2(BUS_WIDTH, m_bus_height/m_bits-2)));
         }
-        member_pins_on_vals.emplace_back(&on);
     }
 
     bool contains(int index, const sf::Vector2f& pos)
@@ -53,7 +43,7 @@ public:
         {
             return false;
         }
-        return bus_pins[index].getGlobalBounds().contains(pos);
+        return bus_pins.at(index).getGlobalBounds().contains(pos);
     }
 
     float get_width()
@@ -73,13 +63,26 @@ public:
         if (event.type == sf::Event::MouseButtonPressed)
         {
             // TODO: Update this so that member pins are switched on/off
-            for (int index = 0; index < m_bits; index++)
+            for (int index = 0; index < bus_pins.size(); index++)
             {
-                std::cout << "Handle event\n";
                 auto pressed = contains(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
                 if (pressed)
                 {
-                    *member_pins_on_vals[index] = !(*member_pins_on_vals[index]);
+                    if (index == 0)
+                    {
+                        on = !on;
+                    }
+                    else
+                    {
+                        if (member_pins.at(index-1)->is_on())
+                        {
+                            member_pins.at(index-1)->toggle_off();
+                        }
+                        else
+                        {
+                            member_pins.at(index-1)->toggle_on();
+                        }
+                    }
                     std::cout << "Bus_pin pressed\n";
                 }
             }
@@ -87,43 +90,53 @@ public:
         }
     }
 
+    int get_member_size()
+    {
+        return member_pins.size();
+    }
+
     void draw(sf::RenderTarget &target, sf::RenderStates states)
     {
-        // std::cout << "Draw called on bus\n";
-        if (on)
-        {
-            m_bus.setFillColor(ON_COLOR);
-        }
-        else
-        {
-            m_bus.setFillColor(OFF_COLOR);
-        }
+        std::cout << "handle events: " << member_pins.size() << '\n';
+
+        std::cout << this << '\n';
         target.draw(m_bus, states);
 
         auto bus_pos = m_bus.getPosition();
 
+        // index 0 below is actually index 1 in bus because we store index 0 in this bus class and it has its own on/off.
         for (int index = 0; index < m_bits; index++)
         {
-            // std::cout << "getting pin\n";
-            auto current_pin = bus_pins[index];
-            // std::cout << "got pin, getting pin val\n";
-            if (member_pins_on_vals[index] == nullptr)
+            bool is_pin_on;
+            std::cout << "Index: " << index << " Bus_pins size: " << bus_pins.size() << "\n";
+            auto& current_pin_rec = bus_pins.at(index);
+            if (index == 0)
             {
-                std::cout << "NULL pointer\n";
-            }
-            bool is_pin_on = *member_pins_on_vals[index];
-            // std::cout << "setting pin color\n";
-            if (is_pin_on)
-            {
-                current_pin.setFillColor(ON_COLOR);
+                is_pin_on = is_on();
             }
             else
             {
-                current_pin.setFillColor(OFF_COLOR);
+                std::cout << "getting pin\n";
+                std::cout << "got bus_pin, getting pin val\n";
+                if (member_pins.at(index-1) == nullptr)
+                {
+                    std::cout << "NULL pointer\n";
+                }
+                std::cout << "got pin\n";
+                is_pin_on = member_pins.at(index-1)->is_on();
             }
-            // std::cout << "Drawing bus_pin\n";
-            current_pin.setPosition({bus_pos.x - 20, bus_pos.y - (index*m_bus_height/m_bits-2+2)});
-            target.draw(current_pin, states);
+
+            if (is_pin_on)
+            {
+                current_pin_rec.setFillColor(ON_COLOR);
+            }
+            else
+            {
+                current_pin_rec.setFillColor(OFF_COLOR);
+            }
+            std::cout << "Drawing bus_pin\n";
+            current_pin_rec.setPosition({bus_pos.x - 20, bus_pos.y - ((index)*m_bus_height/m_bits-2+2)});
+            target.draw(current_pin_rec, states);
         }
 
         // target.draw(m_bits_text, states);
@@ -162,11 +175,6 @@ public:
     void toggle_off() 
     {
         on = false;
-    }    
-
-    bool contains_pin_at_index(int index)
-    {
-        return ((front_index <= index) & ((front_index+m_bits-1) >= index));
     }
 
     bool is_first_pin(int index)
@@ -174,17 +182,20 @@ public:
         return front_index == index;
     }
 
-    void add_member_pin(std::shared_ptr<bool> on_val)
+    void add_member_pin(PinGui* pin)
     {
-        if (on_val == nullptr)
+        std::cout << this << '\n';
+        if (pin == nullptr)
         {
             std::cout << "null inputted\n";
         }
         else
         {
-            std::cout << "member pointer: " << on_val << "\n";
+            std::cout << "Member pins size before: " << member_pins.size() << "\n";
+            std::cout << "Adding member pointer: " << pin << "\n";
+            member_pins.push_back(pin); // TODO: Why does the size of the vector go down even after adding a new value
+            std::cout << "Member pins size now: " << member_pins.size() << "\n";
         }
-        member_pins_on_vals.emplace_back(on_val);
     }
 
 private:
@@ -198,8 +209,7 @@ private:
     int front_index = 0;
     sf::Text m_bits_text;
     std::vector<sf::RectangleShape> bus_pins;
-    std::vector<bool> m_on_bits{};
-    std::vector<std::shared_ptr<bool>> member_pins_on_vals{};
+    std::vector<PinGui*> member_pins;
 };
 
 #endif /* BUS__GUI */
