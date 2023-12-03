@@ -209,52 +209,92 @@ public:
     m_output_pin_port.handle_events(event, false);
   }
 
+void update_pins_vec(std::vector<std::pair<std::size_t, Connection_Val>>& pins, size_t value_to_add_to_pid)
+{
+  if (pins.size() != 0)
+  {
+    for (int index = 0; index < pins.size(); index++)
+    {
+      auto [temp_pid, pin] = pins.at(index);
+      pins.at(index) = {temp_pid + value_to_add_to_pid, pin};
+    }
+    return;
+  }
+}
+
 
 // returns the PIN ID and the pin.
-std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
+std::vector<std::pair<std::size_t, Connection_Val>> get_pin(const sf::Vector2f& pos)
 {
+  // TODO: This is used to wire 2 pins. Now make it able to wire 2 busses as well!
   std::size_t input_pid_acc = 0;
   std::size_t output_pid_acc = 0;
 
+  std::vector<std::pair<std::size_t, Connection_Val>> output = {};
   // std::cout << "Finding pin. If there's no other printout then it found it lol\n";
 
   // Query main input pins.
-  auto [pid, pin] = m_input_pin_port.get_pin(pos);
+  // auto [pid, pin] = m_input_pin_port.get_pin(pos);
+  std::vector<std::pair<std::size_t, Connection_Val>> pins {};
+  pins = m_input_pin_port.get_pins(pos);
 
   // Return if found from main input port.
-  if (pin != nullptr) return {pid, pin};
+  // if (pin != nullptr) return {pid, pin};
+  if (pins.size() > 0)
+  {
+    return pins;
+  }
   input_pid_acc += m_input_pin_port.size();
 
   // Query main output pins.
-  std::tie(pid, pin) = m_output_pin_port.get_pin(pos);
+  // std::tie(pid, pin) = m_output_pin_port.get_pin(pos);
+  pins = m_input_pin_port.get_pins(pos);
 
   // Return if found from main output port.
-  if (pin != nullptr) return {pid + INPUT_PIN_LIMIT, pin};
+  // if (pin != nullptr) return {pid + INPUT_PIN_LIMIT, pin};
+  if (pins.size() > 0)
+  {
+    update_pins_vec( pins, INPUT_PIN_LIMIT);
+    return pins;
+  }
   output_pid_acc += m_output_pin_port.size();
 
   // Query from components (this is where it gets messy).
   for (auto& component : m_components)
   {
     // Search the input port.
-    std::tie(pid, pin) = component->get_input_pin_port()->get_pin(pos);
+    // std::tie(pid, pin) = component->get_input_pin_port()->get_pin(pos);
+    pins = component->get_input_pin_port()->get_pins(pos);
 
     // Return if found from input port.
-    if (pin != nullptr) return {input_pid_acc + pid, pin};
+    // if (pin != nullptr) return {input_pid_acc + pid, pin};
+    if (pins.size() > 0)
+    {
+      update_pins_vec(pins, input_pid_acc);
+      return pins;
+    }
 
     // Search the output port.
-    std::tie(pid, pin) = component->get_output_pin_port()->get_pin(pos);
+    // std::tie(pid, pin) = component->get_output_pin_port()->get_pin(pos);
+    pins = component->get_output_pin_port()->get_pins(pos);
 
     // Return if found from output port.
-    if (pin != nullptr) return {output_pid_acc + pid + INPUT_PIN_LIMIT, pin};
+    // if (pin != nullptr) return {output_pid_acc + pid + INPUT_PIN_LIMIT, pin};
+    if (pins.size() > 0)
+    {
+      update_pins_vec(pins, output_pid_acc + INPUT_PIN_LIMIT);
+      return pins;
+    }
 
     // If we reached here it means that we haven't found them. We add to the i/o accumulators.
     input_pid_acc += component->get_input_pin_port()->size();
     output_pid_acc += component->get_output_pin_port()->size();
   }
   // std::cout << "Pin not found\n";
-  return {0, nullptr};
+  return {};
 }
 
+// TODO: Make wires work with new get_pins
 void handle_wiring_mode(const sf::Event& event)
   {
     if (event.type == sf::Event::MouseButtonPressed)
@@ -262,24 +302,32 @@ void handle_wiring_mode(const sf::Event& event)
       auto mouse_pos = sf::Vector2f(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
 
       // Retrieve pin.
-      auto [pid, pin] = get_pin(mouse_pos);
+      // auto [pid, pin] = get_pin(mouse_pos);
+      auto pins = get_pin(mouse_pos);
 
       auto* active_wire = Context::instance()->active_wire;
 
       if (active_wire != nullptr)
       {
-        if (pin != nullptr && pin != active_wire->get_src_pin())
+        for (auto [pid, val] : pins)
         {
-          active_wire->add_node(pin->get_position());
-          active_wire->set_dest_pin(pin);
-          active_wire->set_dest_index(pid);
-          Context::instance()->active_wire = nullptr;
-
-          Context::instance()->sketch->wire_pins(active_wire->get_src_index(), active_wire->get_dest_index());
-        }
-        else
-        {
-          active_wire->handle_events(event);
+          BusGui* bus = val.m_bus;
+          PinGui* pin = val.m_pin;
+          ConnectionGui* connection = val.m_connection;
+          // if (pin != nullptr && pin != active_wire->get_src_pin())
+          if (pin != nullptr && connection != active_wire->get_src_pin())
+          {
+            active_wire->add_node(connection->get_position());
+            active_wire->set_dest_pin(connection);
+            active_wire->set_dest_index(pid);
+            
+            Context::instance()->active_wire = nullptr;
+            Context::instance()->sketch->wire_pins(active_wire->get_src_index(), active_wire->get_dest_index());
+          }
+          else
+          {
+            active_wire->handle_events(event);
+          }
         }
         return;
       }

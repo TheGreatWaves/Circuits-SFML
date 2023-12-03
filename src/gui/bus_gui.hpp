@@ -37,13 +37,22 @@ public:
         }
     }
 
-    bool contains(int index, const sf::Vector2f& pos)
+    bool contains_at_index(int index, const sf::Vector2f& pos)
     {
         if (index > bus_pins.size())
         {
             return false;
         }
         return bus_pins.at(index).getGlobalBounds().contains(pos);
+    }
+
+    bool contains(const sf::Vector2f& pos)
+    {
+        for (int index = 0; index < bus_pins.size(); index++)
+        {
+            if (contains_at_index(index, pos)) return true;
+        }
+        return false;
     }
 
     float get_width()
@@ -62,10 +71,9 @@ public:
 
         if (event.type == sf::Event::MouseButtonPressed)
         {
-            // TODO: Update this so that member pins are switched on/off
             for (int index = 0; index < bus_pins.size(); index++)
             {
-                auto pressed = contains(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
+                auto pressed = contains_at_index(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
                 if (pressed)
                 {
                     if (index == 0)
@@ -196,6 +204,11 @@ public:
             member_pins.push_back(pin); // TODO: Why does the size of the vector go down even after adding a new value
             std::cout << "Member pins size now: " << member_pins.size() << "\n";
         }
+    }
+
+    std::vector<PinGui*> get_members()
+    {
+        return member_pins;
     }
 
 private:

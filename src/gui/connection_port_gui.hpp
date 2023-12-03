@@ -26,21 +26,41 @@ public:
         m_interactable = interactable;
     }
 
-    std::pair<std::size_t, ConnectionGui*> get_pin(const sf::Vector2f& pos)
+    std::vector<std::pair<std::size_t, Connection_Val>> get_pins(const sf::Vector2f& pos)
     {
         std::size_t index = 0;
+        std::vector<std::pair<std::size_t, Connection_Val>> output = {};
         for (auto& p : m_connections)
         {
+            if (p.m_connection_type == Connection::BusMember)
+            {
+                continue;
+            }
             // Ugly and wasteful but it has to be done.
             if (p.contains(pos))
             {
                 // TODO: go to bus_gui and set it such that
                 // we can return true for the bus head
-                return {index, &p};
+                if (p.m_connection_type == Connection::Bus)
+                {
+                    // TODO: Return all the pins in the bus including the bus head
+                    output.emplace_back(index, Connection_Val{p.get_bus(), nullptr});
+                    auto member_pins = p.get_bus_members();
+                    for (size_t index2 = 0; index2 < member_pins.size(); index2++)
+                    {
+                        output.emplace_back(index+index2+1, Connection_Val{nullptr, member_pins.at(index2)});
+                    }
+                    return output;
+                }
+                else
+                {
+                    output.emplace_back(index, Connection_Val{nullptr, p.get_pin()});
+                    return output;
+                }
             }
             index++;
         }
-        return {0, nullptr};
+        return {};
     }
 
     std::size_t get_bits()

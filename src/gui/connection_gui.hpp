@@ -18,6 +18,13 @@ enum class Connection {
     BusMember, // Essentially a pin
 };
 
+class ConnectionGui;
+
+struct Connection_Val {
+    BusGui* m_bus;
+    PinGui* m_pin;
+    ConnectionGui* m_connection;
+};
 
 class ConnectionGui
 {
@@ -62,7 +69,7 @@ public:
             }
             break; case Connection::Bus:
             {
-                return m_bus->contains(0, pos);
+                return m_bus->contains(pos);
             }
         }
     }
@@ -127,6 +134,18 @@ public:
         }
     }
 
+    std::vector<PinGui*> get_bus_members()
+    {
+        if (m_connection_type == Connection::Bus)
+        {
+            return m_bus->get_members();
+        }
+        else
+        {
+            return {};
+        }
+    }
+
     // Returns the width of the bus
     float get_bus_width()
     {
@@ -164,15 +183,25 @@ public:
     }
 
     // Returns the pin of a connection
-    PinGui* get_pin()
+    // PinGui* get_pin()
+    std::vector<Connection_Val> get_pins()
     {
+        std::vector<Connection_Val> output = {};
         if (m_connection_type != Connection::Bus)
         {
-            return m_pin.get();
+            Connection_Val output_pin = { nullptr, m_pin.get(), this };
+            output.push_back(output_pin);
+            return output;
         }
         else
         {
-            return nullptr;
+            output.push_back({ m_bus.get() , nullptr });
+            auto bus_members = m_bus->get_members();
+            for (int index = 0; index < bus_members.size(); index++)
+            {
+                output.push_back({ nullptr, bus_members.at(index) });
+            }
+            return output;
         }
     }
 
@@ -305,7 +334,16 @@ public:
         return m_bus->get_member_size();
     }
     
+    BusGui* get_bus()
+    {
+        return m_bus.get();
+    }
     
+    PinGui* get_pin()
+    {
+        return m_pin.get();
+    }
+
     Connection m_connection_type = Connection::Pin;
 private:
     std::unique_ptr<BusGui> m_bus;
