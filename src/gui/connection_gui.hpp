@@ -35,7 +35,22 @@ class ConnectionGui
 
         void draw(sf::RenderTarget &target, sf::RenderStates states)
         {
+            target.draw(m_bus, states);
+            auto bus_pos = m_bus.getPosition();
             // TODO: Get a rectangle shape, draw it, shift it down, draw it again, until you get pins val.
+            for (int index = 0; index < m_pins.size(); index++)
+            {
+                if (m_pins.at(index))
+                {
+                    m_pins_shape.setFillColor(ON_COLOR);
+                }
+                else
+                {
+                    m_pins_shape.setFillColor(OFF_COLOR);
+                }
+                m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y - ((index)*m_connection_height/m_bits-2+2)});
+                target.draw(m_pins_shape, states);
+            }
         }
 
         bool contains_at_index(int index, const sf::Vector2f& pos)
