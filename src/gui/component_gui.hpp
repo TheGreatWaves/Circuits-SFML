@@ -32,14 +32,14 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 
 #include "../board.hpp"
-#include "pin_gui.hpp"
+#include "connection_port_gui.hpp"
 
 #include "text_box.hpp"
-#include "pin_port_gui.hpp"
 
 constexpr float NAME_PADDING = 10.f;
 constexpr float COMPONENT_PIN_RADIUS = 8.f;
 const sf::Color BODY_COLOR = sf::Color(180, 190, 254);
+constexpr float PIN_RADIUS = 15.f;
 
 class ComponentGui 
 {
@@ -47,8 +47,8 @@ public:
 
   ComponentGui(std::string_view configuration_name)
   : m_name("", false)
-  , m_input_pins(COMPONENT_PIN_RADIUS)
-  , m_output_pins(COMPONENT_PIN_RADIUS)
+  , m_input_connections()
+  , m_output_connections()
   , m_component_name(configuration_name)
   {
     auto board = Board::instance();
@@ -60,6 +60,8 @@ public:
 
       auto input_count = m_component->input_pins.size();
       auto output_count = m_component->output_pins.size();
+      auto input_busses = m_component->input_busses;
+      auto output_busses = m_component->output_busses;
       auto max_side_pins_count = std::max(input_count, output_count);
 
       m_name.set_string(std::string{configuration_name});
@@ -71,11 +73,11 @@ public:
       m_body.setFillColor(BODY_COLOR);
       m_body.setOrigin(m_body.getSize()/2.f);
 
-      m_input_pins.set_interactability(true);
-      m_output_pins.set_interactability(false);
+      m_input_connections.set_interactability(true);
+      m_output_connections.set_interactability(false);
 
-      m_input_pins.setup_port(input_count);
-      m_output_pins.setup_port(output_count);
+      m_input_connections.setup_port(input_count, input_busses);
+      m_output_connections.setup_port(output_count, output_busses);
     }
   }  
 
@@ -85,15 +87,15 @@ public:
     {
 
       // std::cout << BLOCK << " [ UPDATING COMPONENT: `" << m_component->name << "` ] " << BLOCK  << BLOCK << BLOCK << '\n';
-      auto input_bits = m_input_pins.get_bits();    
-      m_component->apply_input(m_input_pins.size(), input_bits);
+      auto input_bits = m_input_connections.get_bits();    
+      m_component->apply_input(m_input_connections.get_number_of_pins(), input_bits);
       // m_component->input_info();
       // m_component->wire_info();
       // m_component->subgates_brief();
 
       m_component->simulate();
       auto output_bits = m_component->serialize_output();
-      m_output_pins.apply_bits(output_bits);
+      m_output_connections.apply_bits(output_bits);
 
       // m_component->output_info();
       // m_component->info();
@@ -104,8 +106,8 @@ public:
   void set_position(const sf::Vector2f& pos)
   {
     m_body.setPosition(pos);
-    m_input_pins.anchor(m_body);
-    m_output_pins.anchor(m_body, false);
+    m_input_connections.anchor(m_body);
+    m_output_connections.anchor(m_body, false);
     auto body_size = m_body.getSize();
 
     auto body_gbounds = m_body.getGlobalBounds();
@@ -116,25 +118,25 @@ public:
   void draw(sf::RenderTarget &target, sf::RenderStates states)
   {
     target.draw(m_body, states);
-    m_input_pins.draw(target, states);
-    m_output_pins.draw(target, states);
+    m_input_connections.draw(target, states);
+    m_output_connections.draw(target, states);
     target.draw(m_name, states);
   }
 
   void handle_events(const sf::Event& event)
 	{
-    m_input_pins.handle_events(event);
-    m_output_pins.handle_events(event);
+    m_input_connections.handle_events(event);
+    m_output_connections.handle_events(event);
 	}
 
-  PinPortGui* get_input_pin_port()
+  ConnectionPortGui* get_input_pin_port()
   {
-    return &m_input_pins;
+    return &m_input_connections;
   }
 
-  PinPortGui* get_output_pin_port()
+  ConnectionPortGui* get_output_pin_port()
   {
-    return &m_output_pins;
+    return &m_output_connections;
   }
 
   [[nodiscard]] const std::string& get_component_name() noexcept
@@ -146,8 +148,8 @@ private:
   std::unique_ptr<Gate> m_component;
   sf::RectangleShape    m_body;
   TextBoxGui            m_name;
-  PinPortGui            m_input_pins;
-  PinPortGui            m_output_pins;
+  ConnectionPortGui     m_input_connections;
+  ConnectionPortGui     m_output_connections;
   std::string           m_component_name;
 };
 

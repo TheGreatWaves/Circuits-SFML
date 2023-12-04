@@ -33,11 +33,8 @@
 #include <SFML/Window/Keyboard.hpp>
 
 #include "toolbox.hpp"
-#include "pin_gui.hpp"
 #include "text_box.hpp"
-#include "pin_port_gui.hpp"
 #include "wire_gui.hpp"
-#include "belt_gui.hpp"
 #include "component_gui.hpp"
 #include "../component_recipe.hpp"
 
@@ -45,8 +42,9 @@ class BoardGui
 {
 public:
   BoardGui(const sf::Vector2f& size)
-  : m_mode_text_box("Normal mode", false)
-  , m_belt(size)
+  : m_bits_text_box("Bits: ", false)
+  , m_connection_bits_text_box("1          ", true)
+  , m_mode_text_box("Normal mode", false)
   , m_toolbox(sf::Vector2f{TOOLBOX_WIDTH/2.f, 50.f})
   {
     // TODO: Yes this is bad.
@@ -64,15 +62,17 @@ public:
     m_prototype.setPosition((sf::Vector2f{m_background.getSize().x + TOOLBOX_WIDTH, m_background.getSize().y} - m_prototype.getSize()) / 2.f);
 
     m_name_text_box.set_position({m_prototype.getPosition().x, 20.f});
+    m_bits_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x  - m_mode_text_box.get_width() - 2 * m_connection_bits_text_box.get_width() - m_bits_text_box.get_width(), 20.f});
+    m_connection_bits_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x  - m_mode_text_box.get_width() - 2 * m_connection_bits_text_box.get_width(), 20.f});
     m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
 
     auto prototype_position = m_prototype.getPosition();
 
-    m_input_pin_port.anchor(m_prototype);
-    m_input_pin_port.set_interactability(true);
+    m_input_connection_port.anchor(m_prototype);
+    m_input_connection_port.set_interactability(true);
 
-    m_output_pin_port.anchor(m_prototype, false);
-    m_output_pin_port.set_interactability(false);
+    m_output_connection_port.anchor(m_prototype, false);
+    m_output_connection_port.set_interactability(false);
   }
 
   void add_component(std::unique_ptr<ComponentGui> component)
@@ -107,15 +107,35 @@ public:
    
   }
 
+  void update_mode_text_box_string()
+  {
+    switch (Context::instance()->edit_mode)
+      {
+        break; case Mode::IDLE: 
+        {
+          m_mode_text_box.set_string("Normal mode");
+        }
+        break; case Mode::WIRING:
+        {
+          m_mode_text_box.set_string("Wiring mode");
+        }
+        default:
+        {}
+      }
+  }
+
   void draw(sf::RenderTarget &target, sf::RenderStates states)
   {
+    update_mode_text_box_string();
     target.draw(m_background, states);
     target.draw(m_prototype, states);
     target.draw(m_name_text_box, states);
     target.draw(m_mode_text_box, states);
+    target.draw(m_connection_bits_text_box, states);
+    target.draw(m_bits_text_box, states);
 
-    m_input_pin_port.draw(target, states);
-    m_output_pin_port.draw(target, states);
+    m_input_connection_port.draw(target, states);
+    m_output_connection_port.draw(target, states);
 
     for (auto& component : m_components)
     {
@@ -159,49 +179,49 @@ public:
 
   void handle_edit_mode(const sf::Event& event)
   {
-    m_input_pin_port.handle_events(event);
-    m_output_pin_port.handle_events(event, false);
+    m_input_connection_port.handle_events(event);
+    m_output_connection_port.handle_events(event, false);
   }
 
 
 // returns the PIN ID and the pin.
-std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
+std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
 {
   std::size_t input_pid_acc = 0;
   std::size_t output_pid_acc = 0;
 
   // Query main input pins.
-  auto [pid, pin] = m_input_pin_port.get_pin(pos);
+  auto [connection_pid, connection] = m_input_connection_port.get_connection(pos);
 
   // Return if found from main input port.
-  if (pin != nullptr) return {pid, pin};
-  input_pid_acc += m_input_pin_port.size();
+  if (connection != nullptr) return {connection_pid, connection};
+  input_pid_acc += m_input_connection_port.get_number_of_pins();
 
   // Query main output pins.
-  std::tie(pid, pin) = m_output_pin_port.get_pin(pos);
+  std::tie(connection_pid, connection) = m_output_connection_port.get_connection(pos);
 
   // Return if found from main output port.
-  if (pin != nullptr) return {pid + INPUT_PIN_LIMIT, pin};
-  output_pid_acc += m_output_pin_port.size();
+  if (connection != nullptr) return {connection_pid + INPUT_PIN_LIMIT, connection};
+  output_pid_acc += m_output_connection_port.get_number_of_pins();
 
   // Query from components (this is where it gets messy).
   for (auto& component : m_components)
   {
     // Search the input port.
-    std::tie(pid, pin) = component->get_input_pin_port()->get_pin(pos);
+    std::tie(connection_pid, connection) = component->get_input_pin_port()->get_connection(pos);
 
     // Return if found from input port.
-    if (pin != nullptr) return {input_pid_acc + pid, pin};
+    if (connection != nullptr) return {input_pid_acc + connection_pid, connection};
 
     // Search the output port.
-    std::tie(pid, pin) = component->get_output_pin_port()->get_pin(pos);
+    std::tie(connection_pid, connection) = component->get_output_pin_port()->get_connection(pos);
 
     // Return if found from output port.
-    if (pin != nullptr) return {output_pid_acc + pid + INPUT_PIN_LIMIT, pin};
+    if (connection != nullptr) return {output_pid_acc + connection_pid + INPUT_PIN_LIMIT, connection};
 
     // If we reached here it means that we haven't found them. We add to the i/o accumulators.
-    input_pid_acc += component->get_input_pin_port()->size();
-    output_pid_acc += component->get_output_pin_port()->size();
+    input_pid_acc += component->get_input_pin_port()->get_number_of_pins();
+    output_pid_acc += component->get_output_pin_port()->get_number_of_pins();
   }
 
   return {0, nullptr};
@@ -209,25 +229,36 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
 
   void handle_wiring_mode(const sf::Event& event)
   {
+    // TODO: Connect all the wires within the bus from src -> dest
     if (event.type == sf::Event::MouseButtonPressed)
     {
       auto mouse_pos = sf::Vector2f(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
 
       // Retrieve pin.
-      auto [pid, pin] = get_pin(mouse_pos);
+      auto [connection_pid, connection] = get_connection(mouse_pos);
 
       auto* active_wire = Context::instance()->active_wire;
 
       if (active_wire != nullptr)
       {
-        if (pin != nullptr && pin != active_wire->get_src_pin())
+        if (connection != nullptr && connection != active_wire->get_src_pin().first)
         {
-          active_wire->add_node(pin->get_position());
-          active_wire->set_dest_pin(pin);
-          active_wire->set_dest_index(pid);
+          // Go through all the pins in the connection and connect them up
+          active_wire->add_node(connection->get_position());
+          auto active_wire_src = active_wire->get_src_pin();
+          auto active_wire_connection_pid = active_wire->get_src_connection_idx();
+          for (int index; index < connection->get_number_of_pins(); index++)
+          {
+            WireGui new_wire = WireGui();
+            new_wire.set_src_pin(active_wire_src.first, index);
+            new_wire.set_src_connection_idx(active_wire_connection_pid);
+            new_wire.set_src_index(active_wire_connection_pid + index);
+            new_wire.set_dest_pin(connection, index);
+            new_wire.set_src_connection_idx(connection_pid);
+            new_wire.set_dest_index(connection_pid + index);
+            Context::instance()->sketch->wire_pins(new_wire.get_src_index(), new_wire.get_dest_index());
+          }
           Context::instance()->active_wire = nullptr;
-
-          Context::instance()->sketch->wire_pins(active_wire->get_src_index(), active_wire->get_dest_index());
         }
         else
         {
@@ -236,13 +267,15 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
         return;
       }
 
-      if (pin != nullptr)
+      if (connection != nullptr)
       {
         m_wires.emplace_back();
         auto& wire = m_wires.back();
-        wire.set_src_pin(pin);
-        wire.set_src_index(pid);
-        wire.add_node(pin->get_position());
+
+        wire.set_src_pin(connection, 0);
+        wire.set_src_connection_idx(connection_pid);
+        wire.set_src_index(connection_pid);
+        wire.add_node(connection->get_position());
         Context::instance()->active_wire = &wire;
       }
     }
@@ -253,7 +286,6 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
     auto* context = Context::instance();
 
     m_name_text_box.handle_events(event);
-    // m_belt.handle_events(event);
     m_toolbox.handle_events(event);
 
     for (auto& component : m_components)
@@ -275,8 +307,8 @@ std::pair<std::size_t, PinGui*> get_pin(const sf::Vector2f& pos)
   {
     m_wires.clear();
     m_components.clear();
-    m_input_pin_port.clear_port();
-    m_output_pin_port.clear_port();
+    m_input_connection_port.clear_port();
+    m_output_connection_port.clear_port();
     m_name_text_box.reset();
 
     m_sketch = nullptr;
@@ -336,11 +368,11 @@ private:
   sf::RectangleShape m_prototype;
   TextBoxGui         m_name_text_box;
   TextBoxGui         m_mode_text_box;
+  TextBoxGui         m_connection_bits_text_box;
+  TextBoxGui         m_bits_text_box;
 
-  PinPortGui m_input_pin_port;
-  PinPortGui m_output_pin_port;
-
-  BeltGui m_belt;
+  ConnectionPortGui m_input_connection_port;
+  ConnectionPortGui m_output_connection_port;
 
   ToolBox m_toolbox;
 

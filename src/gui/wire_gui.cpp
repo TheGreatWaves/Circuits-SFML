@@ -23,15 +23,15 @@
  */
 
 #include "wire_gui.hpp"
-#include "pin_gui.hpp"
+#include "connection_gui.hpp"
 
 #include <iostream>
 
 void WireGui::update(const sf::Time& dt)
 {
-  if (m_src != nullptr)
+  if (m_src.first != nullptr)
   {
-    if (m_src->is_on())
+    if (m_src.first->get_pins()->at(m_src.second))
     {
       // Kick start a signal.
       if (m_reached_signal_end < 0.f)
@@ -59,9 +59,9 @@ void WireGui::update(const sf::Time& dt)
 
   if (m_reached_signal_end >= m_max_reachable)
   {
-    if (m_dest_pins != nullptr)
+    if (m_dest_pins.first != nullptr)
     {
-      m_dest_pins->toggle_on();
+      m_dest_pins.first->get_pins()->at(m_dest_pins.second) = true;
     }
   }
 
@@ -72,9 +72,9 @@ void WireGui::update(const sf::Time& dt)
 
   if (m_reached_signal_start >= m_max_reachable)
   {
-    if (m_dest_pins != nullptr)
+    if (m_dest_pins.first != nullptr)
     {
-      m_dest_pins->toggle_off();
+      m_dest_pins.first->get_pins()->at(m_dest_pins.second) = false;
     }
 
     m_reached_signal_end = -1.f;

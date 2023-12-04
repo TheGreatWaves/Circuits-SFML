@@ -40,6 +40,7 @@ constexpr const char* TEST_EXTENSION{ ".tst" };
 constexpr const std::size_t TOOLBOX_WIDTH = 150;
 constexpr const std::size_t TOOLBOX_X_MARGIN = 7.f;
 constexpr const std::size_t TOOLBOX_TOP_MARGIN = 20.f;
+constexpr const int DEFAULT_CONNECTION_BITS = 1;
 
 const std::string SCRIPTS_DIR{ "scripts" };
 

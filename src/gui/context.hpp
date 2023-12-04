@@ -48,6 +48,7 @@ class WireGui;
 class ComponentGui;
 class BoardGui;
 class Gate;
+class PinGui;
 
 struct Context
 {
@@ -60,6 +61,7 @@ struct Context
   sf::RenderWindow*             window = nullptr;
   BoardGui*                     board = nullptr;
   Gate*                         sketch = nullptr;
+  int                           bus_bits = 1;
 
   /**
    * Yes, I should throw an error if the constructor is called again, but I'm too lazy!

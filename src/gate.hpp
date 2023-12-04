@@ -37,6 +37,7 @@
 #include "pin.hpp"
 #include "utils.hpp"
 #include "wire_info.hpp"
+#include "./lang/hdl/meta.hpp"
 
 /**
  * Different type of gates. At the moment we only have one built-in type.
@@ -72,6 +73,12 @@ struct Gate
   std::size_t                                  pin_count{};
 
   /**
+   * Bus Details
+  */
+  std::vector<BusEntry>                             input_busses{};
+  std::vector<BusEntry>                             output_busses{};
+
+  /**
    * Subgates.
    */
   std::vector<std::unique_ptr<Gate>> subgates;
@@ -98,6 +105,22 @@ struct Gate
     , name{ gate_name }
     , serialized{ is_serialized }
   {
+    auto gate_meta = hdl::Meta::get_meta(gate_name);
+    if (gate_meta != nullptr)
+    {
+      auto all_busses = gate_meta->bus;
+      for (int index = 0; index < all_busses.size(); index++)
+      {
+        if (all_busses[index].start >= INPUT_PIN_LIMIT)
+        {
+          output_busses.push_back(all_busses[index]);
+        }
+        else
+        {
+          input_busses.push_back(all_busses[index]);
+        }
+      }
+    }
   }
 
   void print_truth_table()

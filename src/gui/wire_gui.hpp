@@ -36,9 +36,9 @@
 #include <sys/syscall.h>
 
 #include "context.hpp"
+#include "connection_gui.hpp"
 #include "../common.hpp"
 
-class PinGui;
 
 inline float lerp(float a, float b, float f)
 {
@@ -94,9 +94,9 @@ public:
 
   void update(const sf::Time& dt);
 
-  void set_src_pin(PinGui* src)
+  void set_src_pin(ConnectionGui* connection, std::size_t index)
   {
-    m_src = src;
+    m_src = { connection, index };
   }
 
   void set_src_index(std::size_t idx)
@@ -108,6 +108,7 @@ public:
   {
     m_dest_idx = idx;
   }
+
   std::size_t get_src_index() const
   {
     return m_src_idx;
@@ -118,9 +119,9 @@ public:
     return m_dest_idx;
   }
 
-  void set_dest_pin(PinGui* dest)
+  void set_dest_pin(ConnectionGui* connection, std::size_t index)
   {
-    m_dest_pins = dest;
+    m_dest_pins = { connection, index };
   }
 
   void draw(sf::RenderTarget &target, sf::RenderStates states)
@@ -165,14 +166,34 @@ public:
     }
   }
 
-  PinGui* get_src_pin()
+  std::pair<ConnectionGui*, std::size_t>  get_src_pin()
   {
     return m_src;
   }
   
-  PinGui* get_dest_pin()
+  std::pair<ConnectionGui*, std::size_t>  get_dest_pin()
   {
     return m_dest_pins;
+  }
+
+  void set_src_connection_idx(std::size_t val)
+  {
+    m_src_connection_idx = val;
+  }
+
+  void set_dest_connection_idx(std::size_t val)
+  {
+    m_dest_connection_idx = val;
+  }
+
+  std::size_t get_src_connection_idx()
+  {
+    return m_src_connection_idx;
+  }
+
+  std::size_t get_dest_connection_idx()
+  {
+    return m_dest_connection_idx;
   }
 
 private:
@@ -183,11 +204,14 @@ private:
   std::vector<sf::Vector2f> m_points{};
   sf::CircleShape           m_pole{};
   sf::CircleShape           m_circle{};
-  PinGui*                   m_dest_pins{};
-  PinGui*                   m_src{};
+  std::pair<ConnectionGui*, std::size_t>                   m_dest_pins{};
+  std::pair<ConnectionGui*, std::size_t>                   m_src{};
 
   std::size_t m_src_idx{};
   std::size_t m_dest_idx{};
+
+  std::size_t m_src_connection_idx{};
+  std::size_t m_dest_connection_idx{};
 };
 
 
