@@ -49,21 +49,33 @@ class ConnectionPortGui
             auto segment_size = m_strip.getSize().y / segments;
 
             std::size_t total_number_of_pins = 0;
-            for (auto& bus: busses)
+            if (busses.size() == 0)
             {
-                auto starting_index = bus.start;
-                if (starting_index > MAX_INPUT_PINS)
-                {
-                    // Reducing the start index by max_pins_count to normalize output index.
-                    starting_index -= MAX_INPUT_PINS;
-                }
-                while (starting_index + 1 > total_number_of_pins)
+                std::size_t bits = size;
+                while (bits --> 0)
                 {
                     m_connections.emplace_back(1);
                     total_number_of_pins++;
                 }
-                m_connections.emplace_back(bus.size);
-                total_number_of_pins += bus.size;
+            }
+            else
+            {
+                for (auto& bus: busses)
+                {
+                    auto starting_index = bus.start;
+                    if (starting_index > MAX_INPUT_PINS)
+                    {
+                        // Reducing the start index by max_pins_count to normalize output index.
+                        starting_index -= MAX_INPUT_PINS;
+                    }
+                    while (starting_index + 1 > total_number_of_pins)
+                    {
+                        m_connections.emplace_back(1);
+                        total_number_of_pins++;
+                    }
+                    m_connections.emplace_back(bus.size);
+                    total_number_of_pins += bus.size;
+                }
             }
 
             if (total_number_of_pins != size)

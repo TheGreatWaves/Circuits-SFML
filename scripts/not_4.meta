@@ -1,0 +1,25 @@
+// THIS META FILE IS AUTO GENERATED. DO NOT EDIT MANUALLY.
+
+// GATE NAME.
+not_4
+
+// BUSES DECLARATION.
+BUSES 2
+in 0 4
+out 255 4
+
+// GLOBAL INPUT PINS.
+INPUTS 4
+in[0]
+in[1]
+in[2]
+in[3]
+
+// GLOBAL OUTPUT PINS.
+OUTPUTS 4
+out[0]
+out[1]
+out[2]
+out[3]
+
+// END OF FILE.

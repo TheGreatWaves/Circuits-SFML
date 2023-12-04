@@ -1,0 +1,24 @@
+// THIS META FILE IS AUTO GENERATED. DO NOT EDIT MANUALLY.
+
+// GATE NAME.
+bus_gate_test
+
+// BUSES DECLARATION.
+BUSES 1
+a 0 4
+
+// GLOBAL INPUT PINS.
+INPUTS 4
+a[0]
+a[1]
+a[2]
+a[3]
+
+// GLOBAL OUTPUT PINS.
+OUTPUTS 4
+out0
+out1
+out2
+out3
+
+// END OF FILE.

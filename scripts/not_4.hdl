@@ -1,0 +1,9 @@
+CHIP not_4 {
+    IN in[4];
+    OUT out[4];
+    PARTS:
+    not(in=in[0], out=out[0]);
+    not(in=in[1], out=out[1]);
+    not(in=in[2], out=out[2]);
+    not(in=in[3], out=out[3]);
+}
