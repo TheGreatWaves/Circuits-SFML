@@ -103,9 +103,7 @@ class ConnectionGui
 
         void set_pin(std::size_t index, bool value)
         {
-            std::cout << "Setting at index: " << index << " Size: " << m_pins.size() << "\n";
             m_pins.at(index) = value;
-            std::cout << "Pin set\n";
         }
 
         void set_interactability(bool interactability)

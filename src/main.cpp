@@ -332,7 +332,7 @@ void init()
 	using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
 
 	for (const auto& gate : std::filesystem::directory_iterator(gate_sketch_dir))
-  {
+  	{
 		if (gate.path().extension() == GATE_EXTENSION)
 		{
 			run_file(gate.path());

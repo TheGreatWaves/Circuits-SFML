@@ -49,9 +49,10 @@ class ConnectionPortGui
             auto segment_size = m_strip.getSize().y / segments;
 
             std::size_t total_number_of_pins = 0;
+            std::cout << "Bus size: " << busses.size() << "\n";
             if (busses.size() == 0)
             {
-                std::cout << "Bus size is 0\n";
+                // std::cout << "Bus size is 0\n";
                 std::size_t bits = size;
                 while (bits --> 0)
                 {
@@ -69,10 +70,20 @@ class ConnectionPortGui
                         // Reducing the start index by max_pins_count to normalize output index.
                         starting_index -= MAX_INPUT_PINS;
                     }
-                    while (starting_index + 1 > total_number_of_pins)
+                    if (starting_index + 1 > total_number_of_pins)
                     {
-                        m_connections.emplace_back(1);
-                        total_number_of_pins++;
+                        for (int index; index < starting_index + 1; index++)
+                        {
+                            std::cout << "Starting index: " << starting_index << "\n";
+                            std::cout << "Total number of pins: " << total_number_of_pins << "\n";
+                            std::cout << "Adding pin\n";
+                            if (starting_index + 1 == total_number_of_pins)
+                            {
+                                break;
+                            }
+                            m_connections.emplace_back(1);
+                            total_number_of_pins++;
+                        }
                     }
                     m_connections.emplace_back(bus.size);
                     total_number_of_pins += bus.size;
@@ -129,7 +140,7 @@ class ConnectionPortGui
 
                 if (pressed)
                 {
-                    add_connection(mouse_pos, is_input);
+                    add_connection(mouse_pos, is_input, Context::instance()->bus_bits);
                 }
             }
         }
@@ -178,7 +189,7 @@ class ConnectionPortGui
         void apply_bits(std::size_t bits)
         {
             auto count = get_number_of_pins();
-            std::cout << "Count at apply_bits: " << count << "\n";
+            // std::cout << "Count at apply_bits: " << count << "\n";
             std::size_t index = 0;
             while (count --> 0)
             {
@@ -209,6 +220,8 @@ class ConnectionPortGui
             for (auto& connection: m_connections)
             {
                 output += connection.get_number_of_pins();
+                // std::cout << "Output +=: " << connection.get_number_of_pins() << "\n";
+                // std::cout << "m_connections len: " << m_connections.size() << "\n";
             }
             return output;
         }

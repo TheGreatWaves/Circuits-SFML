@@ -196,6 +196,16 @@ public:
     return m_dest_connection_idx;
   }
 
+  std::size_t get_src_connection_size()
+  {
+    return m_src.first->get_number_of_pins();
+  }
+
+  std::size_t get_dest_connection_size()
+  {
+    return m_dest_pins.first->get_number_of_pins();
+  }
+
 private:
   
   float                     m_reached_signal_start{-1.f};

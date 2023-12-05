@@ -33,6 +33,7 @@ void WireGui::update(const sf::Time& dt)
   {
     if (m_src.first->get_pins()->at(m_src.second))
     {
+      // std::cout << "First pin in wire is on\n";
       // Kick start a signal.
       if (m_reached_signal_end < 0.f)
       {

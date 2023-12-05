@@ -105,19 +105,22 @@ struct Gate
     , name{ gate_name }
     , serialized{ is_serialized }
   {
-    auto gate_meta = hdl::Meta::get_meta(gate_name);
-    if (gate_meta != nullptr)
+    if (!gate_name.empty())
     {
-      auto all_busses = gate_meta->bus;
-      for (int index = 0; index < all_busses.size(); index++)
+      auto gate_meta = hdl::Meta::get_meta(gate_name);
+      if (gate_meta != nullptr)
       {
-        if (all_busses[index].start >= INPUT_PIN_LIMIT)
+        auto all_busses = gate_meta->bus;
+        for (int index = 0; index < all_busses.size(); index++)
         {
-          output_busses.push_back(all_busses[index]);
-        }
-        else
-        {
-          input_busses.push_back(all_busses[index]);
+          if (all_busses[index].start >= INPUT_PIN_LIMIT)
+          {
+            output_busses.push_back(all_busses[index]);
+          }
+          else
+          {
+            input_busses.push_back(all_busses[index]);
+          }
         }
       }
     }

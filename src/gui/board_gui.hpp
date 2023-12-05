@@ -95,6 +95,11 @@ public:
       wire.update(dt);
     }
 
+    if (m_connection_bits_text_box.was_edited())
+    {
+      Context::instance()->bus_bits = std::stoi(m_connection_bits_text_box.get_string());
+    }
+
     // std::cout << BLOCK << BLOCK << " [ UPDATING ALL COMPONENT ] " << BLOCK  << BLOCK << BLOCK << BLOCK << BLOCK << '\n';
     // m_input_pin_port.info();
     // Context::instance()->sketch->wire_info();
@@ -247,9 +252,15 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
           active_wire->add_node(connection->get_position());
           auto active_wire_src = active_wire->get_src_pin();
           auto active_wire_connection_pid = active_wire->get_src_connection_idx();
-          for (int index; index < connection->get_number_of_pins(); index++)
+          std::size_t pins = connection->get_number_of_pins();
+          if (pins > active_wire->get_src_connection_size())
           {
-            WireGui new_wire = WireGui();
+            pins = active_wire->get_src_connection_size();
+          }
+          for (int index = 0; index < pins; index++)
+          {
+            m_wires.emplace_back();
+            auto& new_wire = m_wires.back();
             new_wire.set_src_pin(active_wire_src.first, index);
             new_wire.set_src_connection_idx(active_wire_connection_pid);
             new_wire.set_src_index(active_wire_connection_pid + index);
@@ -257,6 +268,8 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
             new_wire.set_src_connection_idx(connection_pid);
             new_wire.set_dest_index(connection_pid + index);
             Context::instance()->sketch->wire_pins(new_wire.get_src_index(), new_wire.get_dest_index());
+            std::cout << "Src index: " << new_wire.get_src_index() << "\n";
+            std::cout << "Dest index: " << new_wire.get_dest_index() << "\n";
           }
           Context::instance()->active_wire = nullptr;
         }
@@ -286,6 +299,7 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
     auto* context = Context::instance();
 
     m_name_text_box.handle_events(event);
+    m_connection_bits_text_box.handle_events(event);
     m_toolbox.handle_events(event);
 
     for (auto& component : m_components)
