@@ -107,7 +107,7 @@ public:
   {
     m_body.setPosition(pos);
     m_input_connections.anchor(m_body);
-    m_output_connections.anchor(m_body, false);
+    m_output_connections.anchor(m_body, false);;
     auto body_size = m_body.getSize();
 
     auto body_gbounds = m_body.getGlobalBounds();

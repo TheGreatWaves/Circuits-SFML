@@ -51,6 +51,7 @@ class ConnectionPortGui
             std::size_t total_number_of_pins = 0;
             if (busses.size() == 0)
             {
+                std::cout << "Bus size is 0\n";
                 std::size_t bits = size;
                 while (bits --> 0)
                 {
@@ -63,7 +64,7 @@ class ConnectionPortGui
                 for (auto& bus: busses)
                 {
                     auto starting_index = bus.start;
-                    if (starting_index > MAX_INPUT_PINS)
+                    if (starting_index >= MAX_INPUT_PINS)
                     {
                         // Reducing the start index by max_pins_count to normalize output index.
                         starting_index -= MAX_INPUT_PINS;
@@ -157,19 +158,19 @@ class ConnectionPortGui
 
         void set_pin_at_index(std::size_t index, bool value)
         {
-            std::size_t current_index = 0;
+            std::size_t current_index = index;
             std::size_t current_size = 0;
             for (auto connection : m_connections)
             {
                 current_size = connection.get_number_of_pins();
-                if (current_index+current_size >= index)
+                if (index < current_size)
                 {
-                    std::size_t position = index-current_index;
-                    connection.set_pin(position, value);
+                    // std::size_t position = index - current_size;
+                    connection.set_pin(current_index, value);
                 }
                 else
                 {
-                    current_index += current_size;
+                    current_index -= current_size;
                 }
             }
         }
@@ -177,6 +178,7 @@ class ConnectionPortGui
         void apply_bits(std::size_t bits)
         {
             auto count = get_number_of_pins();
+            std::cout << "Count at apply_bits: " << count << "\n";
             std::size_t index = 0;
             while (count --> 0)
             {
@@ -259,7 +261,6 @@ class ConnectionPortGui
                 connection.set_position({strip_pos.x + (strip_size.x / 2.f), strip_pos.y + cumulative_height});
                 cumulative_height += connection.get_connection_height();
             }
-
         }
 
     private:

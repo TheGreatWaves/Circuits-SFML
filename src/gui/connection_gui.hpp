@@ -6,6 +6,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../common.hpp"
+#include <iostream>
 
 const sf::Color ON_COLOR = sf::Color(220,20,60);
 const sf::Color OFF_COLOR = sf::Color(88, 91, 112);
@@ -87,7 +88,6 @@ class ConnectionGui
                         m_pins.at(index) = !m_pins.at(index);
                     }
                 }
-
             }
         }
 
@@ -103,7 +103,9 @@ class ConnectionGui
 
         void set_pin(std::size_t index, bool value)
         {
+            std::cout << "Setting at index: " << index << " Size: " << m_pins.size() << "\n";
             m_pins.at(index) = value;
+            std::cout << "Pin set\n";
         }
 
         void set_interactability(bool interactability)
