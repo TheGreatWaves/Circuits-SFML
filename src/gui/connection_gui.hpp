@@ -20,7 +20,7 @@ class ConnectionGui
         : m_bits { m_bits }
         , m_connection_height { m_bits*BUS_HEIGHT/4 }
         , m_pins_shape { sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_connection_height/m_bits-2)) }
-        , m_interactable { true }
+        , m_interactable { false }
         {
             m_bus = sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_connection_height));
             for (int index = 0; index < m_bits; index++)
@@ -38,9 +38,11 @@ class ConnectionGui
         {
             target.draw(m_bus, states);
             auto bus_pos = m_bus.getPosition();
-            // TODO: Get a rectangle shape, draw it, shift it down, draw it again, until you get pins val.
+            // Get a rectangle shape, draw it, shift it down, draw it again, until you get pins val.
             for (int index = 0; index < m_pins.size(); index++)
             {
+                // std::cout << "draw1\n";
+                // std::cout << "draw m_pins at index: " << index << " value: " << m_pins.at(index) << "\n";
                 if (m_pins.at(index))
                 {
                     m_pins_shape.setFillColor(ON_COLOR);
@@ -49,7 +51,8 @@ class ConnectionGui
                 {
                     m_pins_shape.setFillColor(OFF_COLOR);
                 }
-                m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y - ((index)*m_connection_height/m_bits-2+2)});
+                // std::cout << "draw2\n";
+                m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + ((index)*m_connection_height/m_bits-2+2)});
                 target.draw(m_pins_shape, states);
             }
         }
@@ -61,7 +64,7 @@ class ConnectionGui
                 return false;
             }
             auto bus_pos = m_bus.getPosition();
-            m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y - ((index)*m_connection_height/m_bits-2+2)});
+            m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + ((index)*m_connection_height/m_bits-2+2)});
             return  m_pins_shape.getGlobalBounds().contains(pos);
         }
 
@@ -72,6 +75,11 @@ class ConnectionGui
                 if (contains_at_index(index, pos)) return true;
             }
             return false;
+        }
+
+        bool touches_box(const sf::Vector2f& pos)
+        {
+            return m_bus.getGlobalBounds().contains(pos);
         }
 
         void handle_events(const sf::Event& event)
@@ -85,7 +93,9 @@ class ConnectionGui
                     auto pressed = contains_at_index(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
                     if (pressed)
                     {
+                        std::cout << "handle-events1\n";
                         m_pins.at(index) = !m_pins.at(index);
+                        std::cout << "handle-events2\n";
                     }
                 }
             }
@@ -103,7 +113,14 @@ class ConnectionGui
 
         void set_pin(std::size_t index, bool value)
         {
+            // if (value) std::cout << "Set to true\n";
+            // if (!value) std::cout << "Set to false\n";
+            std::cout << "Old val: " << m_pins.at(index) << "\n";
             m_pins.at(index) = value;
+            for (int index = 0; index < m_pins.size(); index++)
+            {
+                std::cout << "New val: " << m_pins.at(index) << "\n";
+            }
         }
 
         void set_interactability(bool interactability)

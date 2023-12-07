@@ -267,6 +267,7 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
             new_wire.set_dest_pin(connection, index);
             new_wire.set_src_connection_idx(connection_pid);
             new_wire.set_dest_index(connection_pid + index);
+            new_wire.add_node(connection->get_position());
             Context::instance()->sketch->wire_pins(new_wire.get_src_index(), new_wire.get_dest_index());
             std::cout << "Src index: " << new_wire.get_src_index() << "\n";
             std::cout << "Dest index: " << new_wire.get_dest_index() << "\n";

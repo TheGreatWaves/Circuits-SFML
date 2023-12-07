@@ -30,7 +30,7 @@ class ConnectionPortGui
             for (auto& connection : m_connections)
             {
                 // Ugly and wasteful but it has to be done.
-                if (connection.contains(pos))
+                if (connection.touches_box(pos))
                 {
                     return { index, &connection }; // return the PID of the first pin and the rest of the pins
                 }
@@ -49,8 +49,8 @@ class ConnectionPortGui
             auto segment_size = m_strip.getSize().y / segments;
 
             std::size_t total_number_of_pins = 0;
-            std::cout << "Bus size: " << busses.size() << "\n";
-            if (busses.size() == 0)
+            // std::cout << "Bus size: " << busses.size() << "\n";
+            if (busses.size() == 0 && size > 0)
             {
                 // std::cout << "Bus size is 0\n";
                 std::size_t bits = size;
@@ -74,9 +74,9 @@ class ConnectionPortGui
                     {
                         for (int index; index < starting_index + 1; index++)
                         {
-                            std::cout << "Starting index: " << starting_index << "\n";
-                            std::cout << "Total number of pins: " << total_number_of_pins << "\n";
-                            std::cout << "Adding pin\n";
+                            // std::cout << "Starting index: " << starting_index << "\n";
+                            // std::cout << "Total number of pins: " << total_number_of_pins << "\n";
+                            // std::cout << "Adding pin\n";
                             if (starting_index + 1 == total_number_of_pins)
                             {
                                 break;
@@ -169,9 +169,10 @@ class ConnectionPortGui
 
         void set_pin_at_index(std::size_t index, bool value)
         {
+            std::cout << "Setting pin at index: " << index << "\n";
             std::size_t current_index = index;
             std::size_t current_size = 0;
-            for (auto connection : m_connections)
+            for (auto& connection : m_connections)
             {
                 current_size = connection.get_number_of_pins();
                 if (index < current_size)
@@ -184,21 +185,28 @@ class ConnectionPortGui
                     current_index -= current_size;
                 }
             }
+            // std::cout << "Done setting pin at index\n";
         }
 
+
+        // TODO: Figure out why apply_bits does not work as intended!
         void apply_bits(std::size_t bits)
         {
+            std::size_t working_bits = bits;
             auto count = get_number_of_pins();
-            // std::cout << "Count at apply_bits: " << count << "\n";
+            std::cout << "Count at apply_bits: " << count << "\n";
+            std::cout << "Bits inputted: " << working_bits << "\n";
             std::size_t index = 0;
             while (count --> 0)
             {
-                if ((bits >> count ) & 1) 
+                if ((working_bits >> count ) & 1) 
                 {
+                    // std::cout << "TRUE\n";
                     set_pin_at_index(index, true);
                 }
                 else
                 {
+                    // std::cout << "FALSE\n";
                     set_pin_at_index(index, false);
                 }
             index++;
@@ -232,14 +240,17 @@ class ConnectionPortGui
             std::vector<bool> all_pins = {};
             for (auto& connection: m_connections)
             {
-                auto pins = connection.get_pins();
-                all_pins.push_back(pins);
+                std::vector<bool> pins = *connection.get_pins();
+                std::size_t pins_size = pins.size();
+                for (int index = 0; index < pins_size; index++)
+                {
+                    all_pins.push_back(pins.at(index)); // safe
+                }
             }
-
-            for (auto pin : all_pins)
+            for (bool pin : all_pins)
             {
-            bits <<= 1;
-            bits |= (pin ? 1 : 0);
+                bits <<= 1;
+                bits |= (pin? 1 : 0);
             }
             return bits;
         }

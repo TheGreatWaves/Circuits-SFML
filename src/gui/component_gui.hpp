@@ -88,6 +88,8 @@ public:
 
       // std::cout << BLOCK << " [ UPDATING COMPONENT: `" << m_component->name << "` ] " << BLOCK  << BLOCK << BLOCK << '\n';
       auto input_bits = m_input_connections.get_bits();    
+      std::cout << "Input bits: " << input_bits << "\n";
+      std::cout << "number of pins: " << m_input_connections.get_number_of_pins() << "\n";
       m_component->apply_input(m_input_connections.get_number_of_pins(), input_bits);
       // m_component->input_info();
       // m_component->wire_info();
@@ -95,7 +97,10 @@ public:
 
       m_component->simulate();
       auto output_bits = m_component->serialize_output();
+      std::cout << "Applying bits to output_bits" << output_bits << "\n";
+      std::cout << "Output connection no pins: " << m_output_connections.get_number_of_pins() << "\n";
       m_output_connections.apply_bits(output_bits);
+      std::cout << "Applied bits: " << m_output_connections.get_bits() << "\n"; 
 
       // m_component->output_info();
       // m_component->info();
@@ -119,6 +124,7 @@ public:
   {
     target.draw(m_body, states);
     m_input_connections.draw(target, states);
+    std::cout << "Output bits" << m_output_connections.get_bits() << "\n";
     m_output_connections.draw(target, states);
     target.draw(m_name, states);
   }
