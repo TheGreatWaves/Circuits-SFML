@@ -244,7 +244,7 @@ namespace cpp20trie
         }
 
         template <std::size_t Index, class String, typename... Prefixes, int Ch, typename Next, typename = Specialize<(Ch == String::head())>>
-        constexpr auto insert_sorted(nil, String&&, TrieNode<Prefixes...>, Transition<Ch, Next>, auto&&... transitions)
+        constexpr auto insert_sorted(nil, String&&, TrieNode<Prefixes...>, Transition<Ch, Next>, auto... transitions)
         noexcept -> TrieNode<Prefixes..., Transition<Ch, decltype(trie_add<Index>(Next(), typename String::tail()))>, decltype(transitions)...>
         {
             return {};
@@ -326,7 +326,7 @@ namespace cpp20trie
 
     #define MATCH(str) cpp20trie::do_trie(str, [&] {
     #define CASE(str) }, cpp20trie::FixedString<str>(), [&] {
-    #define ENDMATCH })
+    #define ENDMATCH });
 
 } // namespace cpp20trie
 
