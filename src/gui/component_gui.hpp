@@ -63,12 +63,19 @@ public:
       auto input_busses = m_component->input_busses;
       auto output_busses = m_component->output_busses;
       auto max_side_pins_count = std::max(input_count, output_count);
+      auto max_side_busses_count = std::max(input_busses.size(), output_busses.size());
+
+      auto input_side_height = get_side_height(input_count, input_busses);
+      auto output_side_height = get_side_height(output_count, output_busses);
+      auto max_height = std::max(input_side_height, output_side_height);
 
       m_name.set_string(std::string{configuration_name});
       m_name.set_font_size(20);
       m_name.set_text_color(sf::Color(17, 17, 27));
 
-      auto body_size = sf::Vector2f{ m_name.get_width() + NAME_PADDING + PIN_RADIUS * 2, max_side_pins_count * PIN_RADIUS * 2 };
+      // auto body_size = sf::Vector2f{ m_name.get_width() + NAME_PADDING + PIN_RADIUS * 2, BUS_HEIGHT * (max_side_busses_count + max_side_pins_count /4) };
+
+      auto body_size = sf::Vector2f{ m_name.get_width() + NAME_PADDING + PIN_RADIUS * 2, max_height };
       m_body.setSize(body_size);
       m_body.setFillColor(BODY_COLOR);
       m_body.setOrigin(m_body.getSize()/2.f);
@@ -80,6 +87,30 @@ public:
       m_output_connections.setup_port(output_count, output_busses);
     }
   }  
+
+  float get_side_height(std::size_t size, std::vector<BusEntry> busses)
+  {
+    float total_height = 0.f;
+    std::size_t total_number_of_pins = 0;
+    if (busses.size() == 0 && size > 0)
+    {
+        std::size_t bits = size;
+        while (bits --> 0)
+        {
+            total_height +=  BUS_HEIGHT + BUS_HEIGHT*1/4;
+            total_number_of_pins++;
+        }
+    }
+    else
+    {
+        for (auto& bus: busses)
+        {
+          total_height +=  BUS_HEIGHT + BUS_HEIGHT * bus.size /4;
+          total_number_of_pins += bus.size;
+        }
+    }
+    return total_height;
+  }
 
   void update(const sf::Time& dt)
   {

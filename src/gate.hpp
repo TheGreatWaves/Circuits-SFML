@@ -156,6 +156,7 @@ struct Gate
     newline();
 
     // Loop through all perms.
+    std::cout << "gate1\n";
     for (std::size_t i = 0; i < indicies; i++)
     {
       auto output = serialized_computation.at(i);
@@ -172,6 +173,7 @@ struct Gate
       }
       newline();
     }
+    std::cout << "gate2\n";
   }
 
   bool is_serialized()
@@ -335,6 +337,9 @@ struct Gate
           if ( range > pin )
           {
             range -= s;
+            std::cout << "gate get_pin1\n";
+            auto test = &subgate->input_pins.at(pin - range);
+            std::cout << "gate get_pin2\n";
             return &subgate->input_pins.at(pin - range);
           }
         }
@@ -360,6 +365,9 @@ struct Gate
           if ( range > pin )
           {
             range -= s;
+            std::cout << "gate get_pin1\n";
+            auto test = &subgate->output_pins.at(pin - range);
+            std::cout << "gate get_pin2\n";
             return &subgate->output_pins.at(pin - range);
           }
         }
@@ -416,6 +424,9 @@ struct Gate
 
   PinState get_pin_state(std::size_t input_id)
   {
+    std::cout << "getpinstate1\n";
+    auto test = input_pins.at(input_id).state;
+    std::cout << "getpinstate2\n";
     return input_pins.at(input_id).state;
   }
 

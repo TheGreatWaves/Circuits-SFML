@@ -189,7 +189,6 @@ class ConnectionPortGui
         }
 
 
-        // TODO: Figure out why apply_bits does not work as intended!
         void apply_bits(std::size_t bits)
         {
             std::size_t working_bits = bits;
@@ -242,10 +241,12 @@ class ConnectionPortGui
             {
                 std::vector<bool> pins = *connection.get_pins();
                 std::size_t pins_size = pins.size();
+                std::cout << "get_bits1\n";
                 for (int index = 0; index < pins_size; index++)
                 {
                     all_pins.push_back(pins.at(index)); // safe
                 }
+                std::cout << "get_bits2\n";
             }
             for (bool pin : all_pins)
             {

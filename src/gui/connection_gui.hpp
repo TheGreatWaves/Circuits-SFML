@@ -18,30 +18,34 @@ class ConnectionGui
     public:
         ConnectionGui(int m_bits = DEFAULT_CONNECTION_BITS)
         : m_bits { m_bits }
-        , m_connection_height { m_bits*BUS_HEIGHT/4 }
-        , m_pins_shape { sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_connection_height/m_bits-2)) }
+        , m_connection_height { BUS_HEIGHT + BUS_HEIGHT*m_bits/4 }
         , m_interactable { false }
         {
-            m_bus = sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_connection_height));
+            m_connection = sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_connection_height));
+            m_connection.setOutlineThickness(2);
+            m_connection.setOutlineColor(sf::Color(88, 91, 112));
             for (int index = 0; index < m_bits; index++)
             {
                 m_pins.emplace_back(false);
             }
+            float m_pins_height = m_connection_height/m_bits-1;
+            m_pins_shape = sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_pins_height-3));
+            m_pin_y_pos_offset = m_pins_height + 1;
         }
 
         void set_position(const sf::Vector2f& pos)
         {
-            m_bus.setPosition(pos);
+            m_connection.setPosition(pos);
         }
 
         void draw(sf::RenderTarget &target, sf::RenderStates states)
         {
-            target.draw(m_bus, states);
-            auto bus_pos = m_bus.getPosition();
+            target.draw(m_connection, states);
+            auto bus_pos = m_connection.getPosition();
             // Get a rectangle shape, draw it, shift it down, draw it again, until you get pins val.
             for (int index = 0; index < m_pins.size(); index++)
             {
-                // std::cout << "draw1\n";
+                std::cout << "draw: " << index << "/" << m_pins.size() << "\n";
                 // std::cout << "draw m_pins at index: " << index << " value: " << m_pins.at(index) << "\n";
                 if (m_pins.at(index))
                 {
@@ -51,8 +55,8 @@ class ConnectionGui
                 {
                     m_pins_shape.setFillColor(OFF_COLOR);
                 }
-                // std::cout << "draw2\n";
-                m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + ((index)*m_connection_height/m_bits-2+2)});
+                std::cout << "draw finish\n";
+                m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + 2 + ((index)*m_pin_y_pos_offset)});
                 target.draw(m_pins_shape, states);
             }
         }
@@ -63,8 +67,8 @@ class ConnectionGui
             {
                 return false;
             }
-            auto bus_pos = m_bus.getPosition();
-            m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + ((index)*m_connection_height/m_bits-2+2)});
+            auto bus_pos = m_connection.getPosition();
+            m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + 2 + ((index)*m_pin_y_pos_offset)});
             return  m_pins_shape.getGlobalBounds().contains(pos);
         }
 
@@ -79,7 +83,7 @@ class ConnectionGui
 
         bool touches_box(const sf::Vector2f& pos)
         {
-            return m_bus.getGlobalBounds().contains(pos);
+            return m_connection.getGlobalBounds().contains(pos);
         }
 
         void handle_events(const sf::Event& event)
@@ -115,12 +119,13 @@ class ConnectionGui
         {
             // if (value) std::cout << "Set to true\n";
             // if (!value) std::cout << "Set to false\n";
-            std::cout << "Old val: " << m_pins.at(index) << "\n";
+            std::cout << "set_pin1\n";
             m_pins.at(index) = value;
             for (int index = 0; index < m_pins.size(); index++)
             {
                 std::cout << "New val: " << m_pins.at(index) << "\n";
             }
+            std::cout << "set_pin2\n";
         }
 
         void set_interactability(bool interactability)
@@ -140,16 +145,18 @@ class ConnectionGui
 
         sf::Vector2f get_position()
         {
-            return m_bus.getPosition();
+            return m_connection.getPosition();
         }
 
     private:
         int m_bits;
-        sf::RectangleShape m_bus;
+        sf::RectangleShape m_connection;
         float m_connection_height;
         bool m_interactable;
         std::vector<bool> m_pins;
         sf::RectangleShape m_pins_shape;
+        float m_pin_y_pos_offset;
+        float m_pins_height;
 };
 
 #endif /* CONNECTION_GUI */
