@@ -49,10 +49,8 @@ class ConnectionPortGui
             auto segment_size = m_strip.getSize().y / segments;
 
             std::size_t total_number_of_pins = 0;
-            // std::cout << "Bus size: " << busses.size() << "\n";
             if (busses.size() == 0 && size > 0)
             {
-                // std::cout << "Bus size is 0\n";
                 std::size_t bits = size;
                 while (bits --> 0)
                 {
@@ -74,9 +72,6 @@ class ConnectionPortGui
                     {
                         for (int index; index < starting_index + 1; index++)
                         {
-                            // std::cout << "Starting index: " << starting_index << "\n";
-                            // std::cout << "Total number of pins: " << total_number_of_pins << "\n";
-                            // std::cout << "Adding pin\n";
                             if (starting_index + 1 == total_number_of_pins)
                             {
                                 break;
@@ -126,7 +121,6 @@ class ConnectionPortGui
             for (auto& connection : m_connections)
             {
                 connection.handle_events(event);
-
                 // Ugly and wasteful but it has to be done.
                 if (connection.contains(mouse_pos))
                 {
@@ -169,7 +163,6 @@ class ConnectionPortGui
 
         void set_pin_at_index(std::size_t index, bool value)
         {
-            std::cout << "Setting pin at index: " << index << "\n";
             std::size_t current_index = index;
             std::size_t current_size = 0;
             for (auto& connection : m_connections)
@@ -177,7 +170,6 @@ class ConnectionPortGui
                 current_size = connection.get_number_of_pins();
                 if (index < current_size)
                 {
-                    // std::size_t position = index - current_size;
                     connection.set_pin(current_index, value);
                 }
                 else
@@ -185,7 +177,6 @@ class ConnectionPortGui
                     current_index -= current_size;
                 }
             }
-            // std::cout << "Done setting pin at index\n";
         }
 
 
@@ -193,22 +184,12 @@ class ConnectionPortGui
         {
             std::size_t working_bits = bits;
             auto count = get_number_of_pins();
-            std::cout << "Count at apply_bits: " << count << "\n";
-            std::cout << "Bits inputted: " << working_bits << "\n";
             std::size_t index = 0;
             while (count --> 0)
             {
-                if ((working_bits >> count ) & 1) 
-                {
-                    // std::cout << "TRUE\n";
-                    set_pin_at_index(index, true);
-                }
-                else
-                {
-                    // std::cout << "FALSE\n";
-                    set_pin_at_index(index, false);
-                }
-            index++;
+                const bool condition = (working_bits >> count ) & 1;
+                set_pin_at_index(index, condition);
+                index++;
             }
         }
 
@@ -227,8 +208,6 @@ class ConnectionPortGui
             for (auto& connection: m_connections)
             {
                 output += connection.get_number_of_pins();
-                // std::cout << "Output +=: " << connection.get_number_of_pins() << "\n";
-                // std::cout << "m_connections len: " << m_connections.size() << "\n";
             }
             return output;
         }
@@ -241,12 +220,10 @@ class ConnectionPortGui
             {
                 std::vector<bool> pins = *connection.get_pins();
                 std::size_t pins_size = pins.size();
-                std::cout << "get_bits1\n";
                 for (int index = 0; index < pins_size; index++)
                 {
                     all_pins.push_back(pins.at(index)); // safe
                 }
-                std::cout << "get_bits2\n";
             }
             for (bool pin : all_pins)
             {

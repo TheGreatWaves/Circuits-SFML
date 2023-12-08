@@ -61,7 +61,8 @@ struct Context
   sf::RenderWindow*             window = nullptr;
   BoardGui*                     board = nullptr;
   Gate*                         sketch = nullptr;
-  int                           bus_bits = 1;
+  std::size_t                   bus_bits = 1;
+  std::size_t                   input_bus_bits = 1;
 
   /**
    * Yes, I should throw an error if the constructor is called again, but I'm too lazy!

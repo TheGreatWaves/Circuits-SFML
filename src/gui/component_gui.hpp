@@ -73,8 +73,6 @@ public:
       m_name.set_font_size(20);
       m_name.set_text_color(sf::Color(17, 17, 27));
 
-      // auto body_size = sf::Vector2f{ m_name.get_width() + NAME_PADDING + PIN_RADIUS * 2, BUS_HEIGHT * (max_side_busses_count + max_side_pins_count /4) };
-
       auto body_size = sf::Vector2f{ m_name.get_width() + NAME_PADDING + PIN_RADIUS * 2, max_height };
       m_body.setSize(body_size);
       m_body.setFillColor(BODY_COLOR);
@@ -116,26 +114,12 @@ public:
   {
     if (m_component != nullptr)
     {
-
-      // std::cout << BLOCK << " [ UPDATING COMPONENT: `" << m_component->name << "` ] " << BLOCK  << BLOCK << BLOCK << '\n';
       auto input_bits = m_input_connections.get_bits();    
-      std::cout << "Input bits: " << input_bits << "\n";
-      std::cout << "number of pins: " << m_input_connections.get_number_of_pins() << "\n";
       m_component->apply_input(m_input_connections.get_number_of_pins(), input_bits);
-      // m_component->input_info();
-      // m_component->wire_info();
-      // m_component->subgates_brief();
 
       m_component->simulate();
       auto output_bits = m_component->serialize_output();
-      std::cout << "Applying bits to output_bits" << output_bits << "\n";
-      std::cout << "Output connection no pins: " << m_output_connections.get_number_of_pins() << "\n";
       m_output_connections.apply_bits(output_bits);
-      std::cout << "Applied bits: " << m_output_connections.get_bits() << "\n"; 
-
-      // m_component->output_info();
-      // m_component->info();
-      // std::cout << '\n';
     }
   }
 
@@ -155,7 +139,6 @@ public:
   {
     target.draw(m_body, states);
     m_input_connections.draw(target, states);
-    std::cout << "Output bits" << m_output_connections.get_bits() << "\n";
     m_output_connections.draw(target, states);
     target.draw(m_name, states);
   }

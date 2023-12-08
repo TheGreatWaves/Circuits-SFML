@@ -20,6 +20,7 @@ class ConnectionGui
         : m_bits { m_bits }
         , m_connection_height { BUS_HEIGHT + BUS_HEIGHT*m_bits/4 }
         , m_interactable { false }
+        , box_touched { false }
         {
             m_connection = sf::RectangleShape(sf::Vector2(CONNECTION_WIDTH, m_connection_height));
             m_connection.setOutlineThickness(2);
@@ -45,8 +46,6 @@ class ConnectionGui
             // Get a rectangle shape, draw it, shift it down, draw it again, until you get pins val.
             for (int index = 0; index < m_pins.size(); index++)
             {
-                std::cout << "draw: " << index << "/" << m_pins.size() << "\n";
-                // std::cout << "draw m_pins at index: " << index << " value: " << m_pins.at(index) << "\n";
                 if (m_pins.at(index))
                 {
                     m_pins_shape.setFillColor(ON_COLOR);
@@ -55,7 +54,6 @@ class ConnectionGui
                 {
                     m_pins_shape.setFillColor(OFF_COLOR);
                 }
-                std::cout << "draw finish\n";
                 m_pins_shape.setPosition({bus_pos.x - 20, bus_pos.y + 2 + ((index)*m_pin_y_pos_offset)});
                 target.draw(m_pins_shape, states);
             }
@@ -86,20 +84,45 @@ class ConnectionGui
             return m_connection.getGlobalBounds().contains(pos);
         }
 
+        void apply_bits(std::size_t bits)
+        {
+            std::size_t working_bits = bits;
+            auto count = m_pins.size();
+            std::size_t index = 0;
+            while (count --> 0)
+            {
+                const bool condition = (working_bits >> count ) & 1;
+                set_pin(index, condition);
+                index++;
+            }
+        }
+
         void handle_events(const sf::Event& event)
         {
             if (!m_interactable) return;
-
             if (event.type == sf::Event::MouseButtonPressed)
             {
-                for (int index = 0; index < m_pins.size(); index++)
+                if (touches_box(sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)}))
                 {
-                    auto pressed = contains_at_index(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
-                    if (pressed)
+                    if (box_touched)
                     {
-                        std::cout << "handle-events1\n";
-                        m_pins.at(index) = !m_pins.at(index);
-                        std::cout << "handle-events2\n";
+                        apply_bits(0);
+                    }
+                    else
+                    {
+                        apply_bits(Context::instance()->input_bus_bits);
+                    }
+                    box_touched = !box_touched;
+                }
+                else
+                {
+                    for (int index = 0; index < m_pins.size(); index++)
+                    {
+                        auto pressed = contains_at_index(index, sf::Vector2f{static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)});
+                        if (pressed)
+                        {
+                            m_pins.at(index) = !m_pins.at(index);
+                        }
                     }
                 }
             }
@@ -117,15 +140,7 @@ class ConnectionGui
 
         void set_pin(std::size_t index, bool value)
         {
-            // if (value) std::cout << "Set to true\n";
-            // if (!value) std::cout << "Set to false\n";
-            std::cout << "set_pin1\n";
             m_pins.at(index) = value;
-            for (int index = 0; index < m_pins.size(); index++)
-            {
-                std::cout << "New val: " << m_pins.at(index) << "\n";
-            }
-            std::cout << "set_pin2\n";
         }
 
         void set_interactability(bool interactability)
@@ -148,6 +163,11 @@ class ConnectionGui
             return m_connection.getPosition();
         }
 
+        sf::Vector2f get_size()
+        {
+            return m_connection.getSize();
+        }
+
     private:
         int m_bits;
         sf::RectangleShape m_connection;
@@ -157,6 +177,7 @@ class ConnectionGui
         sf::RectangleShape m_pins_shape;
         float m_pin_y_pos_offset;
         float m_pins_height;
+        bool box_touched;
 };
 
 #endif /* CONNECTION_GUI */

@@ -37,6 +37,7 @@
 #include "wire_gui.hpp"
 #include "component_gui.hpp"
 #include "../component_recipe.hpp"
+#include "../utils.hpp"
 
 class BoardGui 
 {
@@ -45,6 +46,8 @@ public:
   : m_bits_text_box("Bits: ", false)
   , m_connection_bits_text_box("1          ", true)
   , m_mode_text_box("Normal mode", false)
+  , m_input_bits_text_box("Input Bits: ", false)
+  , m_input_connection_bits_text_box("0", true)
   , m_toolbox(sf::Vector2f{TOOLBOX_WIDTH/2.f, 50.f})
   {
     // TODO: Yes this is bad.
@@ -65,6 +68,8 @@ public:
     m_bits_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x  - m_mode_text_box.get_width() - 2 * m_connection_bits_text_box.get_width() - m_bits_text_box.get_width(), 20.f});
     m_connection_bits_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x  - m_mode_text_box.get_width() - 2 * m_connection_bits_text_box.get_width(), 20.f});
     m_mode_text_box.set_position({m_prototype.getPosition().x + m_prototype.getSize().x - m_mode_text_box.get_width(), 20.f});
+    m_input_bits_text_box.set_position({m_prototype.getPosition().x, 740.f});
+    m_input_connection_bits_text_box.set_position({m_prototype.getPosition().x + m_input_bits_text_box.get_width(), 740.f});
 
     auto prototype_position = m_prototype.getPosition();
 
@@ -97,13 +102,19 @@ public:
 
     if (m_connection_bits_text_box.was_edited())
     {
-      Context::instance()->bus_bits = std::stoi(m_connection_bits_text_box.get_string());
+      if (!m_connection_bits_text_box.get_string().empty())
+      {
+        Context::instance()->bus_bits = std::stoi(m_connection_bits_text_box.get_string());
+      }
     }
 
-    // std::cout << BLOCK << BLOCK << " [ UPDATING ALL COMPONENT ] " << BLOCK  << BLOCK << BLOCK << BLOCK << BLOCK << '\n';
-    // m_input_pin_port.info();
-    // Context::instance()->sketch->wire_info();
-    // Context::instance()->sketch->subgates_brief();
+    if (m_input_connection_bits_text_box.was_edited())
+    {
+      if (!m_input_connection_bits_text_box.get_string().empty())
+      {
+        Context::instance()->input_bus_bits = std::stoi(m_input_connection_bits_text_box.get_string());
+      }
+    }
 
     for (auto& component : m_components)
     {
@@ -137,6 +148,8 @@ public:
     target.draw(m_name_text_box, states);
     target.draw(m_mode_text_box, states);
     target.draw(m_connection_bits_text_box, states);
+    target.draw(m_input_connection_bits_text_box, states);
+    target.draw(m_input_bits_text_box, states);
     target.draw(m_bits_text_box, states);
 
     m_input_connection_port.draw(target, states);
@@ -249,7 +262,7 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
         if (connection != nullptr && connection != active_wire->get_src_pin().first)
         {
           // Go through all the pins in the connection and connect them up
-          active_wire->add_node(connection->get_position());
+          active_wire->add_node(connection->get_position() + connection->get_size()/2.f);
           auto active_wire_src = active_wire->get_src_pin();
           auto active_wire_connection_pid = active_wire->get_src_connection_idx();
           std::size_t pins = connection->get_number_of_pins();
@@ -267,10 +280,8 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
             new_wire.set_dest_pin(connection, index);
             new_wire.set_src_connection_idx(connection_pid);
             new_wire.set_dest_index(connection_pid + index);
-            new_wire.add_node(connection->get_position());
+            new_wire.add_node(connection->get_position() + connection->get_size()/2.f);
             Context::instance()->sketch->wire_pins(new_wire.get_src_index(), new_wire.get_dest_index());
-            std::cout << "Src index: " << new_wire.get_src_index() << "\n";
-            std::cout << "Dest index: " << new_wire.get_dest_index() << "\n";
           }
           Context::instance()->active_wire = nullptr;
         }
@@ -289,7 +300,7 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
         wire.set_src_pin(connection, 0);
         wire.set_src_connection_idx(connection_pid);
         wire.set_src_index(connection_pid);
-        wire.add_node(connection->get_position());
+        wire.add_node(connection->get_position() + connection->get_size()/2.f);
         Context::instance()->active_wire = &wire;
       }
     }
@@ -298,9 +309,9 @@ std::pair<std::size_t, ConnectionGui*> get_connection(const sf::Vector2f& pos)
   void handle_events(const sf::Event& event)
 	{
     auto* context = Context::instance();
-
     m_name_text_box.handle_events(event);
     m_connection_bits_text_box.handle_events(event);
+    m_input_connection_bits_text_box.handle_events(event);
     m_toolbox.handle_events(event);
 
     for (auto& component : m_components)
@@ -385,6 +396,8 @@ private:
   TextBoxGui         m_mode_text_box;
   TextBoxGui         m_connection_bits_text_box;
   TextBoxGui         m_bits_text_box;
+  TextBoxGui         m_input_bits_text_box;
+  TextBoxGui         m_input_connection_bits_text_box;
 
   ConnectionPortGui m_input_connection_port;
   ConnectionPortGui m_output_connection_port;
