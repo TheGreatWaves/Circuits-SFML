@@ -124,10 +124,10 @@ SERIALIZE CHIP not_4 {
     OUT out[4];
 
     PARTS:
-    not(in=a[0], out=out[0]);
-    not(in=a[1], out=out[1]);
-    not(in=a[2], out=out[2]);
-    not(in=a[3], out=out[3]);
+    not(in=in[0], out=out[0]);
+    not(in=in[1], out=out[1]);
+    not(in=in[2], out=out[2]);
+    not(in=in[3], out=out[3]);
 }
 ```
 
