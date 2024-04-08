@@ -1,0 +1,12 @@
+SERIALIZE CHIP mux {
+	IN a, b, sel;
+	OUT out;
+
+	PARTS:
+	and(a=sel, b=b, out=t1);
+
+	not(in=sel, out=not_sel);
+	and(a=a, b=not_sel, out=t2);
+
+	or(a=t1, b=t2, out=out);
+}
