@@ -1,4 +1,4 @@
 sim
 gates
 build
-.meta
+*.meta
