@@ -1,0 +1,22 @@
+CHIP not16 {
+	IN in[16];
+	OUT out[16];
+
+	PARTS:
+	not(in=in[0], out=out[0]);
+	not(in=in[1], out=out[1]);
+	not(in=in[2], out=out[2]);
+	not(in=in[3], out=out[3]);
+	not(in=in[4], out=out[4]);
+	not(in=in[5], out=out[5]);
+	not(in=in[6], out=out[6]);
+	not(in=in[7], out=out[7]);
+	not(in=in[8], out=out[8]);
+	not(in=in[9], out=out[9]);
+	not(in=in[10], out=out[10]);
+	not(in=in[11], out=out[11]);
+	not(in=in[12], out=out[12]);
+	not(in=in[13], out=out[13]);
+	not(in=in[14], out=out[14]);
+	not(in=in[15], out=out[15]);
+}
