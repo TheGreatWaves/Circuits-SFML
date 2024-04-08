@@ -1,0 +1,12 @@
+SERIALIZE CHIP dmux {
+	IN in, sel;
+	OUT a, b;
+
+	PARTS:
+	// By default, when 'sel' is 0, we channel 'in' to 'a'.
+	not(in=sel, out=not_sel);
+	and(a=in, b=not_sel, out=a);
+
+	// "sel" is 1, channel 'in' to 'b'.
+	and(a=in, b=sel, out=b);
+}
