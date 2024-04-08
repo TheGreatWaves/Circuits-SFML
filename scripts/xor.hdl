@@ -1,0 +1,10 @@
+SERIALIZE CHIP xor {
+	IN a, b;
+	OUT out;
+
+	PARTS:
+	nand(a=a,b=b,out=t1);
+	nand(a=a,b=t1,out=t2);
+	nand(a=b,b=t1,out=t3);
+	nand(a=t2, b=t3, out=out);
+}
