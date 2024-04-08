@@ -192,7 +192,7 @@ The test may be invoked in the CLI via `test <chip name>`.
 > [!TIP]
 > You can type `help` to show commands.
 
-`compile <chip>`: Compiles HDL file. Specify `all` is compile all HDL files.
+`compile <chip>`: Compiles HDL file. Specify `all` to compile all HDL files.
 
 `gui`: Start GUI mode.
 
