@@ -1,3 +1,13 @@
+// Name: Multiplexor
+//
+// Pick either 'a' or 'b' to forward to 'out',
+// depending on the signal of 'sel'.
+//
+// if (sel == 0):
+//     out = a
+// else
+//     out = b
+//
 SERIALIZE CHIP mux {
 	IN a, b, sel;
 	OUT out;
