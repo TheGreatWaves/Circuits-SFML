@@ -1,0 +1,9 @@
+SERIALIZE CHIP or {
+	IN a, b;
+	OUT out;
+
+	PARTS:
+	not(in=a, out=tmp1);
+	not(in=b, out=tmp2);
+	nand(a=tmp1, b=tmp2, out=out);
+}
