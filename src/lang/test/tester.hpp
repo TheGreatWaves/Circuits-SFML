@@ -56,9 +56,9 @@ struct ChipInfo
 
 struct Variable
 {
- ChipInfo*                  chip_info;       
- Gate*                      chip;
- std::map<std::string, int> values;
+ ChipInfo*             chip_info;       
+ Gate*                 chip;
+ std::set<std::string> values;
 };
 
 enum class ValueType
@@ -218,8 +218,8 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
         ChipInfo* image = &chip_images.at(type);
 
-        std::map<std::string, int> values{};
-        auto add_value = [&](const auto& pin) { values[pin.pin_name] = 0; };
+        std::set<std::string> values{};
+        auto add_value = [&](const auto& pin) { values.insert(pin.pin_name); };
 
         std::for_each(image->meta->input_pins.begin(), 
                       image->meta->input_pins.end(), 
@@ -231,7 +231,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
         std::for_each(image->meta->bus.begin(), 
                       image->meta->bus.end(), 
-                      [&](const auto& bus) { values[bus.bus_name] = 0; });
+                      [&](const auto& bus) { values.insert(bus.bus_name); });
 
         const auto key = board.context().second->add_subgate(image->gate, &board);
         auto chip = board.context().second->subgates[key].get();
@@ -265,33 +265,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         log("RUNNING EVAL!!!");
         for (auto& [_, variable] : variables)
         {
-            int sim_count = 1;
-            while (sim_count --> 0)
-            {
-                variable.chip->simulate();
-            }
-
-            for (const auto& [name, number] : variable.chip_info->meta->output_pins)
-            {
-                const auto state = (variable.chip->get_pin(number)->is_active()) ? 1 : 0;
-                variable.values[name] = state;
-                log("Setting " + name + " to " + std::to_string(state));
-            }
-            for (const auto& [name, start, size] : variable.chip_info->meta->bus)
-            {
-                // We only want outputs.
-                if (start < MAX_INPUT_PINS) 
-                    continue;
-
-                std::size_t so = 0;
-                for (std::size_t offset = 0; offset < size; offset++)
-                {
-                  so <<= 1;
-                  so |= (variable.chip->output_pins.at(start + (size-1) - offset - MAX_INPUT_PINS).is_active() ? 1 : 0);
-                }
-                variable.values[name] = so;
-                log("Setting bus " + name + " to " + std::to_string(so));
-            }
+            variable.chip->simulate();
         }
     }
 
@@ -409,7 +383,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
                 // Should be unreachable.
                 report_error(value.value + value.member + " is not of type bus or pin.");
-                return variable.values[value.member];
+                return 0;
             }
         }
         // Should be unreachable.
@@ -460,7 +434,6 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
         }
 
         auto int_val = get_value(value);
-        variable.values[var.member] = int_val;
 
         // Now we get the pin number and set it. 
         const auto& pin = variable.chip_info->meta->get_pin(var.member);
