@@ -1,7 +1,7 @@
-LOAD and16;
+LOAD and_16;
 
-TEST 'and16 65535 0' {
-	VAR a: and16;
+TEST 'and_16 65535 0' {
+	VAR a: and_16;
 	SET a.a = 65535;
 	EVAL;
 	REQUIRE (a.a IS 65535)
@@ -9,8 +9,8 @@ TEST 'and16 65535 0' {
 		AND (a.out IS 0);
 }
 
-TEST 'and16 65535 1' {
-	VAR a: and16;
+TEST 'and_16 65535 1' {
+	VAR a: and_16;
 	SET a.a = 65535;
 	SET a.b = 1;
 	EVAL;
@@ -19,8 +19,8 @@ TEST 'and16 65535 1' {
 		AND (a.out IS 1);
 }
 
-TEST 'and16 65535 65535' {
-	VAR a: and16;
+TEST 'and_16 65535 65535' {
+	VAR a: and_16;
 	SET a.a = 65535;
 	SET a.b = 65535;
 	EVAL;
@@ -29,8 +29,8 @@ TEST 'and16 65535 65535' {
 		AND (a.out IS 65535);
 }
 
-TEST 'and16 65535 21845' {
-	VAR a: and16;
+TEST 'and_16 65535 21845' {
+	VAR a: and_16;
 	SET a.a = 65535;
 	SET a.b = 21845;
 	EVAL;

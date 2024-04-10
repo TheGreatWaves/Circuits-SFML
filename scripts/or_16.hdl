@@ -1,4 +1,4 @@
-CHIP or16 {
+CHIP or_16 {
 	IN a[16], b[16];
 	OUT out[16];
 

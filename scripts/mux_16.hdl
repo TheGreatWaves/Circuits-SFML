@@ -8,7 +8,7 @@
 // else
 //     out = b
 //
-CHIP mux16 {
+CHIP mux_16 {
 	IN a[16], b[16], sel;
 	OUT out[16];
 

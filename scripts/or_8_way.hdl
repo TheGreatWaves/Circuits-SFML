@@ -1,0 +1,18 @@
+CHIP or_8_way {
+	IN in[8];
+	OUT out;
+
+	PARTS:
+	// First Layer
+	or(a=in[0], b=in[1], out=or_out_1);
+	or(a=in[2], b=in[3], out=or_out_2);
+	or(a=in[4], b=in[5], out=or_out_3);
+	or(a=in[6], b=in[7], out=or_out_4);
+
+	// Second layer
+	or(a=or_out_1, b=or_out_2, out=or_out_5);
+	or(a=or_out_3, b=or_out_4, out=or_out_6);
+
+	// Final layer
+	or(a=or_out_5, b=or_out_6, out=out);
+}
