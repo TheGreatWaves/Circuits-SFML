@@ -23,6 +23,7 @@
  */
 
 #pragma once
+#include <cmath>
 #ifndef TESTER_H
 #define TESTER_H
 
@@ -369,6 +370,45 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
                     return 0;
                 }
 
+                // Now we get the pin number and set it. 
+                const auto& pin = variable.chip_info->meta->get_pin(value.member);
+                const auto& bus = variable.chip_info->meta->get_bus(value.member);
+
+                if (bus.has_value())
+                {
+                    const auto& [name, start, size] = bus.value();
+                    const auto& pins = variable.chip->input_pins;
+
+                    std::size_t so = 0; 
+                    if (start < MAX_INPUT_PINS) 
+                    {
+                        for (std::size_t offset = 0; offset < size; offset++)
+                        {
+                          so <<= 1;
+                          so |= (variable.chip->input_pins.at(start + (size-1) - offset).is_active() ? 1 : 0);
+                        }
+                                
+                    }
+                    else
+                    {
+                        for (std::size_t offset = 0; offset < size; offset++)
+                        {
+                          so <<= 1;
+                          so |= (variable.chip->output_pins.at(start + (size-1) - offset - MAX_INPUT_PINS).is_active() ? 1 : 0);
+                        }
+                    }
+
+
+                    return so;
+                }
+                else if (pin.has_value())
+                {
+                    const auto pin_number = pin.value().pin_number;
+                    return (variable.chip->get_pin(pin_number)->is_active()) ? 1 : 0;
+                }
+
+                // Should be unreachable.
+                report_error(value.value + value.member + " is not of type bus or pin.");
                 return variable.values[value.member];
             }
         }
