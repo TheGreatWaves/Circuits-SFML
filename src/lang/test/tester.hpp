@@ -359,7 +359,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
                         for (std::size_t offset = 0; offset < size; offset++)
                         {
                           so <<= 1;
-                          so |= (variable.chip->input_pins.at(start + (size-1) - offset).is_active() ? 1 : 0);
+                          so |= (variable.chip->input_pins.at(start + offset).is_active() ? 1 : 0);
                         }
                                 
                     }
@@ -368,7 +368,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
                         for (std::size_t offset = 0; offset < size; offset++)
                         {
                           so <<= 1;
-                          so |= (variable.chip->output_pins.at(start + (size-1) - offset - MAX_INPUT_PINS).is_active() ? 1 : 0);
+                          so |= (variable.chip->output_pins.at(start + offset - MAX_INPUT_PINS).is_active() ? 1 : 0);
                         }
                     }
 
@@ -452,7 +452,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
             for (std::size_t offset = 0; offset < size; offset++)
             {
-                pins[start + offset].state = (((int_val >> offset ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
+                pins[start + offset].state = (((int_val >> ((size-1) - offset) ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
                 log("Setting " + name + "[" + std::to_string(start+offset) + "] = " + std::to_string(((int_val >> offset ) & 1) == 1 ? 1 : 0));
             }
         }

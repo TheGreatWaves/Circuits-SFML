@@ -223,7 +223,8 @@ struct Gate
     std::size_t index = 0;
     while (count --> 0)
     {
-      output_pins[index++].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
+      output_pins[index].state = (((mask >> count ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
+      index++;
     }
   }
 
@@ -529,7 +530,8 @@ struct Gate
     for (auto [src, dest] : wire_construction_recipe)
     {
       std::cout << src << " <---> " << dest << '\n';
-    }  }
+    }  
+  }
   
   // Prints information about the current gate.
   void info()

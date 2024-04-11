@@ -143,7 +143,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
             for (int i = 0; i < count; i++)
             {
-                const auto input_name_index = input_name + "[" + std::to_string(i) + "]";
+                const auto input_name_index = input_name + "[" + std::to_string(count - 1 - i) + "]";
                 builder.add_input_pin(input_name_index);
                 pin_numbers[input_name_index] = input_pin_offset++;
             }
@@ -175,7 +175,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
                 for (int i = 0; i < count; i++)
                 {
-                    const auto input_name_index = input_name + "[" + std::to_string(i) + "]";
+                    const auto input_name_index = input_name + "[" + std::to_string(count - 1 - i) + "]";
                     builder.add_input_pin(input_name_index);
                     pin_numbers[input_name_index] = input_pin_offset++;
                 }
@@ -218,7 +218,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
             for (int i = 0; i < count; i++)
             {
-                const auto output_name_index = output_name + "[" + std::to_string(i) + "]";
+                const auto output_name_index = output_name + "[" + std::to_string(count - 1 - i) + "]";
                 builder.add_output_pin(output_name_index);
                 pin_numbers[output_name_index] = MAX_INPUT_PINS + output_pin_offset++;
             }
@@ -251,7 +251,7 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
                 for (int i = 0; i < count; i++)
                 {
-                    const auto output_name_index = output_name + "[" + std::to_string(i) + "]";
+                    const auto output_name_index = output_name + "[" + std::to_string(count - 1 - i) + "]";
                     builder.add_output_pin(output_name_index);
                     pin_numbers[output_name_index] = MAX_INPUT_PINS + output_pin_offset++;
                 }
@@ -298,7 +298,16 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
         // We expect ATLEAST one linkage.
         consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
-        const auto subgate_input_pin = previous.lexeme;
+
+        auto subgate_input_pin = previous.lexeme;
+
+        if (match(HDLTokenType::LSqaure))
+        {
+            consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+            subgate_input_pin = subgate_input_pin + "[" + previous.lexeme + "]";
+            consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+        }
+
         consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
         consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
         auto subgate_output_name = previous.lexeme;
@@ -333,9 +342,8 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
                 for (auto i = 0; i < bus_entry_count; i++)
                 {
                     const auto pin_number = bus_entry->start + i + offset;
-                    const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                    const auto output_name_location = subgate_output_name + "[" + std::to_string(bus_entry_count - 1 - i) + "]";
                     const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
-                    log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
 
                     if (output_bus_not_found)
                     {
@@ -374,7 +382,16 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         while (match(HDLTokenType::Comma))
         {
             consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
-            const auto subgate_input_pin = previous.lexeme;
+
+            auto subgate_input_pin = previous.lexeme;
+
+            if (match(HDLTokenType::LSqaure))
+            {
+                consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+                subgate_input_pin = subgate_input_pin + "[" + previous.lexeme + "]";
+                consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+            }
+
             consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
             consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
             auto subgate_output_name = previous.lexeme;
@@ -409,9 +426,8 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
                     for (auto i = 0; i < bus_entry_count; i++)
                     {
                         const auto pin_number = bus_entry->start + i + offset;
-                        const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                        const auto output_name_location = subgate_output_name + "[" + std::to_string(bus_entry_count - 1 - i) + "]";
                         const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
-                        log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
 
                         if (output_bus_not_found)
                         {
@@ -491,7 +507,15 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
 
         // We expect ATLEAST one linkage.
         consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
-        const auto subgate_input_pin = previous.lexeme;
+
+        auto subgate_input_pin = previous.lexeme;
+
+        if (match(HDLTokenType::LSqaure))
+        {
+            consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+            subgate_input_pin = subgate_input_pin + "[" + previous.lexeme + "]";
+            consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+        }
 
         consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
 
@@ -527,13 +551,11 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
                 for (auto i = 0; i < bus_entry_count; i++)
                 {
                     const auto pin_number = bus_entry->start + i + offset;
-                    const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                    const auto output_name_location = subgate_output_name + "[" + std::to_string(bus_entry_count - 1 - i) + "]";
                     const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
-                    log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
 
                     if (output_bus_not_found)
                     {
-                        log("WHAT WHAT WHAT WHAT");
                         pin_numbers[output_name_location] = pin_number;
                     }
                     else
@@ -572,7 +594,16 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
         while (match(HDLTokenType::Comma))
         {
             consume(HDLTokenType::Identifier, "Linkage statement expects atleast one identifier.");
-            const auto subgate_input_pin = previous.lexeme;
+
+            auto subgate_input_pin = previous.lexeme;
+
+            if (match(HDLTokenType::LSqaure))
+            {
+                consume(HDLTokenType::Number, "Expected number, found '" + current.lexeme + "'.");
+                subgate_input_pin = subgate_input_pin + "[" + previous.lexeme + "]";
+                consume(HDLTokenType::RSquare, "Expected ']', found '" + current.lexeme + "'.");
+            }
+
             consume(HDLTokenType::Assignment, "Expected assignment operator, found '" + current.lexeme + "'.");
             consume(HDLTokenType::Identifier, "Linkage statement expected output, found '" + current.lexeme + "'.");
             auto subgate_output_name = previous.lexeme;
@@ -606,9 +637,8 @@ class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
                     for (auto i = 0; i < bus_entry_count; i++)
                     {
                         const auto pin_number = bus_entry->start + i + offset;
-                        const auto output_name_location = subgate_output_name + "[" + std::to_string(i) + "]";
+                        const auto output_name_location = subgate_output_name + "[" + std::to_string(bus_entry_count - 1 - i) + "]";
                         const auto linkage_entry = Meta::PinEntry{output_name_location, pin_number};
-                        log("Linking bus " + subgate_input_pin + "[" + std::to_string(i) + "] to " + subgate_output_name + "[" + std::to_string(i) + "]" );
 
                         if (output_bus_not_found)
                         {
