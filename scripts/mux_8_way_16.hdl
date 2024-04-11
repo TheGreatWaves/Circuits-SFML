@@ -1,0 +1,9 @@
+CHIP mux_8_way_16 {
+	IN a[16], b[16], c[16], d[16], e[16], f[16], g[16], h[16], sel[3];
+	OUT out[16];
+
+	PARTS:
+	mux_4_way_16(a=a, b=b, c=c, d=d, sel[0]=sel[0], sel[1]=sel[1], out=mux_out_1);
+	mux_4_way_16(a=e, b=f, c=g, d=h, sel[0]=sel[0], sel[1]=sel[1], out=mux_out_2);
+	mux_16(a=mux_out_1, b=mux_out_2,  sel=sel[2], out=out);
+}

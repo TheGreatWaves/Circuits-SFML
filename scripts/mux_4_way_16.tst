@@ -29,3 +29,24 @@ TEST 'choosing correct values' {
 	EVAL;
 	REQUIRE m.out IS 4;
 }
+
+TEST 'pipe value' {
+	VAR m1: mux_4_way_16;
+	VAR m2: mux_4_way_16;
+
+	SET m1.a = 32;
+	SET m1.c = 27;
+
+	SET m2.b = m1.a;
+	SET m2.c = m1.c;
+
+	SET m2.sel = 1;
+	EVAL;
+
+	REQUIRE (m2.out IS m1.a);
+
+	SET m2.sel = 2;
+	EVAL;
+	REQUIRE (m2.out IS m1.c);
+	
+}

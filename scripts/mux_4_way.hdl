@@ -1,0 +1,21 @@
+CHIP mux_4_way {
+	IN a, b, c, d, sel[2];
+	OUT out;
+
+	PARTS:
+	not(in=sel[0], out=not_sel_0);
+	not(in=sel[1], out=not_sel_1);
+
+	and(a=sel[0], b=not_sel_1, out=and_out_1);
+	and(a=sel[1], b=not_sel_0, out=and_out_2);
+
+	// Mux for a and b
+	mux(a=a, b=b, sel=and_out_1, out=mux_out_1);
+
+	// Mux for c and d
+	mux(a=d, b=c, sel=and_out_2, out=mux_out_2);
+
+	// Final mux 
+	mux(sel=sel[1], a=mux_out_1, b=mux_out_2, out=out);
+}
+
