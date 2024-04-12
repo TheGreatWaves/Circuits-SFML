@@ -1,0 +1,8 @@
+CHIP half_adder {
+	IN a, b;
+	OUT sum, carry;
+
+	PARTS:
+	xor(a=a, b=b, out=sum);
+	and(a=a, b=b, out=carry);
+}
