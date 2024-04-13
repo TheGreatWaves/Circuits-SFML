@@ -1,0 +1,35 @@
+// Name: 4-way Demultiplexor
+//
+// Channels 'in' into either 'a', 'b', 'c' or 'd', depending on 'sel'.
+//
+// if (sel == 0):
+//     {a=in, b=c=d=0}
+// else if (sel == 1):
+//     {b=in, a=c=d=0}
+// else if (sel == 2):
+//     {c=in, a=b=d=0}
+// else if (sel == 3):
+//     {d=in, a=b=c=0}
+//
+CHIP dmux_4_way {
+	IN in, sel[2];
+	OUT a, b, c, d;
+
+	PARTS:
+	dmux(in=in, sel=sel[0], a=dmux_1_a, b=dmux_1_b);
+	dmux(in=in, sel=sel[1], a=dmux_2_a, b=dmux_2_b);
+
+	// a
+	and(a=dmux_1_a, b=dmux_2_a, out=a);
+
+	// b
+	not(in=dmux_2_b, out=dmux_2_b_not);
+	and(a=dmux_1_b, b=dmux_2_b_not, out=b);
+
+	// c
+	not(in=dmux_1_b, out=dmux_1_b_not);
+	and(a=dmux_2_b, b=dmux_1_b_not, out=c);
+
+	// d
+	and(a=dmux_1_b, b=dmux_2_b, out=d);
+}
