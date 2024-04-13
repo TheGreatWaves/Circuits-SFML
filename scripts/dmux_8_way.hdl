@@ -1,0 +1,24 @@
+// Name: 8-way Demultiplexor
+//
+// Channels 'in' into either 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h', 
+// depending on 'sel'.
+//
+CHIP dmux_8_way {
+	IN in, sel[3];
+	OUT a, b, c, d, e, f, g, h;
+
+	PARTS:
+	dmux_4_way(in=in, sel[0]=sel[0], sel[1]=sel[1], a=a1, b=b1, c=c1, d=d1);
+	dmux_4_way(in=in, sel[0]=sel[0], sel[1]=sel[1], a=a2, b=b2, c=c2, d=d2);
+
+	not(in=sel[2], out=not_out);
+	and(a=not_out, b=a1, out=a);
+	and(a=not_out, b=b1, out=b);
+	and(a=not_out, b=c1, out=c);
+	and(a=not_out, b=d1, out=d);
+
+	and(a=sel[2], b=a2, out=e);
+	and(a=sel[2], b=b2, out=f);
+	and(a=sel[2], b=c2, out=g);
+	and(a=sel[2], b=d2, out=h);
+}
