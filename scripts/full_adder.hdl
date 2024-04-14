@@ -1,4 +1,4 @@
-CHIP full_adder {
+SERIALIZE CHIP full_adder {
 	IN a, b, c;
 	OUT sum, carry;
 
