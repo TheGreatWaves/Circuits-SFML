@@ -1,0 +1,18 @@
+// Name: True
+//
+// A helper gate which takes in any signal and always return true.
+//
+// Note: This is needed because of how the simulator is implemented. 
+// Signals propagate from input pins, this means that given a custom gate,
+// we won't be able to make something akin to an 'on' gate be able to propagate
+// it's signal throughout the system without connecting an a global input pin
+// to an input pin of the 'on' gate, which really should not have one.
+//
+SERIALIZE CHIP true {
+	IN in;
+	OUT out;
+
+	PARTS:
+	not(in=in, out=not_out);
+	or(a=in, b=not_out, out=out);
+}
