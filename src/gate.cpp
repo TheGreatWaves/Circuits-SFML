@@ -77,7 +77,7 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
       exploring.pop_back();
 
       // Add the pins it is connected to.
-      for (auto conn : pin.connections)
+      for (auto& conn : pin.connections)
       {
         bool changed = false;
         PinState original_state = PinState::INACTIVE;
@@ -115,7 +115,7 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
         }
       }
     }
-    for (auto gate : gates)
+    for (const auto& gate : gates)
     {
       if (was_visited.count(gate) == 0)
       {
