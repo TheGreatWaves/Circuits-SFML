@@ -23,7 +23,6 @@
  */
 
 #pragma once
-#include <cmath>
 #ifndef TESTER_H
 #define TESTER_H
 
