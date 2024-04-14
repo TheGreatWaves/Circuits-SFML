@@ -1,0 +1,8 @@
+CHIP inc_16 {
+	IN in[16];
+	OUT out[16];
+
+	PARTS:
+	true(in=in[0], out=one);
+	add_16(a=in, b[0]=one, out=out);
+}
