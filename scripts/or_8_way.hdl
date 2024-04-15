@@ -1,4 +1,4 @@
-CHIP or_8_way {
+SERIALIZE CHIP or_8_way {
 	IN in[8];
 	OUT out;
 
