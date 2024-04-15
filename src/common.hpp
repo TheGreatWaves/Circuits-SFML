@@ -55,7 +55,7 @@ inline auto hdl_file(const std::string& name) -> std::string
  * Max number of input pins, referring to a pin ID bigger than 
  * this number will return an output pin.
  */
-constexpr std::size_t INPUT_PIN_LIMIT{ 500 };
+constexpr std::size_t INPUT_PIN_LIMIT{ 1000 };
 
 /**
  * GUI wire's signal speed.
