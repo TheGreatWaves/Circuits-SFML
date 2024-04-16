@@ -58,28 +58,28 @@ struct Gate
   GateType                                     type;
   std::size_t                                  subgate_count{};
   std::string                                  name{};
-  WireConstructionInfo                         wire_construction_recipe;
+  WireConstructionInfo                         wire_construction_recipe{};
+  std::size_t                                  pin_count{};
+  std::vector<std::unique_ptr<Gate>>           subgates{};
+  bool                                         serialized{};
+  std::vector<std::size_t>                     serialized_computation{};
+  std::vector<std::size_t>*                    serialized_computation_ptr{ nullptr };
 
   /**
-   * Input/Output ports.
+   * Input/Output ports and wires.
+   *
+   * NOTE: This information can probably be pulled out into a struct. The struct
+   * then can hold a pointer to an 'image/profile' of the gate (the Gate class).
+   * That will give it sufficient amount of information that is required for simulation.
+   * Then when we want to duplicate a chip, we can just duplicate the struct. This will
+   * help us avoid duplicating redundant information which only needs to be constructed once
+   * like wire_construction_recipe. There is no point for every single chip to be holding
+   * the same information
    */
   std::vector<Pin>                             input_pins{};
   std::vector<Pin>                             output_pins{};
-  std::size_t                                  pin_count{};
-
-  /**
-   * Subgates.
-   */
-  std::vector<std::unique_ptr<Gate>> subgates;
-
-  /**
-   * Wires.
-   */
   std::vector<Wire*> wires;
   
-  bool                                         serialized;
-  std::vector<std::size_t>                     serialized_computation;
-  std::vector<std::size_t>*                    serialized_computation_ptr { nullptr };
 
   explicit Gate(std::size_t ipc = 0,
                 std::size_t opc = 0,
