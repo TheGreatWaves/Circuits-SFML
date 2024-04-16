@@ -1,4 +1,4 @@
-CHIP not_16 {
+SERIALIZE CHIP not_16 {
 	IN in[16];
 	OUT out[16];
 

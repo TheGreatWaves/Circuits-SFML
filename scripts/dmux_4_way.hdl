@@ -11,7 +11,7 @@
 // else if (sel == 3):
 //     {d=in, a=b=c=0}
 //
-CHIP dmux_4_way {
+SERIALIZE CHIP dmux_4_way {
 	IN in, sel[2];
 	OUT a, b, c, d;
 

@@ -26,11 +26,7 @@
 #ifndef GATE
 #define GATE
 
-#include <algorithm>
 #include <vector>
-#include <map>
-#include <utility>
-#include <fstream>
 #include <unordered_set>
 
 #include "common.hpp"
@@ -81,10 +77,9 @@ struct Gate
    */
   std::vector<Wire*> wires;
   
-  // Used for book keeping during simulate.
-  std::vector<bool>                            components_up_to_date{};
   bool                                         serialized;
   std::vector<std::size_t>                     serialized_computation;
+  std::vector<std::size_t>*                    serialized_computation_ptr { nullptr };
 
   explicit Gate(std::size_t ipc = 0,
                 std::size_t opc = 0,
@@ -132,7 +127,7 @@ struct Gate
     // Loop through all perms.
     for (std::size_t i = 0; i < indicies; i++)
     {
-      auto output = serialized_computation.at(i);
+      auto output = (*serialized_computation_ptr).at(i);
 
       for (std::size_t j = 0; j < input_pins.size(); j++)
       {
@@ -174,6 +169,7 @@ struct Gate
       serialized_computation.push_back(serialize_output());
     }
     this->serialized = true;
+    this->serialized_computation_ptr = &this->serialized_computation;
   }
 
   std::size_t serialize_output()
@@ -204,7 +200,7 @@ struct Gate
     auto serialized_input = serialize_input();
 
     // Retrieve the serialized output entry using the serialized input.
-    auto serialized_output = serialized_computation[serialized_input];
+    auto serialized_output = (*serialized_computation_ptr)[serialized_input];
 
     apply_output(static_cast<int>(output_pins.size()), serialized_output);
   }
@@ -415,7 +411,8 @@ struct Gate
     if (this->serialized)
     {
       // If it is serialized we don't actually need to do any wiring (no simulation).
-      g->serialized_computation = this->serialized_computation;
+      // g->serialized_computation = this->serialized_computation;
+      g->serialized_computation_ptr = this->serialized_computation_ptr;
       return g;
     }
     else

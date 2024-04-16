@@ -97,8 +97,8 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
      */
     [[nodiscard]] explicit Tester(const std::string& file_path)
         : BaseParser<TestTokenTypeScanner, TestTokenType>(file_path)
-        , board(false)
     {
+        board_ptr = Board::instance();
     }
 
     /**
@@ -144,14 +144,22 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
     auto LOAD_impl(const std::string& chip_name) noexcept -> void
     {
-        const auto path = GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION;
-        log("Loading: " + path);
-
-        if (!board.load_file(path))
+        auto chip = board_ptr->get_component(chip_name);
+        
+        if (chip == nullptr)
         {
-            report_error("'" + chip_name + ".gate' failed to load.");
-            return;
+            const auto path = GATE_RECIPE_DIRECTORY + chip_name + GATE_EXTENSION;
+            log("Loading: " + path);
+
+            if (!board_ptr->load_file(path))
+            {
+                report_error("'" + chip_name + ".gate' failed to load.");
+                return;
+            }
+
         }
+
+        chip = board_ptr->get_component(chip_name);
 
         auto meta = hdl::Meta::get_meta(chip_name);
         if (meta == nullptr)
@@ -160,7 +168,8 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
             return;
         }
 
-        chip_images[chip_name] = { board.get_component(chip_name), std::move(meta) };
+
+        chip_images[chip_name] = { chip, std::move(meta) };
     }
 
     auto LOAD_statement() noexcept -> void
@@ -232,8 +241,8 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
                       image->meta->bus.end(), 
                       [&](const auto& bus) { values.insert(bus.bus_name); });
 
-        const auto key = board.context().second->add_subgate(image->gate, &board);
-        auto chip = board.context().second->subgates[key].get();
+        const auto key = board_ptr->context().second->add_subgate(image->gate, board_ptr);
+        auto chip = board_ptr->context().second->subgates[key].get();
 
         variables[varname] = { image, chip, std::move(values) };
     }
@@ -519,7 +528,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
 
     auto REQUIRE_impl(std::vector<Condition>& conditions) noexcept -> void
     {
-        const auto& test_name = board.context().first;
+        const auto& test_name = board_ptr->context().first;
         bool expected = true;
         for (const auto& cond : conditions)
         {
@@ -633,9 +642,9 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
     {
         test_failed = false;
         purge_variables();
-        board.reset_context();
-        board.create_new(test);
-        board.set_context(test);
+        board_ptr->reset_context();
+        board_ptr->create_new(test);
+        board_ptr->set_context(test);
     }
 
     auto TEST_statement() noexcept -> void
@@ -694,7 +703,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
     }
 
 private:
-    Board                           board;
+    Board*                          board_ptr;
     bool                            test_failed;
     std::map<std::string, ChipInfo> chip_images;
     std::map<std::string, Variable> variables; 

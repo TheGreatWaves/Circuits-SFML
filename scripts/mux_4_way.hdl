@@ -1,4 +1,4 @@
-CHIP mux_4_way {
+SERIALIZE CHIP mux_4_way {
 	IN a, b, c, d, sel[2];
 	OUT out;
 

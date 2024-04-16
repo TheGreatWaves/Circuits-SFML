@@ -3,7 +3,7 @@
 // Channels 'in' into either 'a', 'b', 'c', 'd', 'e', 'f', 'g' or 'h', 
 // depending on 'sel'.
 //
-CHIP dmux_8_way {
+SERIALIZE CHIP dmux_8_way {
 	IN in, sel[3];
 	OUT a, b, c, d, e, f, g, h;
 

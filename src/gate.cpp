@@ -29,7 +29,6 @@
 std::size_t Gate::add_subgate(std::string_view gate_name, Board* board)
 {
   auto board_instance = (board == nullptr) ? Board::instance() : board;
-	components_up_to_date.push_back(false);
   auto key = subgate_count++;
 	auto gate = board_instance->get_component(gate_name);
   subgates.push_back(gate->duplicate(board));

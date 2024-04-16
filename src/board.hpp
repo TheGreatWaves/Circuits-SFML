@@ -23,7 +23,6 @@
  */
 
 #pragma once
-#include "lang/hdl/parser.hpp"
 #ifndef BOARD
 #define BOARD
 
@@ -32,6 +31,7 @@
 
 #include "lang/assem/token_assem.hpp"
 #include "lang/core/trie.hpp"
+#include "lang/hdl/parser.hpp"
 #include "gate.hpp"
 #include "utils.hpp"
 

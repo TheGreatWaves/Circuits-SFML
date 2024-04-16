@@ -1,4 +1,4 @@
-CHIP half_adder {
+SERIALIZE CHIP half_adder {
 	IN a, b;
 	OUT sum, carry;
 
