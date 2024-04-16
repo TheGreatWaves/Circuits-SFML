@@ -40,6 +40,7 @@
 enum class GateType
 {
   NAND,
+  DFF,
   CUSTOM
 };
 
@@ -441,6 +442,14 @@ struct Gate
     output_pins[0].state = (!(input_pins[0].is_active() && input_pins[1].is_active()))
                          ? PinState::ACTIVE
                          : PinState::INACTIVE;
+  }
+
+  void handle_dff()
+  {
+    if (input_pins[1].is_active())
+    {
+      output_pins[0].state = input_pins[0].get_state();
+    }
   }
 
 

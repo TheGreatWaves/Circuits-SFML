@@ -143,6 +143,7 @@ void Gate::simulate(std::unordered_set<Gate*> was_visited)
   switch (type) 
   {
     break; case GateType::NAND: handle_nand();
+    break; case GateType::DFF: handle_dff();
     break; case GateType::CUSTOM: handle_custom_type(was_visited);
     break; default: log("Invalid type...?\n");
   }

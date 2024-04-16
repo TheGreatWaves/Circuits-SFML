@@ -42,6 +42,7 @@ public:
   Board(bool is_singleton = true)
    : is_singleton(is_singleton)
   {
+    // Add built-in chips (this is pretty ugly)
     auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
     auto nandp = nandc.get();
     components["nand"] = std::move(nandc);
@@ -50,6 +51,14 @@ public:
     nand->get_pin(1)->parent = nandp;
     nand->serialize();
     search_trie.insert("nand");
+
+    auto dffc = std::make_unique<Gate>(2, 1, GateType::DFF, "dff");
+    auto dffp = dffc.get();
+    components["dff"] = std::move(dffc);
+    auto dff = components["dff"].get();
+    dff->get_pin(0)->parent = dffp;
+    dff->get_pin(1)->parent = dffp;
+    search_trie.insert("dff");
 
     if (is_singleton)
     {

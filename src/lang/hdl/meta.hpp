@@ -112,6 +112,8 @@ struct Meta
 {
     auto meta = std::make_unique<Meta>();
 
+    // TODO: IFF another built-in gate is required to be added again,
+    //       let's refactor to make this nicer.
     if (component_name == "nand")
     {
         meta->name = "nand";
@@ -125,7 +127,19 @@ struct Meta
         meta->trie.insert("out");
         return meta;
     }
+    else if (component_name == "dff")
+    {
+        meta->name = "dff";
+        meta->input_count = 2;
+        meta->output_count = 1;
+        meta->input_pins = {PinEntry("in", 0), PinEntry("clock", 1)};
+        meta->output_pins = {PinEntry("out", MAX_INPUT_PINS)};
 
+        meta->trie.insert("in");
+        meta->trie.insert("clock");
+        meta->trie.insert("out");
+        return meta;
+    }
 
     try
     {
