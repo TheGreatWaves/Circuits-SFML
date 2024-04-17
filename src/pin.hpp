@@ -28,7 +28,6 @@
 
 #include <vector>
 #include <memory>
-#include <map>
 
 class Wire;
 class Gate;
@@ -43,7 +42,6 @@ struct Pin
 {
   PinState state;
   std::vector<std::shared_ptr<Wire>> connections;
-  // OPTIONAL: The pin may live on a gate, in which case we can simulate it.
   Gate* parent;
 
   Pin(Gate* p = nullptr)
@@ -53,8 +51,6 @@ struct Pin
   }
 
   ~Pin() = default;
-
-  void simulate(std::vector<bool>* visited = nullptr, std::map<std::size_t, std::unique_ptr<Gate>>* components = nullptr);
 
   [[nodiscard]] PinState get_state()
   {

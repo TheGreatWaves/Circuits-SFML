@@ -1,0 +1,22 @@
+CHIP register {
+	IN in[16], load, clock;
+	OUT out[16];
+
+	PARTS:
+	bit(in=in[0],  load=load, clock=clock, out=out[0]);
+	bit(in=in[1],  load=load, clock=clock, out=out[1]);
+	bit(in=in[2],  load=load, clock=clock, out=out[2]);
+	bit(in=in[3],  load=load, clock=clock, out=out[3]);
+	bit(in=in[4],  load=load, clock=clock, out=out[4]);
+	bit(in=in[5],  load=load, clock=clock, out=out[5]);
+	bit(in=in[6],  load=load, clock=clock, out=out[6]);
+	bit(in=in[7],  load=load, clock=clock, out=out[7]);
+	bit(in=in[8],  load=load, clock=clock, out=out[8]);
+	bit(in=in[9],  load=load, clock=clock, out=out[9]);
+	bit(in=in[10], load=load, clock=clock, out=out[10]);
+	bit(in=in[11], load=load, clock=clock, out=out[11]);
+	bit(in=in[12], load=load, clock=clock, out=out[12]);
+	bit(in=in[13], load=load, clock=clock, out=out[13]);
+	bit(in=in[14], load=load, clock=clock, out=out[14]);
+	bit(in=in[15], load=load, clock=clock, out=out[15]);
+}
