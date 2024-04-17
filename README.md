@@ -218,3 +218,5 @@ Keybinds:
 
 ![droppers](https://github.com/TheGreatWaves/Digital-Logic-SFML/assets/106456906/abf0ab66-ec0c-4595-8169-20cb7cccebf0)
 
+## Implementation Note
+At the moment the simulator has no proper cycle detection, this is causing a big problem with implementing the program counter because there is a feedback loop which runs infinitely, incrementing the value non-stop. Until cycle detection is properly implemented, the program counter cannot be implemented properly. At the moment the clock is also just another input pin, further work on integrating the clock into the system is needed.
