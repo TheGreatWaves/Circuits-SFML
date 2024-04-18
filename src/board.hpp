@@ -42,28 +42,30 @@ public:
   Board(bool is_singleton = true)
    : is_singleton(is_singleton)
   {
-    // Add built-in chips (this is pretty ugly)
-    auto nandc = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
-    auto nandp = nandc.get();
-    components["nand"] = std::move(nandc);
-    auto nand = components["nand"].get();
-    nand->get_pin(0)->parent = nandp;
-    nand->get_pin(1)->parent = nandp;
-    nand->serialize();
-    search_trie.insert("nand");
+    auto nand = std::make_unique<Gate>(2, 1, GateType::NAND, "nand", true);
+    auto dff = std::make_unique<Gate>(2, 1, GateType::DFF, "dff");
 
-    auto dffc = std::make_unique<Gate>(2, 1, GateType::DFF, "dff");
-    auto dffp = dffc.get();
-    components["dff"] = std::move(dffc);
-    auto dff = components["dff"].get();
-    dff->get_pin(0)->parent = dffp;
-    dff->get_pin(1)->parent = dffp;
-    search_trie.insert("dff");
+    add_built_in(std::move(nand));
+    add_built_in(std::move(dff));
 
     if (is_singleton)
     {
       singleton = this;
     }
+  }
+
+  void add_built_in(std::unique_ptr<Gate> builtin_gate)
+  {
+    auto gate_ptr = builtin_gate.get();
+
+    // Kind of misleading, technically, this should be 'serializable'
+    if (gate_ptr->serialized)
+    {
+      gate_ptr->serialize();      
+    }
+
+    components[gate_ptr->name] = std::move(builtin_gate);
+    search_trie.insert(gate_ptr->name);
   }
 
   ~Board()
