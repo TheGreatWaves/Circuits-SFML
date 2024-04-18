@@ -94,8 +94,8 @@ template <typename T, typename VT>
 inline std::enable_if_t<std::is_unsigned_v<T>> 
 set_bitvec(T value, std::vector<VT>& target, std::function<void(VT&, bool)> f, std::size_t start, std::size_t end)
 {
-	std::size_t size = end - start;
-  for (std::size_t offset = 0; offset < size; offset++)
+	T size = end - start;
+  for (T offset = 0; offset < size; offset++)
   {
 		auto bit_on = (((value >> ((size-1) - offset) ) & 1) == 1);
 		f(target[start + offset], bit_on);

@@ -26,6 +26,7 @@
 #ifndef GATE
 #define GATE
 
+#include <memory>
 #include <vector>
 #include <unordered_set>
 
@@ -41,10 +42,12 @@ enum class GateType
 {
   NAND,
   DFF,
+  PC,
   CUSTOM
 };
 
 class Board;
+
 
 /**
  * A Gate represents a component board. Each component board consists of I/O ports,
@@ -393,31 +396,7 @@ struct Gate
 
   std::size_t add_subgate(std::string_view gate_name, Board* board = nullptr);
 
-  std::unique_ptr<Gate> duplicate(Board* board = nullptr)
-  {
-    auto g = std::make_unique<Gate>(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
-
-    if (this->serialized)
-    {
-      // If it is serialized we don't actually need to do any wiring (no simulation).
-      // g->serialized_computation = this->serialized_computation;
-      g->serialized_computation_ptr = this->serialized_computation_ptr;
-      return g;
-    }
-    else
-    {
-      // Not serialized, which means that we need to simulate it. 
-      // Add the subgates and copy the wiring.
-      for (std::size_t i = 0; i < subgate_count; i++)
-      {
-        g->add_subgate(subgates.at(i)->name, board);
-      }
-
-      g->construct_wire(this->wire_construction_recipe);
-     
-      return g;
-    }
-  }
+  std::unique_ptr<Gate> duplicate(Board* board = nullptr);
 
   void handle_custom_type(std::unordered_set<Gate*> was_visited);
 
@@ -440,6 +419,7 @@ struct Gate
     }
   }
 
+  void handle_pc();
 
   void input_info()
   {
@@ -554,5 +534,98 @@ struct Gate
     subgates_info();
   }
 };
+
+struct PC : Gate 
+{
+  explicit PC()
+    : Gate(
+        19,             // 16-bit input, load, inc, clock
+        16,             // 16-bit output 
+        GateType::PC,   // Gate type
+        "pc"            // Gate name
+      ),
+      register_value(0)
+  {
+  }
+
+
+  void handle_pc_impl() 
+  {
+    if (forwardable())
+    {
+      if (inc_pin().is_active())
+      {
+        increment();
+      }
+      else if (load_pin().is_active())
+      {
+        load();
+      }
+      else if (reset_pin().is_active())
+      {
+        reset();
+      }
+
+      sync_output();
+    }
+
+    // We don't want to continuously forward. 
+    // ONly forward once, when the signal turned from inactive to active.
+    previous_clock = clock_pin().get_state();
+  }
+
+  void sync_output()
+  {
+    set_pinvec(this->register_value, this->output_pins, 0, 16);
+  }
+
+  void increment()
+  {
+    this->register_value++;
+  }
+
+  void load()
+  {
+    this->register_value = pinvec_to_uint<uint16_t>(input_pins, 0, 16);
+  }
+
+  void reset()
+  {
+    this->register_value = 0;
+  }
+
+  bool forwardable()
+  {
+    // Clock was inactive, and now it is active.
+    return (this->previous_clock == PinState::INACTIVE) && clock_pin().is_active();
+  }
+
+
+  inline Pin& load_pin()
+  {
+    return this->input_pins.at(15);
+  }
+
+  inline Pin& inc_pin()
+  {
+    return this->input_pins.at(16);
+  }
+
+  inline Pin& reset_pin()
+  {
+    return this->input_pins.at(17);
+  }
+
+  inline Pin& clock_pin()
+  {
+    return this->input_pins.at(18);
+  }
+   
+  /*
+   * 
+   */
+  uint16_t register_value { 0 };
+  PinState previous_clock { PinState::INACTIVE };
+}; 
 
 #endif /* GATE */

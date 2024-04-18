@@ -119,7 +119,41 @@ void Gate::simulate(std::unordered_set<Gate*> was_visited)
   {
     break; case GateType::NAND: handle_nand();
     break; case GateType::DFF: handle_dff();
+    break; case GateType::PC: handle_pc();
     break; case GateType::CUSTOM: handle_custom_type(was_visited);
     break; default: log("Invalid type...?\n");
   }
+}
+
+void Gate::handle_pc()
+{
+  static_cast<PC*>(this)->handle_pc_impl();
+}
+
+std::unique_ptr<Gate> Gate::duplicate(Board* board)
+{
+  // Really ugly but it must be done.
+  if (this->name == "pc") return std::make_unique<PC>();
+
+  auto g = std::make_unique<Gate>(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
+
+  if (this->serialized)
+  {
+    // If it is serialized we don't actually need to do any wiring (no simulation).
+    g->serialized_computation_ptr = this->serialized_computation_ptr;
+    return g;
+  }
+  else
+  {
+    // Not serialized, which means that we need to simulate it. 
+    // Add the subgates and copy the wiring.
+    for (std::size_t i = 0; i < subgate_count; i++)
+    {
+      g->add_subgate(subgates.at(i)->name, board);
+    }
+
+    g->construct_wire(this->wire_construction_recipe);
+   
+    return g;
+  }  
 }

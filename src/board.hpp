@@ -47,6 +47,7 @@ public:
 
     add_built_in(std::move(nand));
     add_built_in(std::move(dff));
+    add_built_in(std::make_unique<PC>());
 
     if (is_singleton)
     {
