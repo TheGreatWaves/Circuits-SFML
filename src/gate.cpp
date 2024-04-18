@@ -63,12 +63,9 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
 
   while( !to_explore.empty() )
   {
-    std::vector<Pin> exploring = to_explore;
-    to_explore.clear();
+    std::vector<Pin> exploring = std::move(to_explore);
 
     // Keep exploring until we reach a deadend or a parent component.
-    std::size_t wires_explored = 0;
-
     while ( !exploring.empty() )
     {
       // Grab the pin we're interested in.
@@ -78,39 +75,29 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
       // Add the pins it is connected to.
       for (auto& conn : pin.connections)
       {
-        bool changed = false;
-        PinState original_state = PinState::INACTIVE;
+        if (conn->output == nullptr) continue;
 
-        if (conn->output != nullptr)
-        {
-          original_state = conn->output->state;          
-        }
+        const PinState original_state = conn->output->state;          
 
         conn->simulate();
 
-        if (conn->output != nullptr)
-        {
-          changed = conn->output->state != original_state;          
-        }
+        const bool changed = conn->output->state != original_state;          
 
         if (changed 
-        && conn->output->parent != nullptr 
+        && conn->output->has_parent() 
         && was_visited.contains(conn->output->parent))
         {
           was_visited.erase(conn->output->parent);
         }
 
-        if (conn->output != nullptr)
+        if (!conn->output->has_parent())
         {
-          if (conn->output->parent == nullptr)
-          {
-            exploring.push_back(*conn->output);
-          }
-          else if (was_visited.count(conn->output->parent) == 0)
-          {
-             // Queue the component for next update.
-            gates.push_back(conn->output->parent);
-          }
+          exploring.push_back(*conn->output);
+        }
+        else if (!was_visited.contains(conn->output->parent))
+        {
+           // Queue the component for next update.
+          gates.push_back(conn->output->parent);
         }
       }
     }

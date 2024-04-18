@@ -57,7 +57,7 @@ struct Pin
     return state;
   }
 
-  bool is_active()
+  bool is_active() const
   {
     return state == PinState::ACTIVE;
   }
@@ -80,6 +80,11 @@ struct Pin
   void flip()
   {
     state = is_active() ? PinState::INACTIVE : PinState::ACTIVE;
+  }
+
+  bool has_parent()
+  {
+    return parent != nullptr;
   }
 
 };
