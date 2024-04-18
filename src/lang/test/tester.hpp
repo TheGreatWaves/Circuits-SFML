@@ -360,26 +360,18 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
                 {
                     const auto& [name, start, size] = bus.value();
                     const auto& pins = variable.chip->input_pins;
+                    const bool is_input { start < MAX_INPUT_PINS };
 
-                    std::size_t so = 0; 
-                    if (start < MAX_INPUT_PINS) 
-                    {
-                        for (std::size_t offset = 0; offset < size; offset++)
-                        {
-                          so <<= 1;
-                          so |= (variable.chip->input_pins.at(start + offset).is_active() ? 1 : 0);
-                        }
-                                
-                    }
-                    else
-                    {
-                        for (std::size_t offset = 0; offset < size; offset++)
-                        {
-                          so <<= 1;
-                          so |= (variable.chip->output_pins.at(start + offset - MAX_INPUT_PINS).is_active() ? 1 : 0);
-                        }
-                    }
 
+                    std::size_t offset = is_input 
+                                       ? 0 
+                                       : MAX_INPUT_PINS;
+
+                    std::vector<Pin>& target = is_input 
+                                             ? variable.chip->input_pins 
+                                             : variable.chip->output_pins;
+
+                    std::size_t so = pinvec_to_uint(target, start - offset, start + size - offset);
 
                     return so;
                 }
@@ -441,7 +433,7 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
             return;
         }
 
-        auto int_val = get_value(value);
+        std::size_t int_val = get_value(value);
 
         // Now we get the pin number and set it. 
         const auto& pin = variable.chip_info->meta->get_pin(var.member);
@@ -458,11 +450,8 @@ class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
                 return;
             }
 
-            for (std::size_t offset = 0; offset < size; offset++)
-            {
-                pins[start + offset].state = (((int_val >> ((size-1) - offset) ) & 1) == 1) ? PinState::ACTIVE : PinState::INACTIVE;
-                log("Setting " + name + "[" + std::to_string(start+offset) + "] = " + std::to_string(((int_val >> offset ) & 1) == 1 ? 1 : 0));
-            }
+            // Apply bitmask.
+            set_pinvec(int_val, pins, start, start+size);
         }
         else if (pin.has_value())
         {

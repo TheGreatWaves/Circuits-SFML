@@ -173,26 +173,14 @@ struct Gate
     this->serialized_computation_ptr = &this->serialized_computation;
   }
 
-  std::size_t serialize_output()
+  inline std::size_t serialize_output()
   {
-    std::size_t so = 0;
-    for (std::size_t j = 0; j < output_pins.size(); j++)
-    {
-      so <<= 1;
-      so |= (output_pins[j].is_active() ? 1 : 0);
-    }
-    return so;
+    return pinvec_to_uint(output_pins, 0, output_pins.size());
   }
 
-  std::size_t serialize_input()
+  inline std::size_t serialize_input()
   {
-    std::size_t so = 0;
-    for (std::size_t j = 0; j < input_pins.size(); j++)
-    {
-      so <<= 1;
-      so |= (input_pins[j].is_active() ? 1 : 0);
-    }
-    return so;
+    return pinvec_to_uint(input_pins, 0, input_pins.size());
   }
 
   void simulate_serialized()
