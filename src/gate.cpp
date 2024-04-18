@@ -32,18 +32,6 @@ std::size_t Gate::add_subgate(std::string_view gate_name, Board* board)
   auto key = subgate_count++;
 	auto gate = board_instance->get_component(gate_name);
   subgates.push_back(gate->duplicate(board));
-
-  for (auto& p : subgates[key]->input_pins)
-  {
-    p.parent = subgates[key].get();
-		p.reset();
-  }
-
-  for (auto& p : subgates[key]->output_pins)
-  {
-		p.reset();
-  }
-
   return key;
 }
 
