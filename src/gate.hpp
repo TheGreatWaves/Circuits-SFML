@@ -539,7 +539,7 @@ struct PC : Gate
 {
   explicit PC()
     : Gate(
-        19,             // 16-bit input, load, inc, clock
+        20,             // 16-bit input, load, inc, reset, clock
         16,             // 16-bit output 
         GateType::PC,   // Gate type
         "pc"            // Gate name
@@ -603,22 +603,22 @@ struct PC : Gate
 
   inline Pin& load_pin()
   {
-    return this->input_pins.at(15);
+    return this->input_pins.at(16);
   }
 
   inline Pin& inc_pin()
   {
-    return this->input_pins.at(16);
+    return this->input_pins.at(17);
   }
 
   inline Pin& reset_pin()
   {
-    return this->input_pins.at(17);
+    return this->input_pins.at(18);
   }
 
   inline Pin& clock_pin()
   {
-    return this->input_pins.at(18);
+    return this->input_pins.at(19);
   }
    
   /*
