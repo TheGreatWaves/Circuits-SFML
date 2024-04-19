@@ -190,6 +190,12 @@ struct Meta
         meta->add_output_pin("out");
         return meta;
     }
+    else if (component_name == "pc")
+    {
+        meta->set_name("pc");
+        meta->add_input_bus("in", 16);
+        meta->add_input_pins({"load", "inc", "reset", "clock"});
+        meta->add_output_bus("out", 16);
         return meta;
     }
 
