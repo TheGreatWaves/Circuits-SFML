@@ -98,6 +98,70 @@ struct Meta
 
     [[nodiscard]] static inline auto get_meta(std::string_view component_name) -> std::unique_ptr<const Meta>;
 
+    auto add_input_pin(std::string_view pin_name) -> void
+    {
+        this->input_pins.emplace_back(std::string(pin_name), input_pins.size());
+        this->trie.insert(std::string(pin_name));
+        this->input_count++;
+    }
+
+    auto add_input_pins(std::vector<std::string_view> pin_names) -> void
+    {
+        for (auto pin_name: pin_names)
+        {   
+            add_input_pin(pin_name);
+        }
+    }
+
+    auto add_output_pins(std::vector<std::string_view> pin_names) -> void
+    {
+        for (auto pin_name: pin_names)
+        {   
+            add_output_pin(pin_name);
+        }
+    }
+
+    auto add_output_pin(std::string_view pin_name) -> void
+    {
+        this->output_pins.emplace_back(std::string(pin_name), MAX_INPUT_PINS + output_pins.size());
+        this->trie.insert(std::string(pin_name));
+        this->output_count++;
+    }
+
+    auto add_input_bus(std::string_view bus_name, std::size_t size)
+    {
+        int32_t s = static_cast<int32_t>(size);
+        this->trie.insert(std::string(bus_name));
+        this->bus.emplace_back(std::string(bus_name), this->input_count, size);
+
+        while (s --> 0)
+        {
+            std::stringstream ss;
+            ss << bus_name << '[' << s << ']';
+            add_input_pin(ss.str());
+        }
+    }
+
+    auto add_output_bus(std::string_view bus_name, std::size_t size) -> void
+    {
+        int32_t s = static_cast<int32_t>(size);
+        this->trie.insert(std::string(bus_name));
+        this->bus.emplace_back(std::string(bus_name), this->output_count, size);
+
+        while (s --> 0)
+        {
+            std::stringstream ss;
+            ss << bus_name << '[' << s << ']';
+            add_output_pin(ss.str());
+        }
+    }
+
+    auto set_name(std::string_view name) -> void
+    {
+        this->name = name;
+        this->trie.insert(std::string(name));
+    }
+
     std::string           name{};
     std::size_t           input_count{};
     std::size_t           output_count{};
@@ -112,32 +176,20 @@ struct Meta
 {
     auto meta = std::make_unique<Meta>();
 
-    // TODO: IFF another built-in gate is required to be added again,
-    //       let's refactor to make this nicer.
     if (component_name == "nand")
     {
-        meta->name = "nand";
-        meta->input_count = 2;
-        meta->output_count = 1;
-        meta->input_pins = {PinEntry("a", 0), PinEntry("b", 1)};
-        meta->output_pins = {PinEntry("out", MAX_INPUT_PINS)};
-
-        meta->trie.insert("a");
-        meta->trie.insert("b");
-        meta->trie.insert("out");
+        meta->set_name("nand");
+        meta->add_input_pins({"a", "b"});
+        meta->add_output_pin("out");
         return meta;
     }
     else if (component_name == "dff")
     {
-        meta->name = "dff";
-        meta->input_count = 2;
-        meta->output_count = 1;
-        meta->input_pins = {PinEntry("in", 0), PinEntry("clock", 1)};
-        meta->output_pins = {PinEntry("out", MAX_INPUT_PINS)};
-
-        meta->trie.insert("in");
-        meta->trie.insert("clock");
-        meta->trie.insert("out");
+        meta->set_name("dff");
+        meta->add_input_pins({"in", "clock"});
+        meta->add_output_pin("out");
+        return meta;
+    }
         return meta;
     }
 
