@@ -146,7 +146,7 @@ struct Meta
     {
         int32_t s = static_cast<int32_t>(size);
         this->trie.insert(std::string(bus_name));
-        this->bus.emplace_back(std::string(bus_name), this->output_count, size);
+        this->bus.emplace_back(std::string(bus_name), MAX_INPUT_PINS + this->output_count, size);
 
         while (s --> 0)
         {
