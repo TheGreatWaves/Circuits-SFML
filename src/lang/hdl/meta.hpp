@@ -198,6 +198,13 @@ struct Meta
         meta->add_output_bus("out", 16);
         return meta;
     }
+    else if (component_name == "bit")
+    {
+        meta->set_name("bit");
+        meta->add_input_pins({"in", "load", "clock"});
+        meta->add_output_pin("out");
+        return meta;
+    }
 
     try
     {
@@ -274,7 +281,7 @@ struct Meta
                 parser.report_custom_error("Expected 'outputS', found " + lexeme);
         }
 
-        parser.consume_token(RawTokenType::Number, "Expected outputS count (number), found " + parser.get_current().lexeme);
+        parser.consume_token(RawTokenType::Number, "Expected outputs count (number), found " + parser.get_current().lexeme);
         meta->output_count = std::stoi(parser.get_previous().lexeme);
         for (std::size_t i = 0; i < meta->output_count; i++)
         {
