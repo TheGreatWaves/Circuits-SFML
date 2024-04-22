@@ -1,0 +1,18 @@
+CHIP ram_8 {
+	IN in[16], address[3], load, clock;
+	OUT out[16];
+
+	PARTS:
+	dmux_8_way(in=load, sel=address, a=a, b=b, c=c, d=d, e=e, f=f, g=g, h=h);
+
+	register(in=in, load=a, clock=clock, out=ra);
+	register(in=in, load=b, clock=clock, out=rb);
+	register(in=in, load=c, clock=clock, out=rc);
+	register(in=in, load=d, clock=clock, out=rd);
+	register(in=in, load=e, clock=clock, out=re);
+	register(in=in, load=f, clock=clock, out=rf);
+	register(in=in, load=g, clock=clock, out=rg);
+	register(in=in, load=h, clock=clock, out=rh);
+
+	mux_8_way_16(a=ra, b=rb, c=rc, d=rd, e=re, f=rf, g=rg, h=rh, sel=address, out=out);
+}
