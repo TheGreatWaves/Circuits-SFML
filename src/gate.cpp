@@ -119,7 +119,6 @@ void Gate::simulate(std::unordered_set<Gate*> was_visited)
   {
     break; case GateType::NAND: handle_nand();
     break; case GateType::DFF: handle_dff();
-    break; case GateType::BIT: handle_bit();
     break; case GateType::PC: handle_pc();
     break; case GateType::CUSTOM: handle_custom_type(was_visited);
     break; default: log("Invalid type...?\n");
@@ -131,15 +130,10 @@ void Gate::handle_pc()
   static_cast<PC*>(this)->handle_pc_impl();
 }
 
-void Gate::handle_bit()
-{
-  static_cast<Bit*>(this)->handle_bit_impl();
-}
 std::unique_ptr<Gate> Gate::duplicate(Board* board)
 {
   // Really ugly but it must be done.
   if (this->name == "pc") return std::make_unique<PC>();
-  else if (this->name == "bit") return std::make_unique<Bit>();
 
   auto g = std::make_unique<Gate>(input_pins.size(), output_pins.size(), this->type, this->name, this->serialized);
 

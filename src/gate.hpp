@@ -42,7 +42,6 @@ enum class GateType
 {
   NAND,
   DFF,
-  BIT,
   PC,
   CUSTOM
 };
@@ -420,7 +419,6 @@ struct Gate
     }
   }
 
-  void handle_bit();
   void handle_pc();
 
   void input_info()
@@ -535,76 +533,6 @@ struct Gate
 
     subgates_info();
   }
-};
-
-struct Bit : Gate
-{
-  explicit Bit()
-    : Gate(
-        3,             // in, load, clock
-        1,             // out
-        GateType::BIT, // Gate type
-        "bit"          // Gate name
-      )
-  {
-  }
-
-  Pin& in_pin()
-  {
-    return this->input_pins[0];
-  }
-
-  Pin& load_pin()
-  {
-    return this->input_pins[1];
-  }
-
-  Pin& clock_pin()
-  {
-    return this->input_pins[2];
-  }
-
-  Pin& out_pin()
-  {
-    return this->output_pins[0];
-  }
-
-  bool forwardable()
-  {
-    // Clock was inactive, and now it is active.
-    return (this->previous_clock == PinState::INACTIVE) && clock_pin().is_active();
-  }
-
-  void sync_output()
-  {
-    out_pin().state = value ? PinState::ACTIVE : PinState::INACTIVE;
-  }
-  
-  void handle_bit_impl() 
-  {
-    if (forwardable() )
-    {
-      std::cout << "Forwardable";
-
-      if (load_pin().is_active())
-      {
-        std::cout << ", loading new value (" << &in_pin() << "): " << (in_pin().is_active() ? 1 : 0);
-        value = in_pin().is_active();
-      }
-
-      std::cout << ".\n";
-      sync_output();
-    }
-
-    // We don't want to continuously forward. 
-    // ONly forward once, when the signal turned from inactive to active.
-    previous_clock = clock_pin().get_state();
-  }
-  
-
-  // members
-  bool value {false};
-  PinState previous_clock { PinState::INACTIVE };
 };
 
 struct PC : Gate 
