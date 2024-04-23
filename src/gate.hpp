@@ -43,6 +43,7 @@ enum class GateType
   NAND,
   DFF,
   PC,
+  RAM_16K,
   CUSTOM
 };
 
@@ -421,6 +422,8 @@ struct Gate
 
   void handle_pc();
 
+  void handle_ram_16k();
+
   void input_info()
   {
     log("Input Info:\n");
@@ -627,5 +630,70 @@ struct PC : Gate
   uint16_t register_value { 0 };
   PinState previous_clock { PinState::INACTIVE };
 }; 
+
+struct Ram16k : Gate {
+  explicit Ram16k()
+    : Gate(
+        32,                 // 16-bit input, 14-bit address, load, clock
+        16,                 // 16-bit output 
+        GateType::RAM_16K,  // Gate type
+        "ram_16k"           // Gate name
+      )
+  {
+  }
+
+  uint16_t read_in()
+  {
+    return pinvec_to_uint<uint16_t>(this->input_pins, 0, 16);
+  }
+
+  std::size_t read_address()
+  {
+    return pinvec_to_uint<uint16_t>(this->input_pins, 16, 30);
+  }
+
+  Pin& load_pin()
+  {
+    return this->input_pins[30];
+  }
+
+  Pin& clock_pin()
+  {
+    return this->input_pins[31];
+  }
+
+  void sync_output()
+  {
+    const auto value = data[address];
+    set_pinvec(value, this->output_pins, 0, 16);
+  }
+
+  void load_value()
+  {
+    const auto value = read_in();
+    data[address] = value;
+  }
+
+  void handle_ram_16k_impl()
+  {
+    // Set the new address
+    address = read_address();
+
+    // Load value into address
+    if (clock_pin().is_active() && load_pin().is_active())
+    {
+      load_value();
+    }
+
+    // Synchronize output pins
+    sync_output();
+  }
+
+  /*
+   * Members.
+   */
+    std::size_t address     {0};
+    uint16_t    data[16384] {0};
+};
 
 #endif /* GATE */
