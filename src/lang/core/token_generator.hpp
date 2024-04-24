@@ -41,6 +41,15 @@
 #include "enum_base.hpp"
 #include "token_base.hpp"
 
+
+#ifndef PRIV_JOIN
+#define PRIV_JOIN(a, b) a ## b
+#endif
+
+#define SCANNER(name) PRIV_JOIN(name, Scanner)
+
+struct SCANNER(TOKEN_CLASS_NAME);
+
 /**
  * Declare new raw enum class and name values.
  */
@@ -55,6 +64,9 @@ DECLARE_RAW_ENUM_CLASS(TOKEN_CLASS_NAME, uint8_t) {
 class TOKEN_CLASS_NAME : public TOKEN_BASE(TOKEN_CLASS_NAME)
 {
 public:
+
+ using Scanner = SCANNER(TOKEN_CLASS_NAME);
+
 /**
  * Generate constant declarations.
  */
@@ -117,6 +129,9 @@ SYMBOL_STRING_DEFINITION(TOKEN_CLASS_NAME) = {
 };
 
 #endif
+
+#undef PRIV_JOIN
+#undef SCANNER
 
 #undef TOKEN_DESCRIPTOR_FILE
 #undef TOKEN_CLASS_NAME

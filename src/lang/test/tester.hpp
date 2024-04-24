@@ -89,14 +89,14 @@ struct Condition
 /**
  * An interpreter for the test code.
  */
-class Tester : public BaseParser<TestTokenTypeScanner, TestTokenType>
+class Tester : public BaseParser<TestTokenType>
 {
   public:
     /**
      * Constructor with file path of test source code.
      */
     [[nodiscard]] explicit Tester(const std::string& file_path)
-        : BaseParser<TestTokenTypeScanner, TestTokenType>(file_path)
+        : BaseParser<TestTokenType>(file_path)
     {
         board_ptr = Board::instance();
     }

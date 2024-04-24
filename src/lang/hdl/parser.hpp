@@ -26,9 +26,6 @@
 #ifndef HDL_PARSER
 #define HDL_PARSER
 
-#include <exception>
-#include <iostream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <map>
@@ -48,14 +45,14 @@ namespace hdl
  * With the current design, a single parser is only intended to parse
  * a single file with a single CHIP declaration.
  */
-class HDLParser : public BaseParser<HDLTokenTypeScanner, HDLTokenType>
+class HDLParser : public BaseParser<HDLTokenType>
 {
   public:
     /**
      * Constructor with file path of HDL source code.
      */
     [[nodiscard]] explicit HDLParser(const std::string& file_path)
-        : BaseParser<HDLTokenTypeScanner, HDLTokenType>(file_path)
+        : BaseParser<HDLTokenType>(file_path)
     {
     }
 

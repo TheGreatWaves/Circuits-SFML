@@ -35,7 +35,7 @@
  * This allows it to be used in any context easily. It is a struct because everything
  * is expected to be public.
  */
-struct RawParser : public BaseParser<RawTokenTypeScanner, RawTokenType>
+struct RawParser : public BaseParser<RawTokenType>
 {
     /**
      * Constructor with file path of HDL source code.

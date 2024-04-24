@@ -40,7 +40,7 @@
  * With the current design, a single parser is only intended to parse
  * a single file with a single CHIP declaration.
  */
-template <class Scanner, class TokenType>
+template <class TokenType>
 class BaseParser
 {
     enum class Type
@@ -172,9 +172,9 @@ class BaseParser
      * Members.
      */
   protected:
-    Token<TokenType> current;
-    Token<TokenType> previous;
-    Scanner          scanner;
+    Token<TokenType>   current;
+    Token<TokenType>   previous;
+    TokenType::Scanner scanner;
 
     bool panic{false};
     bool has_error{false};
