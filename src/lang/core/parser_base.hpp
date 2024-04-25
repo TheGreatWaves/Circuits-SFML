@@ -26,9 +26,7 @@
 #ifndef HDL_PARSER_BASE
 #define HDL_PARSER_BASE
 
-#include <exception>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -58,7 +56,7 @@ class BaseParser
         if (type == Type::File)
         {
             if (!scanner.read_source(input))
-                has_error = true;
+               has_error = true;
         }
         else
         {
@@ -127,9 +125,10 @@ class BaseParser
     /**
      * Returns true when the current type is equivalent to the expected type.
      */
-    [[nodiscard]] bool check(TokenType type) const noexcept
+    template <std::same_as<TokenType>... TokenTypes>
+    [[nodiscard]] bool check(TokenTypes ... type) const noexcept
     {
-        return current.type == type;
+        return ((current.type == type) || ...);
     }
 
     /**
