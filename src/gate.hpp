@@ -100,7 +100,7 @@ struct Gate
   {
   }
 
-  void print_truth_table()
+  auto print_truth_table() -> void
   {
     if (!serialized)
     {
@@ -148,12 +148,12 @@ struct Gate
     }
   }
 
-  bool is_serialized()
+  auto is_serialized() const -> bool
   {
     return serialized;
   }
 
-  void set_name(std::string_view new_name)
+  auto set_name(std::string_view new_name) -> void
   {
     name = new_name;
   }
@@ -163,7 +163,7 @@ struct Gate
     return name;
   }
 
-  void serialize()
+  auto serialize() -> void
   {
     uint64_t indicies = (2ULL << (static_cast<uint64_t>(input_pins.size()) - 1));
 
@@ -177,17 +177,17 @@ struct Gate
     this->serialized_computation_ptr = &this->serialized_computation;
   }
 
-  inline std::size_t serialize_output()
+  inline auto serialize_output() -> std::size_t
   {
     return pinvec_to_uint(output_pins, 0, output_pins.size());
   }
 
-  inline std::size_t serialize_input()
+  inline auto serialize_input() -> std::size_t
   {
     return pinvec_to_uint(input_pins, 0, input_pins.size());
   }
 
-  void simulate_serialized()
+  auto simulate_serialized() -> void
   {
     // Get serialized entry of the input.
     auto serialized_input = serialize_input();
@@ -198,7 +198,7 @@ struct Gate
     apply_output(static_cast<int>(output_pins.size()), serialized_output);
   }
 
-  void apply_input(int count, std::size_t mask)
+  auto apply_input(int count, std::size_t mask) -> void
   {
     std::size_t index = 0;
     while (count --> 0)
@@ -207,7 +207,7 @@ struct Gate
     }
   }
 
-  void apply_output(int count, std::size_t mask)
+  auto apply_output(int count, std::size_t mask) -> void
   {
     std::size_t index = 0;
     while (count --> 0)
@@ -219,7 +219,7 @@ struct Gate
 
   void simulate(std::unordered_set<Gate*> was_visited = {});
 
-  void reset()
+  auto reset() -> void
   {
 		log("Resetting output pins...\n");
     for (auto& output_pin : output_pins)
@@ -229,7 +229,7 @@ struct Gate
   }
 
 
-  void add_input_pin(int n = 1)
+  auto add_input_pin(int n = 1) -> void
   {
     // We update all the pins which are above this number.
     auto old_input_count = input_pins.size();
@@ -254,7 +254,7 @@ struct Gate
     }
   }
 
-  void add_output_pin(int n = 1)
+  auto add_output_pin(int n = 1) -> void
   {
     // We update all the pins which are above this number.
     auto old_output_count = output_pins.size() + INPUT_PIN_LIMIT;
@@ -280,7 +280,7 @@ struct Gate
 
   }
 
-  Pin* get_pin(std::size_t pin)
+  auto get_pin(std::size_t pin) -> Pin*
   {
     if (INPUT_PIN_LIMIT > pin)
     {
@@ -333,12 +333,12 @@ struct Gate
     return nullptr;
   }
 
-  void clear_wires()
+  auto clear_wires() -> void
   {
     wires.clear();
   }
 
-  void construct_wire(WireConstructionInfo& wire_info)
+  auto construct_wire(WireConstructionInfo& wire_info) -> void
   {
     clear_wires();
     for (auto [src, dest] : wire_info)
@@ -350,7 +350,7 @@ struct Gate
     }
   }
 
-  bool wire_pins(std::size_t p1, std::size_t p2)
+  auto wire_pins(std::size_t p1, std::size_t p2) -> bool
   {
     auto pa = get_pin(p1);
 
@@ -373,24 +373,24 @@ struct Gate
 
   bool connect_pins(Pin* input, Pin* output);
 
-  bool has_pin(std::size_t input_id)
+  auto has_pin(std::size_t input_id) -> bool
   {
     return input_pins.size() > input_id;
   }
 
-  PinState get_pin_state(std::size_t input_id)
+  auto get_pin_state(std::size_t input_id) -> PinState
   {
     return input_pins.at(input_id).state;
   }
 
-  bool toggle_pin(std::size_t input_id)
+  auto toggle_pin(std::size_t input_id) -> bool
   {
     if (input_pins.size() < input_id) return false;
     input_pins[input_id].flip();
     return true;
   }
 
-  std::size_t add_subgate(Gate* gate, Board* board = nullptr)
+  auto add_subgate(Gate* gate, Board* board = nullptr) -> std::size_t
   {
   	return add_subgate(gate->name, board);
   }
@@ -405,14 +405,14 @@ struct Gate
    * Built-in type handlers.
    * TODO: Maybe abstract this out later.
    */
-  void handle_nand()
+  auto handle_nand() -> void
   {
     output_pins[0].state = (!(input_pins[0].is_active() && input_pins[1].is_active()))
                          ? PinState::ACTIVE
                          : PinState::INACTIVE;
   }
 
-  void handle_dff()
+  auto handle_dff() -> void
   {
     if (input_pins[1].is_active())
     {
@@ -424,7 +424,7 @@ struct Gate
 
   void handle_ram_16k();
 
-  void input_info()
+  auto input_info() -> void
   {
     log("Input Info:\n");
     for (std::size_t count = 0; count < input_pins.size(); count++)
@@ -433,7 +433,7 @@ struct Gate
 		}
   }
 
-  void output_info()
+  auto output_info() -> void
   {
     log("output Info:\n");
     for (std::size_t count = 0; count < output_pins.size(); count++)
@@ -443,7 +443,7 @@ struct Gate
   }
 
 
-  void subgates_info()
+  auto subgates_info() -> void
   {
     auto count = input_pins.size();
     auto output_count = output_pins.size();
@@ -466,7 +466,7 @@ struct Gate
     }  
   }
 
-  void subgates_brief()
+  auto subgates_brief() -> void
   {
     auto count = input_pins.size();
     auto output_count = output_pins.size();
@@ -490,7 +490,7 @@ struct Gate
   }
 
 
-  void input_pin_address_info()
+  auto input_pin_address_info() -> void
   {
     log("Input pins address:\n");
 		for (const auto& pin : input_pins)
@@ -501,7 +501,7 @@ struct Gate
   }
 
 
-  void wire_info()
+  auto wire_info() -> void
   {
     log("Wire count: ", wires.size(), '\n');
     for (auto [src, dest] : wire_construction_recipe)
@@ -511,7 +511,7 @@ struct Gate
   }
   
   // Prints information about the current gate.
-  void info()
+  auto info() -> void
   {
     log(BLOCK, " Gate ", name, BLOCK, '\n');
     log("Is serialized: ", (serialized ? "yes" : "no"), '\n');
@@ -552,7 +552,7 @@ struct PC : Gate
   }
 
 
-  void handle_pc_impl() 
+  auto handle_pc_impl()  -> void
   {
     if (forwardable())
     {
@@ -577,49 +577,49 @@ struct PC : Gate
     previous_clock = clock_pin().get_state();
   }
 
-  void sync_output()
+  auto sync_output() -> void
   {
     set_pinvec(this->register_value, this->output_pins, 0, 16);
   }
 
-  void increment()
+  auto increment() -> void
   {
     this->register_value++;
   }
 
-  void load()
+  auto load() -> void
   {
     this->register_value = pinvec_to_uint<uint16_t>(input_pins, 0, 16);
   }
 
-  void reset()
+  auto reset() -> void
   {
     this->register_value = 0;
   }
 
-  bool forwardable()
+  auto forwardable() -> bool
   {
     // Clock was inactive, and now it is active.
     return (this->previous_clock == PinState::INACTIVE) && clock_pin().is_active();
   }
 
 
-  inline Pin& load_pin()
+  inline auto load_pin() -> Pin&
   {
     return this->input_pins.at(16);
   }
 
-  inline Pin& inc_pin()
+  inline auto inc_pin() -> Pin&
   {
     return this->input_pins.at(17);
   }
 
-  inline Pin& reset_pin()
+  inline auto reset_pin() -> Pin&
   {
     return this->input_pins.at(18);
   }
 
-  inline Pin& clock_pin()
+  inline auto clock_pin() -> Pin&
   {
     return this->input_pins.at(19);
   }
@@ -631,7 +631,8 @@ struct PC : Gate
   PinState previous_clock { PinState::INACTIVE };
 }; 
 
-struct Ram16k : Gate {
+struct Ram16k : Gate 
+{
   explicit Ram16k()
     : Gate(
         32,                 // 16-bit input, 14-bit address, load, clock
@@ -642,39 +643,39 @@ struct Ram16k : Gate {
   {
   }
 
-  uint16_t read_in()
+  auto read_in() -> uint16_t
   {
     return pinvec_to_uint<uint16_t>(this->input_pins, 0, 16);
   }
 
-  std::size_t read_address()
+  auto read_address() -> std::size_t
   {
     return pinvec_to_uint<uint16_t>(this->input_pins, 16, 30);
   }
 
-  Pin& load_pin()
+  auto load_pin() -> Pin&
   {
     return this->input_pins[30];
   }
 
-  Pin& clock_pin()
+  auto clock_pin() -> Pin&
   {
     return this->input_pins[31];
   }
 
-  void sync_output()
+  auto sync_output() -> void
   {
     const auto value = data[address];
     set_pinvec(value, this->output_pins, 0, 16);
   }
 
-  void load_value()
+  auto load_value() -> void
   {
     const auto value = read_in();
     data[address] = value;
   }
 
-  void handle_ram_16k_impl()
+  auto handle_ram_16k_impl() -> void
   {
     // Set the new address
     address = read_address();

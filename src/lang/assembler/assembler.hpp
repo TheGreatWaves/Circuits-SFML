@@ -66,7 +66,7 @@ inline std::map<std::string_view, std::size_t> COMP {
 {"D|M", 0b1010101},
 };
 
-inline uint16_t get_dest_bits(std::string_view target)
+inline auto get_dest_bits(std::string_view target) -> uint16_t
 {
  for (std::uint16_t i{0}; i < 8; i++)
   if (target==DESTINATION[i])
@@ -78,7 +78,7 @@ inline uint16_t get_dest_bits(std::string_view target)
  return -1;
 }
 
-inline uint16_t get_comp_bits(std::string_view target)
+inline auto get_comp_bits(std::string_view target) -> uint16_t
 {
  if (auto f = COMP.find(target); f != COMP.end())
  {
@@ -91,7 +91,7 @@ inline uint16_t get_comp_bits(std::string_view target)
  }
 }
 
-inline uint16_t get_jump_bits(std::string_view target)
+inline auto get_jump_bits(std::string_view target) -> uint16_t
 {
  for (std::uint16_t i{0}; i < 8; i++)
   if (target==JUMP[i])
