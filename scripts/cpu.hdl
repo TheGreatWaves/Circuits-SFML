@@ -1,0 +1,14 @@
+CHIP cpu {
+	IN 
+	inM[16],         // Value of M (RAM[A])
+	instruction[16], // Instruction to execute
+	reset;           // Execute first instruction (reset == 1), or next instruction.
+
+	OUT
+	outM[16],     // Value to write to RAM register
+	writeM,       // Write to RAM
+	addressM[15], // Ram register address
+	pc[15];       // Address of next instruction
+
+	PARTS:
+}
