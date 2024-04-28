@@ -49,6 +49,7 @@ public:
     add_built_in(std::move(dff));
     add_built_in(std::make_unique<PC>());
     add_built_in(std::make_unique<Ram16k>());
+    add_built_in(std::make_unique<Mux16>());
 
     if (is_singleton)
     {

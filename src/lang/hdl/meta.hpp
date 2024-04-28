@@ -210,6 +210,18 @@ struct Meta
 
         return meta;
     }
+    else if (component_name == "mux_16")
+    {
+        meta->set_name("mux_16");
+
+        meta->add_input_bus("a", 16);
+        meta->add_input_bus("b", 16);
+        meta->add_input_pin("sel");
+
+        meta->add_output_bus("out", 16);
+
+        return meta;
+    }
 
     try
     {
