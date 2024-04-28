@@ -44,6 +44,7 @@ enum class GateType
   DFF,
   PC,
   RAM_16K,
+  REGISTER,
   MUX_16,
   CUSTOM
 };
@@ -427,6 +428,8 @@ struct Gate
 
   auto handle_mux_16() -> void;
 
+  auto handle_register() -> void;
+
   auto input_info() -> void
   {
     log("Input Info:\n");
@@ -735,6 +738,46 @@ struct Mux16 : Gate
     const uint16_t value = pinvec_to_uint<uint16_t>(this->input_pins, start, end);
     set_pinvec(value, this->output_pins, 0, 16);
   }
+};
+
+struct Register : Gate
+{
+  explicit Register()
+    : Gate(
+        18,                 // 16-bit input, load, clock
+        16,                 // 16-bit output 
+        GateType::REGISTER, // Gate type
+        "register"          // Gate name
+      )
+  {
+  }
+
+  auto load_pin() -> Pin& 
+  {
+    return this->input_pins[16];
+  }
+
+  auto clock_pin() -> Pin& 
+  {
+    return this->input_pins[17];
+  }
+
+  auto handle_register_impl() -> void
+  {
+    if (clock_pin().is_active() && load_pin().is_active())
+    {
+      const uint16_t loaded_value = pinvec_to_uint(this->input_pins, 0, 16);
+
+      this->data = loaded_value;
+
+      set_pinvec(loaded_value, this->output_pins, 0, 16);
+    }
+  }
+
+  /**
+   * Members
+   */
+  uint16_t data;
 };
 
 

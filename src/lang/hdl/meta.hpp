@@ -222,6 +222,17 @@ struct Meta
 
         return meta;
     }
+    else if (component_name == "register")
+    {
+        meta->set_name("register");
+
+        meta->add_input_bus("in", 16);
+        meta->add_input_pins({"load", "clock"});
+
+        meta->add_output_bus("out", 16);
+
+        return meta;
+    }
 
     try
     {
