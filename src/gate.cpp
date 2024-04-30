@@ -52,13 +52,14 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
   while( !to_explore.empty() )
   {
     std::vector<Pin> exploring = std::move(to_explore);
+    int index {0};
+    const int size = exploring.size();
 
     // Keep exploring until we reach a deadend or a parent component.
-    while ( !exploring.empty() )
+    while ( index < size )
     {
       // Grab the pin we're interested in.
-      auto pin = exploring.back();
-      exploring.pop_back();
+      auto pin = exploring.at(index++);
 
       // Add the pins it is connected to.
       for (auto& conn : pin.connections)
