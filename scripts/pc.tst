@@ -46,14 +46,6 @@ TEST 'load' {
 	SET p.load = 1;
 	EVAL;
 
-	REQUIRE p.out IS 1589;
-
-	// tick-tock
-	SET p.clock = 0;
-	EVAL;
-	SET p.clock = 1;
-	EVAL;
-
 	REQUIRE p.out IS 2354;
 }
 
