@@ -34,6 +34,7 @@
 #include "lang/hdl/parser.hpp"
 #include "gate.hpp"
 #include "utils.hpp"
+#include "builtin/builtin.hpp"
 
 // We have a single static instance of the board (this will have the lifetime of the program)
 class Board

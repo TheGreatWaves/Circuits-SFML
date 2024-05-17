@@ -26,6 +26,11 @@
 #include "board.hpp"
 #include "wire.hpp"
 
+/**
+ * Builtin Gates
+ */
+#include "builtin/builtin.hpp"
+
 std::size_t Gate::add_subgate(std::string_view gate_name, Board* board)
 {
   auto board_instance = (board == nullptr) ? Board::instance() : board;
