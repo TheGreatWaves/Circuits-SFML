@@ -562,17 +562,17 @@ struct PC : Gate
   {
     if (forwardable())
     {
-      if (inc_pin().is_active())
+      if (reset_pin().is_active())
       {
-        increment();
+        reset();
       }
       else if (load_pin().is_active())
       {
         load();
       }
-      else if (reset_pin().is_active())
+      else if (inc_pin().is_active())
       {
-        reset();
+        increment();
       }
 
       sync_output();
@@ -605,8 +605,7 @@ struct PC : Gate
 
   auto forwardable() -> bool
   {
-    // Clock was inactive, and now it is active.
-    return (this->previous_clock == PinState::INACTIVE) && clock_pin().is_active();
+    return clock_pin().is_active();
   }
 
 
@@ -764,10 +763,9 @@ struct Register : Gate
 
   auto handle_register_impl() -> void
   {
+    const uint16_t loaded_value = pinvec_to_uint(this->input_pins, 0, 16);
     if (clock_pin().is_active() && load_pin().is_active())
     {
-      const uint16_t loaded_value = pinvec_to_uint(this->input_pins, 0, 16);
-
       this->data = loaded_value;
 
       set_pinvec(loaded_value, this->output_pins, 0, 16);
