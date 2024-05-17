@@ -25,19 +25,19 @@
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <sstream>
 #include <filesystem>
-#include <optional>
 
 #include "common.hpp" 
 #include "board.hpp"
-#include "gui/driver.hpp"
 
-#include "lang/core/trie.hpp"
+#ifdef GUI_ENABLED
+#include "gui/driver.hpp"
+#endif
+
 #include "lang/test/tester.hpp"
 #include "lang/core/comptrie.hpp"
 #include "lang/core/raw_parser.hpp"
-#include "lang/assem/token_assem.hpp"
+#include "lang/assembler/assembler.hpp"
 #include "lang/hdl/parser.hpp"
 
 /**
@@ -45,7 +45,10 @@
  */
 bool run_file(const std::string& filePath);
 void create_component(std::string_view name);
+
+#ifdef GUI_ENABLED
 void run_gui();
+#endif
 
 Board board;
 bool running = true;
@@ -302,8 +305,10 @@ void handle_input(RawParser& parser, std::string_view str)
 		log("Gate Recipe Directory: ", GATE_RECIPE_DIRECTORY);
 	CASE("test")
 		run_test(parser);
+#ifdef GUI_ENABLED
 	CASE("gui")
 		run_gui();
+#endif
 	CASE("quit")
 		running = false;
 	CASE("serialize")
@@ -371,11 +376,13 @@ void create_component(std::string_view name)
 	instance->set_context(name);
 }
 
+#ifdef GUI_ENABLED
 void run_gui()
 {
 	Program program;
 	program.run();
 }
+#endif
 
 int main()
 {
