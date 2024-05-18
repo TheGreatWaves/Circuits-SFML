@@ -27,8 +27,8 @@
  * The implementation looks horribly wasteful, and it probably is.
  */
 #pragma once
-#ifndef BELT_GUI
-#define BELT_GUI
+#ifndef BELT_GUI_H
+#define BELT_GUI_H
 
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -186,4 +186,4 @@ private:
   sf::RectangleShape            m_selection_box;
 };
 
-#endif /* BELT_GUI */
+#endif /* BELT_GUI_H */

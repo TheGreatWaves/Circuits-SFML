@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef HDL_PARSER
-#define HDL_PARSER
+#ifndef HDL_PARSER_H
+#define HDL_PARSER_H
 
 #include <string>
 #include <string_view>
@@ -814,4 +814,4 @@ class HDLParser : public BaseParser<HDLTokenType>
 
 } /* namespace hdl */
 
-#endif /* HDL_PARSER */
+#endif /* HDL_PARSER_H */

@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef WIRE_INFO
-#define WIRE_INFO
+#ifndef WIRE_INFO_H
+#define WIRE_INFO_H
 
 #include <vector>
 
@@ -36,4 +36,4 @@ struct WireInfo
 
 using WireConstructionInfo = std::vector<WireInfo>;
 
-#endif /* WIRE_INFO */
+#endif /* WIRE_INFO_H */

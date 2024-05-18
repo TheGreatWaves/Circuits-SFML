@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef TEXT_BOX
-#define TEXT_BOX
+#ifndef TEXT_BOX_H
+#define TEXT_BOX_H
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Rect.hpp>
@@ -222,4 +222,4 @@ private:
 };
 
 
-#endif /* TEXT_BOX */
+#endif /* TEXT_BOX_H */

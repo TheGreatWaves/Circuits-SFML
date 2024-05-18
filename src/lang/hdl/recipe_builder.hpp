@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 #pragma once
-#ifndef HDL_RECIPE_BUILDER
-#define HDL_RECIPE_BUILDER
+#ifndef HDL_RECIPE_BUILDER_H
+#define HDL_RECIPE_BUILDER_H
 
 #include <iomanip>
 #include <iostream>
@@ -317,4 +317,4 @@ class RecipeBuilder
 };
 } /* namespace hdl */
 
-#endif /* HDL_RECIPE_BUILDER */
+#endif /* HDL_RECIPE_BUILDER_H */

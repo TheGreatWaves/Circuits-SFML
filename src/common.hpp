@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef COMMON
-#define COMMON
+#ifndef COMMON_H
+#define COMMON_H
 
 #include <string>
 
@@ -62,4 +62,4 @@ constexpr std::size_t INPUT_PIN_LIMIT{ 1000 };
  */
 constexpr float WIRE_GROWTH_RATE = 900.f;
 
-#endif /* COMMON */
+#endif /* COMMON_H */

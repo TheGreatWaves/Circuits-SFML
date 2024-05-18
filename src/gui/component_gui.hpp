@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef COMPONENT_GUI
-#define COMPONENT_GUI
+#ifndef COMPONENT_GUI_H
+#define COMPONENT_GUI_H
 
 #include <string_view>
 
@@ -151,5 +151,5 @@ private:
   std::string           m_component_name;
 };
 
-#endif /* COMPONENT_GUI */
+#endif /* COMPONENT_GUI_H */
 

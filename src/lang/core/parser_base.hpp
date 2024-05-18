@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef HDL_PARSER_BASE
-#define HDL_PARSER_BASE
+#ifndef HDL_PARSER_BASE_H
+#define HDL_PARSER_BASE_H
 
 #include <iostream>
 #include <string>
@@ -179,4 +179,4 @@ class BaseParser
     bool has_error{false};
 };
 
-#endif /* HDL_PARSER_BASE */
+#endif /* HDL_PARSER_BASE_H */

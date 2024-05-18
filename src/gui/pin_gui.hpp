@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef PIN_GUI
-#define PIN_GUI
+#ifndef PIN_GUI_H
+#define PIN_GUI_H
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics.hpp>
@@ -126,4 +126,4 @@ private:
 };
 
 
-#endif /* PIN_GUI */
+#endif /* PIN_GUI_H */

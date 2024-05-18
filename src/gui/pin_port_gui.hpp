@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef PIN_PORT_GUI
-#define PIN_PORT_GUI
+#ifndef PIN_PORT_GUI_H
+#define PIN_PORT_GUI_H
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
@@ -228,4 +228,4 @@ private:
   std::vector<PinGui> m_pins;
 };
 
-#endif /* PIN_PORT_GUI */
+#endif /* PIN_PORT_GUI_H */

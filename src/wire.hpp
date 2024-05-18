@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef WIRE
-#define WIRE
+#ifndef WIRE_H
+#define WIRE_H
 
 #include "pin.hpp"
 
@@ -48,4 +48,4 @@ struct Wire
   Pin* output;
 };
 
-#endif /* WIRE */
+#endif /* WIRE_H */

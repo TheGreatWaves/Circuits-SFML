@@ -28,8 +28,8 @@
  * simple singleton which contains all the information I need.
  */
 #pragma once
-#ifndef GUI_CONTEXT
-#define GUI_CONTEXT
+#ifndef GUI_CONTEXT_H
+#define GUI_CONTEXT_H
 
 #include <SFML/Graphics.hpp>
 
@@ -71,4 +71,4 @@ struct Context
 
 inline Context* Context::singleton = nullptr;
 
-#endif /* GUI_CONTEXT */
+#endif /* GUI_CONTEXT_H */

@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef UTILS
-#define UTILS
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <type_traits>
 #include <algorithm>
@@ -113,4 +113,4 @@ set_pinvec(T value, std::vector<Pin>& target, std::size_t start, std::size_t end
 
 #define BLOCK "======"
 
-#endif /* UTILS */
+#endif /* UTILS_H */

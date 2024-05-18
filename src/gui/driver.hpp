@@ -26,8 +26,8 @@
  * This file holds the main driver for the GUI loop.
  */
 #pragma once
-#ifndef GUI_DRIVER
-#define GUI_DRIVER
+#ifndef GUI_DRIVER_H
+#define GUI_DRIVER_H
 
 /**
  * SFML Dependencies.
@@ -189,4 +189,4 @@ inline void Program::handle_events()
 }
 
 
-#endif /* GUI_DRIVER */
+#endif /* GUI_DRIVER_H */

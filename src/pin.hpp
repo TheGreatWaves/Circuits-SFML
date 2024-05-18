@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef PIN
-#define PIN
+#ifndef PIN_H
+#define PIN_H
 
 #include <vector>
 #include <memory>
@@ -91,4 +91,4 @@ struct Pin
 
 
 
-#endif /* PIN */
+#endif /* PIN_H */

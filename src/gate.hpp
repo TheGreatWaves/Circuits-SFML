@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef GATE
-#define GATE
+#ifndef GATE_H
+#define GATE_H
 
 #include <memory>
 #include <vector>
@@ -544,4 +544,4 @@ struct Gate
   }
 };
 
-#endif /* GATE */
+#endif /* GATE_H */

@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef BOARD_GUI
-#define BOARD_GUI
+#ifndef BOARD_GUI_H
+#define BOARD_GUI_H
 
 #include <vector>
 
@@ -349,4 +349,4 @@ private:
   std::unique_ptr<Gate> m_sketch;
 };
 
-#endif /* BOARD_GUI */
+#endif /* BOARD_GUI_H */

@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef BOARD
-#define BOARD
+#ifndef BOARD_H
+#define BOARD_H
 
 #include <memory>
 #include <map>
@@ -390,4 +390,4 @@ private:
 
 inline Board* Board::singleton = nullptr;
 
-#endif /* BOARD */
+#endif /* BOARD_H */

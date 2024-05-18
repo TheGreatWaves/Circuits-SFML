@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef RAW_PARSER
-#define RAW_PARSER
+#ifndef RAW_PARSER_H
+#define RAW_PARSER_H
 
 
 #include "token_raw.hpp"
@@ -116,4 +116,4 @@ struct RawParser : public BaseParser<RawTokenType>
     }
 };
 
-#endif /* RAW_PARSER */
+#endif /* RAW_PARSER_H */

@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef DATASTRUCTURE_TRIE
-#define DATASTRUCTURE_TRIE
+#ifndef TRIE_H
+#define TRIE_H
 
 #include <array>
 #include <string>
@@ -282,4 +282,4 @@ class Trie
     TrieNode* root;
 };
 
-#endif /* DATASTRUCTURE_TRIE */
+#endif /* TRIE_H */

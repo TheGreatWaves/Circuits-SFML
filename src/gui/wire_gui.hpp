@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef WIRE_GUI
-#define WIRE_GUI
+#ifndef WIRE_GUI_H
+#define WIRE_GUI_H
 
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Vertex.hpp>
@@ -191,4 +191,4 @@ private:
 };
 
 
-#endif /* WIRE_GUI */
+#endif /* WIRE_GUI_H */

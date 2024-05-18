@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef COMPONENT_RECIPE
-#define COMPONENT_RECIPE
+#ifndef COMPONENT_RECIPE_H
+#define COMPONENT_RECIPE_H
 
 #include <vector>
 #include <string_view>
@@ -154,4 +154,4 @@ private:
   bool                            m_serializable{ false };
 };
 
-#endif /* COMPONENT_RECIPE */
+#endif /* COMPONENT_RECIPE_H */

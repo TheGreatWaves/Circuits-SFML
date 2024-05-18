@@ -23,8 +23,8 @@
  */
 
 #pragma once
-#ifndef HDL_META
-#define HDL_META
+#ifndef HDL_META_H
+#define HDL_META_H
 
 #include <memory>
 #include <optional>
@@ -345,4 +345,4 @@ struct Meta
 
 } /* namespace hdl */
 
-#endif /* HDL_META */
+#endif /* HDL_META_H */
