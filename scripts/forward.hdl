@@ -1,0 +1,8 @@
+SERIALIZE CHIP forward {
+	IN in;
+	OUT out;
+
+	PARTS:
+	not(in=in, out=not_out);
+	not(in=not_out, out=out);
+}
