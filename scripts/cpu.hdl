@@ -29,12 +29,12 @@ CHIP cpu {
 	forward(in=instruction[4], out=dest_d);
 	forward(in=instruction[3], out=dest_ram);
 
-	// Load to A ?
+	// Load to A?
 	// load_a = (C_instruction AND destination is A) or A_instruction
 	and(a=C_instruction, b=dest_a, out=alu_out_dest_is_a);
 	or(a=A_instruction, b=alu_out_dest_is_a, out=load_a);
 
-	// Load to D ?
+	// Load to D?
 	and(a=C_instruction, b=dest_d, out=load_d);
 
 	///
@@ -55,7 +55,12 @@ CHIP cpu {
 	   out = mux_to_a
 	);
 
-	// To ALU.
+	// Mux to ALU.
+	// Takes in:
+	//  - A register value
+	//  - inM
+	// Selector:
+	//  - Take A register. (take mux input)
 	mux_16(
 		a   = a_reg, 
 		b   = inM, 
@@ -73,7 +78,48 @@ CHIP cpu {
 		f   = instruction[7],
 		no  = instruction[6],
 		out = alu_out,
-		out = outM
+		out = outM,
+		zr  = zr_out,
+		ng  = ng_out
+	);
+
+	//
+	// Program counter.
+	//
+	// Aliases.
+	forward(in=instruction[2], out=j1); // Cond: < 0
+	forward(in=instruction[1], out=j2); // Cond: = 0
+	forward(in=instruction[0], out=j3); // Cond: > 0
+	not(in=ng_out, out=pos);
+
+	// Jump conditions.
+	and(a=j2, b=zr, out=jez);       // Jump if 0
+	and(a=j3, b=positive, out=jgz); // Jump if 0 >
+	and(a=j1, b=ng_out, out=jlz);   // Jump if < 0
+	or(a=jez, b=jlz, out=jlez);     // Jump if <= 0
+	or(a=jez, b=jgz, out=jgez);     // Jump if >= 0
+	or(a=jlez, b=jgez, out=jump);   // Jump condition
+
+	and(a=C_instruction, b=jump, out=load_pc); // if j(jbits,zr,ng) pc <- A 
+	not(in=load_pc, out=inc_pc);               // else pc++
+	
+	true(in=instruction[0], out=true);
+	pc(clock=clock, in=a_reg, load=load_pc, reset=reset, inc=inc_pc,
+		out[0]  = pc[0],
+		out[1]  = pc[1],
+		out[2]  = pc[2],
+		out[3]  = pc[3],
+		out[4]  = pc[4],
+		out[5]  = pc[5],
+		out[6]  = pc[6],
+		out[7]  = pc[7],
+		out[8]  = pc[8],
+		out[9]  = pc[9],
+		out[10] = pc[10],
+		out[11] = pc[11],
+		out[12] = pc[12],
+		out[13] = pc[13],
+		out[14] = pc[14]
 	);
 	
 
