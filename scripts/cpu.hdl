@@ -2,13 +2,99 @@ CHIP cpu {
 	IN 
 	inM[16],         // Value of M (RAM[A])
 	instruction[16], // Instruction to execute
-	reset;           // Execute first instruction (reset == 1), or next instruction.
+	reset,           // Execute first instruction (reset == 1), or next instruction.
+	clock;
 
 	OUT
 	outM[16],     // Value to write to RAM register
 	writeM,       // Write to RAM
 	addressM[15], // Ram register address
+
+	a_reg_out[16],
+	a_mux_out[16],
+
 	pc[15];       // Address of next instruction
 
 	PARTS:
+	///
+	/// Control bits
+	/// 
+
+	// Instruction Type.
+	not(in=instruction[15], out=A_instruction);
+	not(in=A_instruction,   out=C_instruction);
+
+	// Destination bits for C-Instruction.
+	forward(in=instruction[5], out=dest_a);
+	forward(in=instruction[4], out=dest_d);
+	forward(in=instruction[3], out=dest_ram);
+
+	// Load to A ?
+	// load_a = (C_instruction AND destination is A) or A_instruction
+	and(a=C_instruction, b=dest_a, out=alu_out_dest_is_a);
+	or(a=A_instruction, b=alu_out_dest_is_a, out=load_a);
+
+	// Load to D ?
+	and(a=C_instruction, b=dest_d, out=load_d);
+
+	///
+	/// Logical
+	///
+
+	// Mux to A.
+	// Takes in:
+	//  - Alu output
+	//  - Instruction
+	// Selector:
+	//  - C-Dest being A (take Alu output).
+	mux_16(
+	   a   = instruction, // Take instruction by default.
+	   b   = alu_out,     // Only taken if C-Instr destination = A.
+	   sel = alu_out_dest_is_a, 
+	   out = a_mux_out,
+	   out = mux_to_a
+	);
+
+	// To ALU.
+	mux_16(
+		a   = a_reg, 
+		b   = inM, 
+		sel = instruction[12], 
+		out = mux_to_alu
+	);
+
+	forward(in=instruction[3], out=writeM);
+
+	alu(x=d_out, y=mux_to_alu,
+		zx  = instruction[11],
+		zy  = instruction[10],
+		nx  = instruction[9],
+		ny  = instruction[8],
+		f   = instruction[7],
+		no  = instruction[6],
+		out = alu_out,
+		out = outM
+	);
+	
+
+	///
+	/// Registers
+	///
+
+	// A Register.
+	register(
+		clock = clock, 
+		in    = mux_to_a, 
+		out   = a_reg_out,
+		out   = a_reg,
+		load  = load_a
+	);
+
+	// D Register.
+	register(
+		clock = clock, 
+		in    = alu_out, 
+		out   = d_out,
+		load  = load_d
+	);
 }
