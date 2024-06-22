@@ -58,10 +58,9 @@ void Gate::handle_custom_type(std::unordered_set<Gate*> was_visited)
   {
     std::vector<Pin> exploring = std::move(to_explore);
     int index {0};
-    const int size = exploring.size();
 
     // Keep exploring until we reach a deadend or a parent component.
-    while ( index < size )
+    while ( index < exploring.size() )
     {
       // Grab the pin we're interested in.
       auto pin = exploring.at(index++);
