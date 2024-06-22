@@ -59,8 +59,8 @@ struct PC : Gate
     }
 
     // We don't want to continuously forward. 
-    // ONly forward once, when the signal turned from inactive to active.
-    previous_clock = clock_pin().get_state();
+    // Only forward once, when the signal turned from inactive to active.
+    previous_state = pinvec_to_uint(this->input_pins, 0, 20);
   }
 
   auto sync_output() -> void
@@ -85,7 +85,8 @@ struct PC : Gate
 
   auto forwardable() -> bool
   {
-    return clock_pin().is_active();
+    const auto current_state = pinvec_to_uint(this->input_pins, 0, 20);
+    return previous_state != current_state && clock_pin().is_active();
   }
 
 
@@ -113,7 +114,7 @@ struct PC : Gate
    * 
    */
   uint16_t register_value { 0 };
-  PinState previous_clock { PinState::INACTIVE };
+  uint32_t previous_state { 0 };
 }; 
 
 
