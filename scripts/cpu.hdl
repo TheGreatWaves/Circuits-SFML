@@ -6,12 +6,13 @@ CHIP cpu {
 	clock;
 
 	OUT
+	mux_to_alu[16],
 	outM[16],     // Value to write to RAM register
 	writeM,       // Write to RAM
 	addressM[15], // Ram register address
 
-	a_reg_out[16],
-	a_mux_out[16],
+	a_reg[16],
+	d_reg[16],
 
 	pc[15];       // Address of next instruction
 
@@ -70,14 +71,13 @@ CHIP cpu {
 
 	forward(in=instruction[3], out=writeM);
 
-	alu(x=d_out, y=mux_to_alu,
+	alu(x=d_reg, y=mux_to_alu,
 		zx  = instruction[11],
 		zy  = instruction[10],
 		nx  = instruction[9],
 		ny  = instruction[8],
 		f   = instruction[7],
 		no  = instruction[6],
-		out = alu_out,
 		out = outM,
 		zr  = zr_out,
 		ng  = ng_out
@@ -131,7 +131,6 @@ CHIP cpu {
 	register(
 		clock = clock, 
 		in    = mux_to_a, 
-		out   = a_reg_out,
 		out   = a_reg,
 		load  = load_a
 	);
@@ -139,8 +138,8 @@ CHIP cpu {
 	// D Register.
 	register(
 		clock = clock, 
-		in    = alu_out, 
-		out   = d_out,
+		in    = outM, 
+		out   = d_reg,
 		load  = load_d
 	);
 }
