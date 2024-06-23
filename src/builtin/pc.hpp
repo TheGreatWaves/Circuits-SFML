@@ -85,7 +85,7 @@ struct PC : Gate
 
   auto forwardable() -> bool
   {
-    const auto current_state = pinvec_to_uint(this->input_pins, 0, 20);
+    const auto current_state = pinvec_to_uint(this->input_pins, 16, 20);
     return previous_state != current_state && clock_pin().is_active();
   }
 
