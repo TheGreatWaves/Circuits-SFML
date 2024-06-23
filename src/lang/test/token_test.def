@@ -21,6 +21,7 @@ SYMBOL_TOKEN(Comma,      ",")
 SYMBOL_TOKEN(Semicolon,  ";")
 SYMBOL_TOKEN(colon,      ":")
 SYMBOL_TOKEN(Dot,        ".")
+SYMBOL_TOKEN(Plus,       "+")
 SYMBOL_TOKEN(Equal,      "=")
 
 /**
