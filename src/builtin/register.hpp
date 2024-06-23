@@ -46,21 +46,47 @@ struct Register : Gate
     return this->input_pins[17];
   }
 
+  auto load_value() -> uint16_t 
+  {
+    return pinvec_to_uint(this->input_pins, 0, 16);
+  }
+
+  // There is a big problem with this.
+  // We don't know which signal arrives first,
+  // and we don't know which signal might be out-dated.
   auto handle_register_impl() -> void
   {
-    const uint16_t loaded_value = pinvec_to_uint(this->input_pins, 0, 16);
+    const uint16_t loaded_value = load_value();
 
-    if (clock_pin().is_active() && load_pin().is_active())
+    // Data can only be stored on a new clock signal.
+    if (clock_pin().is_active())
     {
-      this->data = loaded_value;
+      const auto new_value_loaded = loaded_value != this->data;
+      const auto new_load_state = load_pin().get_state() != previous_load_state;
 
-      set_pinvec(loaded_value, this->output_pins, 0, 16);
+      if (new_value_loaded && new_load_state && load_pin().is_active())
+      {
+        this->data = loaded_value;
+
+        std::cout << "Loading: " << this->data << '\n';
+        set_pinvec(loaded_value, this->output_pins, 0, 16);
+
+      }
     }
+
+    previous_load_state = load_pin().get_state();
+  }
+
+  auto commit() -> bool
+  {
+    return previous_clock_state == PinState::ACTIVE && !clock_pin().is_active();
   }
 
   /**
    * Members
    */
+  PinState previous_clock_state { PinState::INACTIVE };
+  PinState previous_load_state { PinState::INACTIVE };
   uint16_t data;
 };
 
