@@ -60,7 +60,7 @@ struct PC : Gate
 
     // We don't want to continuously forward. 
     // Only forward once, when the signal turned from inactive to active.
-    previous_state = pinvec_to_uint(this->input_pins, 0, 20);
+    previous_state = pinvec_to_uint(this->input_pins, 16, 20);
   }
 
   auto sync_output() -> void
