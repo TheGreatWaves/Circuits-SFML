@@ -139,11 +139,13 @@ CHIP cpu {
 		load  = load_a
 	);
 
+	forward_16(in=d_reg, out=reg_d_input);
+
 	// D Register.
 	register(
 		clock = clock, 
 		in    = outM, 
-		out   = d_reg,
+		out   = reg_d_input,
 		load  = load_d
 	);
 }

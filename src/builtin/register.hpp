@@ -62,17 +62,27 @@ struct Register : Gate
     {
 
       const auto new_value_loaded = loaded_value != this->data;
+      const auto load_pin_active = load_pin().is_active();
       const auto new_load_state = load_pin().get_state() != previous_load_state;
 
-      if (new_value_loaded && load_pin().is_active())
+      if (new_value_loaded && load_pin_active && (written < 1))
       {
         this->data = loaded_value;
 
         set_pinvec(loaded_value, this->output_pins, 0, 16);
+
+        written++;
       }
     }
 
+    if (previous_clock_state == PinState::ACTIVE
+    &&  !clock_pin().is_active())
+    {
+      written = 0;
+    }
+
     previous_load_state = load_pin().get_state();
+    previous_clock_state = clock_pin().get_state();
   }
 
   auto commit() -> bool
@@ -84,7 +94,8 @@ struct Register : Gate
    * Members
    */
   PinState previous_clock_state { PinState::INACTIVE };
-  PinState previous_load_state { PinState::INACTIVE };
+  PinState previous_load_state  { PinState::INACTIVE };
+  uint8_t  written              { 0 };
   uint16_t data;
 };
 
