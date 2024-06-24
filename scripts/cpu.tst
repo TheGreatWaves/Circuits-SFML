@@ -138,4 +138,23 @@ TEST 'D=1 A=15 D=D+1 D=A D=D+1' {
 	REQUIRE c.pc IS 3
 	    AND c.d_reg IS 2
 	    AND c.a_reg IS 15;
+
+	// D=A
+	SET c.instruction = 60432;
+	SET c.clock = 0; EVAL;
+	SET c.clock = 1; EVAL;
+	REQUIRE c.pc IS 4
+		AND c.a_reg IS 15
+		AND c.mux_to_alu IS c.a_reg
+		AND c.outM IS c.a_reg
+		AND c.d_reg IS c.a_reg;
+
+	// D=D+1
+	SET c.instruction = 59344;
+	SET c.clock = 0; EVAL;
+	SET c.clock = 1; EVAL;
+	REQUIRE c.pc IS 5
+	    AND c.a_reg IS 15
+	    AND c.d_reg IS 16;
+	
 }
