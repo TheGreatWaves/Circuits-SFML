@@ -57,20 +57,18 @@ struct Register : Gate
   auto handle_register_impl() -> void
   {
     const uint16_t loaded_value = load_value();
-
     // Data can only be stored on a new clock signal.
     if (clock_pin().is_active())
     {
+
       const auto new_value_loaded = loaded_value != this->data;
       const auto new_load_state = load_pin().get_state() != previous_load_state;
 
-      if (new_value_loaded && new_load_state && load_pin().is_active())
+      if (new_value_loaded && load_pin().is_active())
       {
         this->data = loaded_value;
 
-        std::cout << "Loading: " << this->data << '\n';
         set_pinvec(loaded_value, this->output_pins, 0, 16);
-
       }
     }
 

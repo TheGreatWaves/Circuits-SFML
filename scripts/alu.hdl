@@ -1,8 +1,8 @@
 CHIP alu {
 	IN x[16], y[16], // Two 16-bit operands.
 	   zx,           // Zero the x input.
-	   zy,           // Zero the y input.
 	   nx,           // Negate the x input.
+	   zy,           // Zero the y input.
 	   ny,           // Negate the y input.
 	   f,            // 1 for Add, 0 for And
 	   no;           // Negate the output.

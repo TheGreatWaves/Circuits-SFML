@@ -73,8 +73,8 @@ CHIP cpu {
 
 	alu(x=d_reg, y=mux_to_alu,
 		zx  = instruction[11],
-		zy  = instruction[10],
-		nx  = instruction[9],
+		nx  = instruction[10],
+		zy  = instruction[9],
 		ny  = instruction[8],
 		f   = instruction[7],
 		no  = instruction[6],
@@ -127,10 +127,14 @@ CHIP cpu {
 	/// Registers
 	///
 
+	forward_16(in=mux_to_a, out=mux_to_a_1);
+	forward_16(in=mux_to_a_1, out=mux_to_a_2);
+	forward_16(in=mux_to_a_2, out=mux_to_a_3);
+
 	// A Register.
 	register(
 		clock = clock, 
-		in    = mux_to_a, 
+		in    = mux_to_a_3, 
 		out   = a_reg,
 		load  = load_a
 	);
