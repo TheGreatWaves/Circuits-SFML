@@ -74,10 +74,13 @@ struct Register : Gate
       if (new_value_loaded && load_pin_active && (written < 1))
       {
         this->data = loaded_value;
+        // std::cout << "Setting value: " << this->data << '\n';
 
         set_pinvec(loaded_value, this->output_pins, 0, 16);
 
         // std::cout << "\n [ WRITTEN ]\n";
+
+        // load_pin().set_off();
 
         written++;
       }
@@ -87,6 +90,7 @@ struct Register : Gate
     {
       // std::cout << "[ WRITTEN RESET ]" << '\n';
       written = 0;
+      load_pin().set_off();
     }
 
     previous_load_state = load_pin().get_state();
