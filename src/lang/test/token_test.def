@@ -22,7 +22,9 @@ SYMBOL_TOKEN(Semicolon,  ";")
 SYMBOL_TOKEN(colon,      ":")
 SYMBOL_TOKEN(Dot,        ".")
 SYMBOL_TOKEN(Plus,       "+")
+SYMBOL_TOKEN(Minus,      "-")
 SYMBOL_TOKEN(Equal,      "=")
+SYMBOL_TOKEN(Exclamation,"!")
 
 /**
  * Keywords.
