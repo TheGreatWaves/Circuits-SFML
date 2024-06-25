@@ -7,6 +7,7 @@ CHIP cpu {
 
 	OUT
 	mux_to_alu[16],
+	mux_to_a[16],
 	outM[16],     // Value to write to RAM register
 	writeM,       // Write to RAM
 	addressM[15], // Ram register address
@@ -50,9 +51,8 @@ CHIP cpu {
 	//  - C-Dest being A (take Alu output).
 	mux_16(
 	   a   = instruction, // Take instruction by default.
-	   b   = alu_out,     // Only taken if C-Instr destination = A.
+	   b   = outM,     // Only taken if C-Instr destination = A.
 	   sel = alu_out_dest_is_a, 
-	   out = a_mux_out,
 	   out = mux_to_a
 	);
 
