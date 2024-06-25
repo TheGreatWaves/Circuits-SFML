@@ -126,6 +126,7 @@ void Gate::simulate(std::unordered_set<Gate*> was_visited)
     break; case GateType::DFF: handle_dff();
     break; case GateType::PC: handle_pc();
     break; case GateType::RAM_16K: handle_ram_16k();
+    break; case GateType::ROM_32K: handle_rom_32k();
     break; case GateType::MUX_16: handle_mux_16();
     break; case GateType::REGISTER: handle_register();
     break; case GateType::CUSTOM: handle_custom_type(was_visited);
@@ -148,6 +149,11 @@ void Gate::handle_ram_16k()
   static_cast<Ram16k*>(this)->handle_ram_16k_impl();
 }
 
+void Gate::handle_rom_32k()
+{
+  static_cast<Rom32k*>(this)->handle_rom_32k_impl();
+}
+
 auto Gate::handle_mux_16() -> void 
 {
   static_cast<Mux16*>(this)->handle_mux_16_impl();
@@ -158,6 +164,7 @@ std::unique_ptr<Gate> Gate::duplicate(Board* board)
   // Really ugly but it must be done.
   if (this->name == "pc") return std::make_unique<PC>();
   else if (this->name == "ram_16k") return std::make_unique<Ram16k>();
+  else if (this->name == "rom_32k") return std::make_unique<Rom32k>();
   else if (this->name == "mux_16") return std::make_unique<Mux16>();
   else if (this->name == "register") return std::make_unique<Register>();
 

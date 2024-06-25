@@ -44,6 +44,7 @@ enum class GateType
   DFF,
   PC,
   RAM_16K,
+  ROM_32K,
   REGISTER,
   MUX_16,
   CUSTOM
@@ -425,6 +426,8 @@ struct Gate
   void handle_pc();
 
   void handle_ram_16k();
+
+  void handle_rom_32k();
 
   auto handle_mux_16() -> void;
 

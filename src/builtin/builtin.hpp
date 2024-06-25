@@ -33,5 +33,6 @@
 #include "pc.hpp"
 #include "mux16.hpp"
 #include "register.hpp"
+#include "rom32k.hpp"
 
 #endif
