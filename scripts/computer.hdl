@@ -1,0 +1,42 @@
+CHIP computer {
+	IN reset;
+
+	PARTS:
+	// Instruction Memory
+	rom_32k(
+		out     = instruction_memory, 
+		address = next_instruction_address
+	);
+
+	// Memory
+	// Note: Extend this later
+	ram_16k(
+		in = outM,
+		address[0] = addressM[0],
+		address[1] = addressM[1],
+		address[2] = addressM[2],
+		address[3] = addressM[3],
+		address[4] = addressM[4],
+		address[5] = addressM[5],
+		address[6] = addressM[6],
+		address[7] = addressM[7],
+		address[8] = addressM[8],
+		address[9] = addressM[9],
+		address[10] = addressM[10],
+		address[11] = addressM[11],
+		address[12] = addressM[12],
+		address[13] = addressM[13],
+		load        = writeM,
+		out         = memory_out
+	);
+
+	cpu(
+		reset       = reset,
+		instruction = instruction_memory,
+		inM         = memory_out,
+		outM        = outM,
+		writeM      = writeM,
+		addressM    = addressM,
+		pc          = next_instruction_address
+	);
+}

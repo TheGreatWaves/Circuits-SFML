@@ -51,6 +51,7 @@ public:
     add_built_in(std::make_unique<PC>());
     add_built_in(std::make_unique<Ram16k>());
     add_built_in(std::make_unique<Mux16>());
+    add_built_in(std::make_unique<Rom32k>());
 
     if (is_singleton)
     {
