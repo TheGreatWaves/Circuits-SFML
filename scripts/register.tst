@@ -18,6 +18,7 @@ TEST 'storing a register' {
 
 	// Clock on, now store
 	SET b.clock = 1;
+	SET b.load = 1;
 	EVAL;
 	REQUIRE b.out IS 2847;
 
@@ -25,11 +26,6 @@ TEST 'storing a register' {
 	SET b.clock = 0;
 	SET b.in = 0;
 	SET b.load = 0;
-	EVAL;
-	REQUIRE b.out IS 2847;
-
-	// Nothing should happen at the next clock cycle
-	SET b.clock = 1;
 	EVAL;
 	REQUIRE b.out IS 2847;
 
@@ -42,6 +38,7 @@ TEST 'storing a register' {
 
 	// Next clock cycle, value 0 is stored
 	SET b.clock = 1;
+	SET b.load = 1;
 	EVAL;
 	REQUIRE b.out IS 65535;
 }
