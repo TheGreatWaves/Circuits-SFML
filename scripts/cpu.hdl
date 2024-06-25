@@ -10,7 +10,6 @@ CHIP cpu {
 	writeM,       // Write to RAM
 	addressM[15], // Ram register address
 
-	a_reg[16],    // For debugging.
 	d_reg[16],    // For debugging.
 
 	pc[15];       // Address of next instruction
@@ -61,10 +60,23 @@ CHIP cpu {
 	// Selector:
 	//  - Take A register. (take mux input)
 	mux_16(
-		a   = a_reg, 
-		b   = inM, 
-		sel = instruction[12], 
-		out = mux_to_alu
+		a[0]  = addressM[0], 
+		a[1]  = addressM[1], 
+		a[2]  = addressM[2], 
+		a[3]  = addressM[3], 
+		a[4]  = addressM[4], 
+		a[5]  = addressM[5], 
+		a[6]  = addressM[6], 
+		a[7]  = addressM[7], 
+		a[8]  = addressM[8], 
+		a[9]  = addressM[9], 
+		a[10] = addressM[10], 
+		a[11] = addressM[11], 
+		a[12] = addressM[12], 
+		a[13] = addressM[13], 
+		b     = inM, 
+		sel   = instruction[12], 
+		out   = mux_to_alu
 	);
 
 	forward(in=instruction[3], out=writeM);
@@ -102,7 +114,21 @@ CHIP cpu {
 	not(in=load_pc, out=inc_pc);               // else pc++
 	
 	true(in=instruction[0], out=true);
-	pc(clock=clock, in=a_reg, load=load_pc, reset=reset, inc=inc_pc,
+	pc(clock=clock, load=load_pc, reset=reset, inc=inc_pc,
+		in[0]  = addressM[0], 
+		in[1]  = addressM[1], 
+		in[2]  = addressM[2], 
+		in[3]  = addressM[3], 
+		in[4]  = addressM[4], 
+		in[5]  = addressM[5], 
+		in[6]  = addressM[6], 
+		in[7]  = addressM[7], 
+		in[8]  = addressM[8], 
+		in[9]  = addressM[9], 
+		in[10] = addressM[10], 
+		in[11] = addressM[11], 
+		in[12] = addressM[12], 
+		in[13] = addressM[13], 
 		out[0]  = pc[0],
 		out[1]  = pc[1],
 		out[2]  = pc[2],
@@ -133,7 +159,20 @@ CHIP cpu {
 	register(
 		clock = clock, 
 		in    = mux_to_a_3, 
-		out   = a_reg,
+		out[0]   = addressM[0],
+		out[1]   = addressM[1],
+		out[2]   = addressM[2],
+		out[3]   = addressM[3],
+		out[4]   = addressM[4],
+		out[5]   = addressM[5],
+		out[6]   = addressM[6],
+		out[7]   = addressM[7],
+		out[8]   = addressM[8],
+		out[9]   = addressM[9],
+		out[10]   = addressM[10],
+		out[11]   = addressM[11],
+		out[12]   = addressM[12],
+		out[13]   = addressM[13],
 		load  = load_a
 	);
 
