@@ -40,22 +40,33 @@ struct PC : Gate
 
   auto handle_pc_impl()  -> void
   {
+    // std::cout << "[" << clock_pin().is_active() << "]\n";
     if (forwardable())
     {
-      if (reset_pin().is_active())
+      // std::cout << "===================\n";
+      // std::cout << "reset: " << reset_pin().is_active() << '\n';
+      // std::cout << "load: " << load_pin().is_active() << '\n';
+      // std::cout << "inc: " << inc_pin().is_active() << '\n';
+      if (inc_pin().is_active())
+      {
+      //   std::cout << "increment\n";
+        increment();
+        clock_pin().set_off();
+      }
+      else if (reset_pin().is_active())
       {
         reset();
+        clock_pin().set_off();
       }
       else if (load_pin().is_active())
       {
+      //   std::cout << "Load\n";
         load();
-      }
-      else if (inc_pin().is_active())
-      {
-        increment();
+        clock_pin().set_off();
       }
 
       sync_output();
+
     }
 
     // We don't want to continuously forward. 

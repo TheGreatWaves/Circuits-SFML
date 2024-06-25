@@ -10,6 +10,9 @@ CHIP cpu {
 	writeM,       // Write to RAM
 	addressM[15], // Ram register address
 
+	C_instruction,
+	jump,
+	load_pc,
 	d_reg[16],    // For debugging.
 
 	pc[15];       // Address of next instruction
@@ -100,10 +103,10 @@ CHIP cpu {
 	forward(in=instruction[2], out=j1); // Cond: < 0
 	forward(in=instruction[1], out=j2); // Cond: = 0
 	forward(in=instruction[0], out=j3); // Cond: > 0
-	not(in=ng_out, out=pos);
+	not(in=ng_out, out=positive);
 
 	// Jump conditions.
-	and(a=j2, b=zr, out=jez);       // Jump if 0
+	and(a=j2, b=zr_out, out=jez);   // Jump if 0
 	and(a=j3, b=positive, out=jgz); // Jump if 0 >
 	and(a=j1, b=ng_out, out=jlz);   // Jump if < 0
 	or(a=jez, b=jlz, out=jlez);     // Jump if <= 0
@@ -115,20 +118,20 @@ CHIP cpu {
 	
 	true(in=instruction[0], out=true);
 	pc(clock=clock, load=load_pc, reset=reset, inc=inc_pc,
-		in[0]  = addressM[0], 
-		in[1]  = addressM[1], 
-		in[2]  = addressM[2], 
-		in[3]  = addressM[3], 
-		in[4]  = addressM[4], 
-		in[5]  = addressM[5], 
-		in[6]  = addressM[6], 
-		in[7]  = addressM[7], 
-		in[8]  = addressM[8], 
-		in[9]  = addressM[9], 
-		in[10] = addressM[10], 
-		in[11] = addressM[11], 
-		in[12] = addressM[12], 
-		in[13] = addressM[13], 
+		in[0]   = addressM[0], 
+		in[1]   = addressM[1], 
+		in[2]   = addressM[2], 
+		in[3]   = addressM[3], 
+		in[4]   = addressM[4], 
+		in[5]   = addressM[5], 
+		in[6]   = addressM[6], 
+		in[7]   = addressM[7], 
+		in[8]   = addressM[8], 
+		in[9]   = addressM[9], 
+		in[10]  = addressM[10], 
+		in[11]  = addressM[11], 
+		in[12]  = addressM[12], 
+		in[13]  = addressM[13], 
 		out[0]  = pc[0],
 		out[1]  = pc[1],
 		out[2]  = pc[2],
@@ -151,29 +154,25 @@ CHIP cpu {
 	/// Registers
 	///
 
-	forward_16(in=mux_to_a, out=mux_to_a_1);
-	forward_16(in=mux_to_a_1, out=mux_to_a_2);
-	forward_16(in=mux_to_a_2, out=mux_to_a_3);
-
 	// A Register.
 	register(
-		clock = clock, 
-		in    = mux_to_a_3, 
-		out[0]   = addressM[0],
-		out[1]   = addressM[1],
-		out[2]   = addressM[2],
-		out[3]   = addressM[3],
-		out[4]   = addressM[4],
-		out[5]   = addressM[5],
-		out[6]   = addressM[6],
-		out[7]   = addressM[7],
-		out[8]   = addressM[8],
-		out[9]   = addressM[9],
-		out[10]   = addressM[10],
-		out[11]   = addressM[11],
-		out[12]   = addressM[12],
-		out[13]   = addressM[13],
-		load  = load_a
+		clock   = clock, 
+		in      = mux_to_a, 
+		out[0]  = addressM[0],
+		out[1]  = addressM[1],
+		out[2]  = addressM[2],
+		out[3]  = addressM[3],
+		out[4]  = addressM[4],
+		out[5]  = addressM[5],
+		out[6]  = addressM[6],
+		out[7]  = addressM[7],
+		out[8]  = addressM[8],
+		out[9]  = addressM[9],
+		out[10] = addressM[10],
+		out[11] = addressM[11],
+		out[12] = addressM[12],
+		out[13] = addressM[13],
+		load    = load_a
 	);
 
 	// D Register.
