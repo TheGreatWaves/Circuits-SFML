@@ -115,9 +115,12 @@ CHIP cpu {
 
 	and(a=C_instruction, b=jump, out=load_pc); // if j(jbits,zr,ng) pc <- A 
 	not(in=load_pc, out=inc_pc);               // else pc++
+
+	forward(in=load_pc, out=late_load_pc_1);
+	forward(in=late_load_pc_2, out=late_load_pc_3);
 	
 	true(in=instruction[0], out=true);
-	pc(clock=clock, load=load_pc, reset=reset, inc=inc_pc,
+	pc(clock=clock, load=late_load_pc_3, reset=reset, inc=inc_pc,
 		in[0]   = addressM[0], 
 		in[1]   = addressM[1], 
 		in[2]   = addressM[2], 

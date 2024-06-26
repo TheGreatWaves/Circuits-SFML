@@ -72,7 +72,8 @@ struct Rom32k : Gate
   auto load_value() -> void
   {
     const auto value = read_in();
-    data[write_address()] = value;
+    const auto address = write_address();
+    data[address] = value;
   }
 
   auto handle_rom_32k_impl() -> void

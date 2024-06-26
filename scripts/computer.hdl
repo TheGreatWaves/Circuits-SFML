@@ -4,14 +4,15 @@ CHIP computer {
 	   load,                   // For debugging
 	   write_address[15],      // For debugging
 	   read_address[15],       // For debugging
-	   in[16],                 // For debugging
-	   instruction_memory[16];
+	   in[16];                 // For debugging
 
 	OUT outM[16],
+	    instruction_memory[16],
+		jump,
 		memory_out[16],
 		writeM,
 		addressM[15],
-	    next_instruction_address[15];
+	    current_instruction_address[15];
 
 	PARTS:
 	// Instruction Memory
@@ -20,7 +21,7 @@ CHIP computer {
 		load          = load,
 		clock         = clock,
 		out           = instruction_memory, 
-		read_address  = next_instruction_address,
+		read_address  = current_instruction_address,
 		write_address = write_address
 	);
 
@@ -58,6 +59,7 @@ CHIP computer {
 		writeM      = writeM,
 		addressM    = addressM,
 		clock       = clock,
-		pc          = next_instruction_address
+		load_pc     = jump,
+		pc          = current_instruction_address
 	);
 }

@@ -42,27 +42,23 @@ struct PC : Gate
   {
     if (!clock_pin().is_active()) action_taken = false;
 
-    if (forwardable() && !action_taken)
+    if (forwardable())
     {
-      action_taken = true;
-      if (reset_pin().is_active())
+      if (reset_pin().is_active() && !action_taken)
       {
         reset();
         clock_pin().set_off();
       }
-      else if (inc_pin().is_active())
+      else if (inc_pin().is_active() && !action_taken)
       {
         increment();
         clock_pin().set_off();
+        action_taken = true;
       }
-      else if (load_pin().is_active())
+      else if (load_pin().is_active() && !action_taken)
       {
         load();
         clock_pin().set_off();
-      }
-      else
-      {
-        action_taken = false;
       }
 
       sync_output();
