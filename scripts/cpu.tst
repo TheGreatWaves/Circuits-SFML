@@ -249,25 +249,29 @@ TEST 'A=15 D=A A=7 D=D-A' {
 	SET c.instruction = 15;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 15;
+	REQUIRE c.addressM IS 15
+		AND c.pc IS 1;
 
 	// D=A
 	SET c.instruction = 60432;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.d_reg IS c.addressM;
+	REQUIRE c.d_reg IS c.addressM
+		AND c.pc IS 2;
 
 	// A=7
 	SET c.instruction = 7;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 7;
+	REQUIRE c.addressM IS 7
+		AND c.pc IS 3;
 
 	// D=D-A
 	SET c.instruction = 58576;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.d_reg IS 8;
+	REQUIRE c.d_reg IS 8
+		AND c.pc IS 4;
 }
 
 TEST 'A=10 AD=A-1' {
@@ -278,14 +282,16 @@ TEST 'A=10 AD=A-1' {
 	SET c.instruction = 10;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 10;
+	REQUIRE c.addressM IS 10
+		AND c.pc IS 1;
 
 	// AD=A-1
 	SET c.instruction = 60592;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
 	REQUIRE c.addressM IS 9
-	    AND c.d_reg IS 9;
+	    AND c.d_reg IS 9
+		AND c.pc IS 2;
 }
 
 TEST 'D=!D' {
@@ -296,7 +302,8 @@ TEST 'D=!D' {
 	SET c.instruction = 58192;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.d_reg IS 65535;
+	REQUIRE c.d_reg IS 65535
+		AND c.pc IS 1;
 }
 
 TEST 'A=15' {
@@ -307,7 +314,8 @@ TEST 'A=15' {
 	SET c.instruction = 15;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 15;
+	REQUIRE c.addressM IS 15
+		AND c.pc IS 1;
 
 	// M=A
 	SET c.instruction = 60424;
@@ -315,7 +323,8 @@ TEST 'A=15' {
 	SET c.clock = 1; EVAL;
 	REQUIRE c.writeM IS 1
 		AND c.outM IS 15
-		AND c.addressM IS 15;
+		AND c.addressM IS 15
+		AND c.pc IS 2;
 }
 
 TEST 'A=M' {
@@ -328,7 +337,8 @@ TEST 'A=M' {
 	SET c.instruction = 64544;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 15;
+	REQUIRE c.addressM IS 15
+		AND c.pc IS 1;
 
 }
 
@@ -344,7 +354,8 @@ TEST 'ADM=M' {
 	SET c.clock = 1; EVAL;
 	REQUIRE c.addressM IS 15
 		AND c.d_reg IS 15
-		AND c.outM IS 15;
+		AND c.outM IS 15
+		AND c.pc IS 1;
 }
 
 TEST 'A=15 0;JMP' {
@@ -355,7 +366,8 @@ TEST 'A=15 0;JMP' {
 	SET c.instruction = 15;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 15;
+	REQUIRE c.addressM IS 15
+		AND c.pc IS 1;
 
 	// 0;JMP
 	SET c.instruction = 60039;
@@ -372,7 +384,8 @@ TEST 'A=15 0;JEQ' {
 	SET c.instruction = 15;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 15;
+	REQUIRE c.addressM IS 15
+		AND c.pc IS 1;
 
 	// 0;JEQ
 	SET c.instruction = 60034;
@@ -390,7 +403,8 @@ TEST 'A=15 A;JGT' {
 	SET c.instruction = 15;
 	SET c.clock = 0; EVAL;
 	SET c.clock = 1; EVAL;
-	REQUIRE c.addressM IS 15;
+	REQUIRE c.addressM IS 15
+		AND c.pc IS 1;
 
 	// A;JGT
 	SET c.instruction = 60417;
