@@ -82,7 +82,7 @@ CHIP cpu {
 		out   = mux_to_alu
 	);
 
-	forward(in=instruction[3], out=writeM);
+	and(a=instruction[15], b=instruction[3], out=writeM);
 
 	alu(x=d_reg, y=mux_to_alu,
 		zx  = instruction[11],

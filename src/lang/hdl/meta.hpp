@@ -215,7 +215,8 @@ struct Meta
         meta->set_name("rom_32k");
 
         meta->add_input_bus("in", 16);
-        meta->add_input_bus("address", 15);
+        meta->add_input_bus("read_address", 15);
+        meta->add_input_bus("write_address", 15);
         meta->add_input_pins({"load", "clock"});
 
         meta->add_output_bus("out", 16);

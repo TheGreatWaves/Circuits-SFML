@@ -66,18 +66,24 @@ struct Ram16k : Gate
   {
     const auto value = read_in();
     data[address] = value;
+    // std::cout << "LOAD[" << address << "] " << value << '\n';
   }
 
   auto handle_ram_16k_impl() -> void
   {
+    // std::cout << "Clock[" << clock_pin().is_active() << "], Load[" << load_pin().is_active() << "]\n";
     // Set the new address
     address = read_address();
 
+
     // Load value into address
-    if (clock_pin().is_active() && load_pin().is_active())
+    if (!immutable && clock_pin().is_active() && load_pin().is_active())
     {
       load_value();
     }
+
+    // State can ONLY be written ONCE per clock cycle.
+    immutable = clock_pin().is_active();
 
     // Synchronize output pins
     sync_output();
@@ -88,5 +94,6 @@ struct Ram16k : Gate
    */
     std::size_t address     {0};
     uint16_t    data[16384] {0};
+    bool immutable { false };
 };
 

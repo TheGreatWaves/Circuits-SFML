@@ -27,7 +27,10 @@ TEST 'loading and setting values' {
 	EVAL;
 	REQUIRE r.out IS 0;
 
+	SET r.clock = 0; EVAL;
+
 	// Load value at address 0.
+	SET r.clock = 1;
 	SET r.in = 1734;
 	SET r.load = 1;
 	EVAL;

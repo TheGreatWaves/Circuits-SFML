@@ -30,7 +30,7 @@ struct Rom32k : Gate
   // but here we have extra for testing purposes.
   explicit Rom32k()
     : Gate(
-        33,                 // 16-bit input, 15-bit address, load, clock
+        48,                 // 16-bit input, 15-bit address (read), 15-bit address (write), load, clock
         16,                 // 16-bit output 
         GateType::ROM_32K,  // Gate type
         "rom_32k"           // Gate name
@@ -45,17 +45,22 @@ struct Rom32k : Gate
 
   auto read_address() -> std::size_t
   {
-    return pinvec_to_uint<uint16_t>(this->input_pins, 16, 30);
+    return pinvec_to_uint<uint16_t>(this->input_pins, 16, 31);
+  }
+
+  auto write_address() -> std::size_t
+  {
+    return pinvec_to_uint<uint16_t>(this->input_pins, 31, 46);
   }
 
   auto load_pin() -> Pin&
   {
-    return this->input_pins[30];
+    return this->input_pins[46];
   }
 
   auto clock_pin() -> Pin&
   {
-    return this->input_pins[31];
+    return this->input_pins[47];
   }
 
   auto sync_output() -> void
@@ -67,7 +72,7 @@ struct Rom32k : Gate
   auto load_value() -> void
   {
     const auto value = read_in();
-    data[address] = value;
+    data[write_address()] = value;
   }
 
   auto handle_rom_32k_impl() -> void

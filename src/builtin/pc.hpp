@@ -40,29 +40,33 @@ struct PC : Gate
 
   auto handle_pc_impl()  -> void
   {
+    if (!clock_pin().is_active()) action_taken = false;
+
     // std::cout << "[" << clock_pin().is_active() << "]\n";
-    if (forwardable())
+    if (forwardable() && !action_taken)
     {
       // std::cout << "===================\n";
       // std::cout << "reset: " << reset_pin().is_active() << '\n';
       // std::cout << "load: " << load_pin().is_active() << '\n';
       // std::cout << "inc: " << inc_pin().is_active() << '\n';
-      if (inc_pin().is_active())
+      if (reset_pin().is_active())
       {
-      //   std::cout << "increment\n";
-        increment();
-        clock_pin().set_off();
-      }
-      else if (reset_pin().is_active())
-      {
+        // std::cout << "Reset\n";
         reset();
         clock_pin().set_off();
       }
+      else if (inc_pin().is_active())
+      {
+        increment();
+        action_taken = true;
+        clock_pin().set_off();
+        // std::cout << "Increment " << this->register_value << "\n";
+      }
       else if (load_pin().is_active())
       {
-      //   std::cout << "Load\n";
         load();
         clock_pin().set_off();
+        // std::cout << "Load " << this->register_value << "\n";
       }
 
       sync_output();
@@ -97,7 +101,8 @@ struct PC : Gate
   auto forwardable() -> bool
   {
     const auto current_state = pinvec_to_uint(this->input_pins, 16, 20);
-    return previous_state != current_state && clock_pin().is_active();
+    return previous_state != current_state 
+        && clock_pin().is_active();
   }
 
 
@@ -125,6 +130,8 @@ struct PC : Gate
    * 
    */
   uint16_t register_value { 0 };
+  PinState previous_clock_state { PinState::INACTIVE };
+  bool     action_taken { false };
   uint32_t previous_state { 0 };
 }; 
 
