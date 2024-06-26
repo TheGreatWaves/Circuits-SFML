@@ -42,31 +42,27 @@ struct PC : Gate
   {
     if (!clock_pin().is_active()) action_taken = false;
 
-    // std::cout << "[" << clock_pin().is_active() << "]\n";
     if (forwardable() && !action_taken)
     {
-      // std::cout << "===================\n";
-      // std::cout << "reset: " << reset_pin().is_active() << '\n';
-      // std::cout << "load: " << load_pin().is_active() << '\n';
-      // std::cout << "inc: " << inc_pin().is_active() << '\n';
+      action_taken = true;
       if (reset_pin().is_active())
       {
-        // std::cout << "Reset\n";
         reset();
         clock_pin().set_off();
       }
       else if (inc_pin().is_active())
       {
         increment();
-        action_taken = true;
         clock_pin().set_off();
-        // std::cout << "Increment " << this->register_value << "\n";
       }
       else if (load_pin().is_active())
       {
         load();
         clock_pin().set_off();
-        // std::cout << "Load " << this->register_value << "\n";
+      }
+      else
+      {
+        action_taken = false;
       }
 
       sync_output();
