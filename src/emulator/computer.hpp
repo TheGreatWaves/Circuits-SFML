@@ -206,6 +206,11 @@ public:
    std::cout << "Stack[" << std::setw(3) << std::right << i << "] " << m_ram[i + 256] << '\n';
   }
 
+  for (std::size_t i{0}; i < 5; i++)
+  {
+   std::cout << "Static[" << std::setw(3) << std::right << i << "] " << m_ram[i + 16] << '\n';
+  }
+
   for (std::size_t i{0}; i < 10; i++)
   {
    std::cout << "Local[" << std::setw(3) << std::right << i << "] " << m_ram[i + 300] << '\n';

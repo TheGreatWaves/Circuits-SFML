@@ -16,5 +16,6 @@ KEYWORD_TOKEN(Local,    "local")
 KEYWORD_TOKEN(Argument, "argument")
 KEYWORD_TOKEN(This,     "this")
 KEYWORD_TOKEN(That,     "that")
+KEYWORD_TOKEN(Static,   "static")
 
 #include "../core/token_end.def"

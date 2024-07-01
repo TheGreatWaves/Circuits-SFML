@@ -1,10 +1,9 @@
 push constant 1
 push constant 2
 push constant 3
-pop local 0
-pop local 1
-pop local 2
-push constant 0
-push constant 0
-push constant 0
-push local 3
+pop static 5
+pop static 6
+pop static 7
+push static 5
+push static 7
+push static 6

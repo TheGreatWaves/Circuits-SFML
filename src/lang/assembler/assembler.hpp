@@ -426,7 +426,14 @@ public:
 
  auto handle_variable() -> void
  {
-  const auto varname = this->previous.lexeme;
+  auto varname = this->previous.lexeme;
+
+  if (match(TokenType::Dot))
+  {
+   consume(TokenType::Number, "Expected number after '.', variable unspecified");
+   varname += ("." + previous.lexeme);
+  }
+
   resolve_variable(varname);
   builder.add_a_instruction(loc, varname);
  }

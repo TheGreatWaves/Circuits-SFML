@@ -28,6 +28,8 @@
 
 #include <sstream>
 #include <string_view>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #include "../core/parser_base.hpp"
 #include "token_vm.hpp"
@@ -51,13 +53,6 @@ public:
   return m_size;
  }
 
- auto write_ln(std::string_view input) -> CodeStringBuilder&
- {
-  m_code << input << '\n';
-  increment();
-  return *this;
- }
-
  auto write_A(uint16_t value) -> CodeStringBuilder&
  {
   m_code << "@" << value << '\n';
@@ -72,14 +67,36 @@ public:
   return *this;
  }
 
+ auto write_A(std::string_view file_name, std::string_view variable_name) -> CodeStringBuilder&
+ {
+  m_code << "@" << file_name << '.' << variable_name << '\n';
+  increment();
+  return *this;
+ }
+
+ auto newline() -> CodeStringBuilder&
+ {
+  m_code << '\n';
+  return *this;
+ }
+
+
+ 
+ auto write_comment(std::convertible_to<std::string_view> auto&& ... comment) -> CodeStringBuilder&
+ {
+  m_code << "// ";
+  for (auto v : std::initializer_list<std::string_view>{ comment... })
+    m_code << v << " ";
+  m_code << '\n';
+  return *this;
+ }
+
  auto write_assignment(std::string_view dest, std::string_view source) -> CodeStringBuilder&
  {
   m_code << dest << "=" << source << '\n';
   increment();
   return *this;
  }
-
- 
 
 private: 
  std::stringstream m_code {};
@@ -95,6 +112,7 @@ public:
  [[nodiscard]] explicit VMTranslator(const std::string& file_path)
      : BaseParser<VMTokenType>(file_path)
      , m_assembler{}
+     , m_filename{fs::path(file_path).stem()}
  {}
 
  auto print() noexcept -> void
@@ -151,9 +169,11 @@ public:
  auto write_pop_segment(std::string_view segment) -> void
  {
      advance();
+     const std::string segment_name = previous.lexeme;
      consume(TokenType::Number, "Expected index after 'constant'");
      const std::string index = previous.lexeme;
-     m_builder.write_A("SP")
+     m_builder.write_comment("pop", segment_name, index)
+              .write_A("SP")
               .write_assignment("M", "M-1")
               .write_assignment("A", "M")
               .write_assignment("D", "M")
@@ -165,15 +185,18 @@ public:
               .write_assignment("A", "M")
               .write_assignment("A", "M")
               .write_assignment("A", "D-A")
-              .write_assignment("M", "D-A");
+              .write_assignment("M", "D-A")
+              .newline();
  }
  
  auto write_push_segment(std::string_view segment) -> void
  {
      advance();
+     const std::string segment_name = previous.lexeme;
      consume(TokenType::Number, "Expected index after 'constant'");
      const std::string index = previous.lexeme;
-     m_builder.write_A(segment)
+     m_builder.write_comment("push", segment_name, index)
+              .write_A(segment)
               .write_assignment("D", "M")
               .write_A(index)
               .write_assignment("A", "D+A")
@@ -183,7 +206,7 @@ public:
               .write_assignment("M", "D")
               .write_A("SP")
               .write_assignment("M", "M+1")
-     ;
+              .newline();
  }
 
  auto handle_push() -> void 
@@ -196,13 +219,31 @@ public:
      consume(TokenType::Number, "Expected index after 'constant'");
      const std::string index = previous.lexeme;
 
-     m_builder.write_A(index)
+     m_builder.write_comment("push constant", index)
+              .write_A(index)
               .write_assignment("D", "A")
               .write_A("SP")
               .write_assignment("A", "M")
               .write_assignment("M", "D")
               .write_A("SP")
-              .write_assignment("M", "M+1");
+              .write_assignment("M", "M+1")
+              .newline();
+    }
+    break; case TokenType::Static:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'constant'");
+     const std::string index = previous.lexeme;
+
+     m_builder.write_comment("push static", index)
+              .write_A(m_filename, index)
+              .write_assignment("D", "M")
+              .write_A("SP")
+              .write_assignment("A", "M")
+              .write_assignment("M", "D")
+              .write_A("SP")
+              .write_assignment("M", "M+1")
+              .newline();
     }
     break; case TokenType::Local:    write_push_segment("LCL");
     break; case TokenType::Argument: write_push_segment("ARG");
@@ -216,6 +257,21 @@ public:
  {
   switch (this->current.type)
   {
+    break; case TokenType::Static:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'constant'");
+     const std::string index = previous.lexeme;
+
+     m_builder.write_comment("pop static", index)
+              .write_A("SP")
+              .write_assignment("M", "M-1")
+              .write_assignment("A", "M")
+              .write_assignment("D", "M")
+              .write_A(m_filename, index)
+              .write_assignment("M", "D")
+              .newline();
+    }
     break; case TokenType::Local:    write_pop_segment("LCL");
     break; case TokenType::Argument: write_pop_segment("ARG");
     break; case TokenType::This:     write_pop_segment("THIS");
@@ -227,6 +283,7 @@ public:
 private:
  Assembler         m_assembler {};
  CodeStringBuilder m_builder {};
+ const std::string m_filename {};
 };
 
 #endif // VM_H
