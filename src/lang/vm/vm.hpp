@@ -171,7 +171,7 @@ public:
  {
      advance();
      const std::string segment_name = previous.lexeme;
-     consume(TokenType::Number, "Expected index after 'constant'");
+     consume(TokenType::Number, "Expected index after '" + segment_name + "'");
      const std::string index = previous.lexeme;
      m_builder.write_comment("pop", segment_name, index)
               .write_A("SP")
@@ -194,7 +194,7 @@ public:
  {
      advance();
      const std::string segment_name = previous.lexeme;
-     consume(TokenType::Number, "Expected index after 'constant'");
+     consume(TokenType::Number, "Expected index after '" + segment_name + "'");
      const std::string index = previous.lexeme;
      m_builder.write_comment("push", segment_name, index)
               .write_A(segment)
@@ -233,7 +233,7 @@ public:
     break; case TokenType::Static:
     {
      advance();
-     consume(TokenType::Number, "Expected index after 'constant'");
+     consume(TokenType::Number, "Expected index after 'static'");
      const std::string index = previous.lexeme;
 
      m_builder.write_comment("push static", index)
@@ -249,7 +249,7 @@ public:
     break; case TokenType::Temp:
     {
      advance();
-     consume(TokenType::Number, "Expected index after 'constant'");
+     consume(TokenType::Number, "Expected index after 'temp'");
      const std::string index_string = previous.lexeme;
      const uint32_t index = std::stoi(index_string);
 
@@ -280,7 +280,7 @@ public:
     break; case TokenType::Static:
     {
      advance();
-     consume(TokenType::Number, "Expected index after 'constant'");
+     consume(TokenType::Number, "Expected index after 'static'");
      const std::string index = previous.lexeme;
 
      m_builder.write_comment("pop static", index)
@@ -289,6 +289,24 @@ public:
               .write_assignment("A", "M")
               .write_assignment("D", "M")
               .write_A(m_filename, index)
+              .write_assignment("M", "D")
+              .newline();
+    }
+    break; case TokenType::Temp:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'temp'");
+     const std::string index_string = previous.lexeme;
+     const uint32_t index = std::stoi(index_string);
+
+     if (index > 7) report_error("Temp index out of range: " + index_string);
+
+     m_builder.write_comment("pop temp", index_string)
+              .write_A("SP")
+              .write_assignment("M", "M-1")
+              .write_assignment("A", "M")
+              .write_assignment("D", "M")
+              .write_A(index + 5)
               .write_assignment("M", "D")
               .newline();
     }
