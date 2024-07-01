@@ -20,5 +20,14 @@ KEYWORD_TOKEN(That,     "that")
 KEYWORD_TOKEN(Static,   "static")
 KEYWORD_TOKEN(Temp,     "temp")
 
+KEYWORD_TOKEN(Add, "add")
+KEYWORD_TOKEN(sub, "sub")
+KEYWORD_TOKEN(Neg, "neg")
+KEYWORD_TOKEN(Eq,  "eq")
+KEYWORD_TOKEN(Gt,  "gt")
+KEYWORD_TOKEN(Lt,  "lt")
+KEYWORD_TOKEN(And, "and")
+KEYWORD_TOKEN(Or,  "or")
+KEYWORD_TOKEN(Not, "not")
 
 #include "../core/token_end.def"
