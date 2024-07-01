@@ -10,7 +10,11 @@
  * Keywords.
  */
 KEYWORD_TOKEN(Push,     "push")
+KEYWORD_TOKEN(Pop,      "pop")
 KEYWORD_TOKEN(Constant, "constant")
 KEYWORD_TOKEN(Local,    "local")
+KEYWORD_TOKEN(Argument, "argument")
+KEYWORD_TOKEN(This,     "this")
+KEYWORD_TOKEN(That,     "that")
 
 #include "../core/token_end.def"

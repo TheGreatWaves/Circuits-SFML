@@ -136,6 +136,36 @@ public:
  {
   if (match(TokenType::Push))
    handle_push();
+  else if (match(TokenType::Pop))
+   handle_pop();
+  else
+  {
+   const std::string current = this->current.lexeme;
+   report_error("Invalid token: " + current);
+  }
+
+  // TODO: Handle error.
+  if (this->has_error) advance();
+ }
+
+ auto write_pop_segment(std::string_view segment) -> void
+ {
+     advance();
+     consume(TokenType::Number, "Expected index after 'constant'");
+     const std::string index = previous.lexeme;
+     m_builder.write_A("SP")
+              .write_assignment("M", "M-1")
+              .write_assignment("A", "M")
+              .write_assignment("D", "M")
+              .write_A(segment)
+              .write_assignment("D", "D+M")
+              .write_A(index)
+              .write_assignment("D", "D+A")
+              .write_A("SP")
+              .write_assignment("A", "M")
+              .write_assignment("A", "M")
+              .write_assignment("A", "D-A")
+              .write_assignment("M", "D-A");
  }
 
  auto handle_push() -> void 
@@ -156,27 +186,19 @@ public:
               .write_A("SP")
               .write_assignment("M", "M+1");
     }
-    break; case TokenType::Local:
-    {
-     advance();
-     consume(TokenType::Number, "Expected index after 'constant'");
-     const std::string index = previous.lexeme;
-
-     m_builder.write_A("SP")
-              .write_assignment("M", "M-1")
-              .write_assignment("A", "M")
-              .write_assignment("D", "M")
-              .write_A("LCL")
-              .write_assignment("D", "D+M")
-              .write_A(index)
-              .write_assignment("D", "D+A")
-              .write_A("SP")
-              .write_assignment("A", "M")
-              .write_assignment("A", "M")
-              .write_assignment("A", "D-A")
-              .write_assignment("M", "D-A");
-    }
     break; default: { report_error("Unexpected segment found in push statement"); }
+  }
+ }
+ 
+ auto handle_pop() -> void 
+ {
+  switch (this->current.type)
+  {
+    break; case TokenType::Local:    write_pop_segment("LCL");
+    break; case TokenType::Argument: write_pop_segment("ARG");
+    break; case TokenType::This:     write_pop_segment("THIS");
+    break; case TokenType::That:     write_pop_segment("THAT");
+    break; default: { report_error("Unexpected segment found in pop statement"); }
   }
  }
 

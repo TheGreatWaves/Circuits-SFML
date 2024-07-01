@@ -144,8 +144,7 @@ public:
   */
   constexpr Computer() 
   {
-   set_stack_pointer();
-   set_local();
+   set_up_memory();
   }
 
  /**
@@ -271,14 +270,13 @@ private:
  /**
   * Stack Operations
   */
- inline auto set_stack_pointer() -> void
+ inline auto set_up_memory() -> void
  {
-  m_ram[0] = 256;
- }
-
- inline auto set_local() -> void
- {
-  m_ram[1] = 300;
+  m_ram[0] = 256;  // Stack Pointer
+  m_ram[1] = 300;  // Base address of local
+  m_ram[2] = 400;  // Base address of argument
+  m_ram[3] = 3000; // Base address of this
+  m_ram[4] = 3010; // Base address of that
  }
 
  inline auto increment_stack_pointer() -> void
