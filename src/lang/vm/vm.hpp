@@ -26,6 +26,7 @@
 #ifndef VM_H
 #define VM_H
 
+#include <string>
 #include <sstream>
 #include <string_view>
 #include <filesystem>
@@ -237,6 +238,25 @@ public:
 
      m_builder.write_comment("push static", index)
               .write_A(m_filename, index)
+              .write_assignment("D", "M")
+              .write_A("SP")
+              .write_assignment("A", "M")
+              .write_assignment("M", "D")
+              .write_A("SP")
+              .write_assignment("M", "M+1")
+              .newline();
+    }
+    break; case TokenType::Temp:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'constant'");
+     const std::string index_string = previous.lexeme;
+     const uint32_t index = std::stoi(index_string);
+
+     if (index > 7) report_error("Temp index out of range: " + index_string);
+
+     m_builder.write_comment("push temp", index_string)
+              .write_A(index + 5)
               .write_assignment("D", "M")
               .write_A("SP")
               .write_assignment("A", "M")
