@@ -1,1 +1,4 @@
-push constant 666
+push constant 5
+push constant 6
+push local 0
+push local 1

@@ -99,8 +99,6 @@ struct ALUArgs
  uint32_t ny : 1  {0}; // Negate y operand
  uint32_t f  : 1  {0}; // Add: 1, And: 0
  uint32_t no : 1  {0}; // Negate output
-
-
 };
 
  inline auto args_from_instruction(uint16_t x, uint16_t y, const instruction::Instruction& instruction) -> ALUArgs
@@ -147,6 +145,7 @@ public:
   constexpr Computer() 
   {
    set_stack_pointer();
+   set_local();
   }
 
  /**
@@ -200,12 +199,17 @@ public:
 
   for (std::size_t i{0}; i < 8; i++)
   {
-   std::cout << "RAM[" << std::setw(3) << std::right << i << "] " << m_ram[i] << '\n';
+   std::cout << "Ram[" << std::setw(3) << std::right << i << "] " << m_ram[i] << '\n';
   }
 
   for (std::size_t i{0}; i < 5; i++)
   {
    std::cout << "Stack[" << std::setw(3) << std::right << i << "] " << m_ram[i + 256] << '\n';
+  }
+
+  for (std::size_t i{0}; i < 10; i++)
+  {
+   std::cout << "Local[" << std::setw(3) << std::right << i << "] " << m_ram[i + 300] << '\n';
   }
  }
 
@@ -270,6 +274,11 @@ private:
  inline auto set_stack_pointer() -> void
  {
   m_ram[0] = 256;
+ }
+
+ inline auto set_local() -> void
+ {
+  m_ram[1] = 300;
  }
 
  inline auto increment_stack_pointer() -> void

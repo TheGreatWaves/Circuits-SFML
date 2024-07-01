@@ -156,6 +156,26 @@ public:
               .write_A("SP")
               .write_assignment("M", "M+1");
     }
+    break; case TokenType::Local:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'constant'");
+     const std::string index = previous.lexeme;
+
+     m_builder.write_A("SP")
+              .write_assignment("M", "M-1")
+              .write_assignment("A", "M")
+              .write_assignment("D", "M")
+              .write_A("LCL")
+              .write_assignment("D", "D+M")
+              .write_A(index)
+              .write_assignment("D", "D+A")
+              .write_A("SP")
+              .write_assignment("A", "M")
+              .write_assignment("A", "M")
+              .write_assignment("A", "D-A")
+              .write_assignment("M", "D-A");
+    }
     break; default: { report_error("Unexpected segment found in push statement"); }
   }
  }

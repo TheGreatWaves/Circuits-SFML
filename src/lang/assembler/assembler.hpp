@@ -131,15 +131,17 @@ public:
  {
   std::array<uint16_t, 32768> instructions {0};
 
-  const auto total_size = a_instruction.size() + c_instruction.size();
+  const auto a_size = a_instruction.size();
+  const auto c_size = c_instruction.size();
+  const auto total_size = a_size + c_size;
   auto a_index{0};
   auto b_index{0};
   auto acc_index {0};
 
   while (acc_index < total_size)
   {
-   auto& [pos_a, a_name] = !a_instruction.empty() ? a_instruction[a_index] : std::pair<std::size_t, std::string>{-1, ""};
-   auto& [pos_b, b_instr] = !c_instruction.empty() ? c_instruction[b_index] : std::pair<std::size_t, uint16_t>{-1, -1};
+   const auto& [pos_a, a_name] = (!a_instruction.empty() && a_index < a_size) ? a_instruction.at(a_index) : std::pair<std::size_t, std::string>{-1, ""};
+   const auto& [pos_b, b_instr] = (!c_instruction.empty() && b_index < c_size) ? c_instruction.at(b_index) : std::pair<std::size_t, uint16_t>{-1, -1};
 
    if (pos_a == (acc_index))
    {

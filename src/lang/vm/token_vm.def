@@ -11,5 +11,6 @@
  */
 KEYWORD_TOKEN(Push,     "push")
 KEYWORD_TOKEN(Constant, "constant")
+KEYWORD_TOKEN(Local,    "local")
 
 #include "../core/token_end.def"
