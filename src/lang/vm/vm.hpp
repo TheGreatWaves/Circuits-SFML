@@ -157,6 +157,8 @@ public:
    handle_push();
   else if (match(TokenType::Pop))
    handle_pop();
+  else if (match(TokenType::Add))
+   handle_add();
   else
   {
    const std::string current = this->current.lexeme;
@@ -351,6 +353,24 @@ public:
     break; case TokenType::That:     write_pop_segment("THAT");
     break; default: { report_error("Unexpected segment found in pop statement"); }
   }
+ }
+
+ auto handle_add() -> void 
+ {
+  m_builder.write_comment("add")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A+1")
+           .write_assignment("D", "D+M") // This changes for different function
+           .write_A("SP")
+           .write_assignment("M", "M-1")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("M", "D")
+           .newline();
  }
 
 private:
