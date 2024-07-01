@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <array>
 #include <iostream>
+#include <iomanip>
 
 namespace emulator {
 
@@ -141,6 +142,14 @@ class Computer
 {
 public:
  /**
+  * Default Ctor
+  */
+  constexpr Computer() 
+  {
+   set_stack_pointer();
+  }
+
+ /**
   * Methods
   */
  inline auto process() -> void
@@ -181,6 +190,30 @@ public:
    else
     m_pc++;
   }
+ }
+
+ inline auto print_state() -> void
+ {
+  std::cout << "D " << m_D << '\n';
+  std::cout << "A " << m_A << '\n';
+  std::cout << "PC " << m_pc << '\n';
+
+  for (std::size_t i{0}; i < 8; i++)
+  {
+   std::cout << "RAM[" << std::setw(3) << std::right << i << "] " << m_ram[i] << '\n';
+  }
+
+  for (std::size_t i{0}; i < 5; i++)
+  {
+   std::cout << "Stack[" << std::setw(3) << std::right << i << "] " << m_ram[i + 256] << '\n';
+  }
+ }
+
+
+ inline auto process(std::size_t cycles) -> void
+ {
+  for (std::size_t cycle {0}; cycle < cycles; cycle++)
+   process();
  }
 
  inline auto load_instructions(const std::array<uint16_t, 32768>& instruction)
@@ -230,6 +263,36 @@ private:
  {
   return instruction::from_uint16_t(m_instruction.at(m_pc)); 
  }
+
+ /**
+  * Stack Operations
+  */
+ inline auto set_stack_pointer() -> void
+ {
+  m_ram[0] = 256;
+ }
+
+ inline auto increment_stack_pointer() -> void
+ {
+  m_ram[0]++;
+ }
+
+ inline auto decrement_stack_pointer() -> void
+ {
+  m_ram[0]--;
+ }
+
+ inline auto get_stack_pointer() -> uint16_t
+ {
+  return m_ram[0];
+ }
+
+ inline auto stack_push_constant(uint16_t value) -> void
+ {
+  m_ram[get_stack_pointer()] = value;
+  increment_stack_pointer();
+ }
+
 
 private:
  /**

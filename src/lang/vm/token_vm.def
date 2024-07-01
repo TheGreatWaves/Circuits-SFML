@@ -1,0 +1,15 @@
+#include "../core/token_begin.def"
+
+/*================================*/
+/*                                */
+/*        TOKENS DEFINITION.      */
+/*                                */
+/*================================*/
+
+/**
+ * Keywords.
+ */
+KEYWORD_TOKEN(Push,     "push")
+KEYWORD_TOKEN(Constant, "constant")
+
+#include "../core/token_end.def"

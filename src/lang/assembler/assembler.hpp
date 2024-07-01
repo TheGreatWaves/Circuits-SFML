@@ -28,6 +28,7 @@
 
 #include <cstdio>
 #include <map>
+#include <iomanip>
 
 #include "../core/parser_base.hpp"
 #include "token_assembler.hpp"
@@ -126,8 +127,10 @@ public:
   c_instruction.emplace_back(line, instruction);
  }
 
- auto print(const std::unordered_map<std::string, std::size_t>& index_names) const
+ [[nodiscard]] auto to_instructions(const std::unordered_map<std::string, std::size_t>& index_names) const -> const std::array<uint16_t, 32768> 
  {
+  std::array<uint16_t, 32768> instructions {0};
+
   const auto total_size = a_instruction.size() + c_instruction.size();
   auto a_index{0};
   auto b_index{0};
@@ -152,12 +155,14 @@ public:
      value = index_names.at(a_name);
     }
 
-    print_number(value);
+    // print_number(value);
+    instructions[acc_index] = value;
    }
    else if (pos_b == (acc_index))
    {
     b_index++;
-    print_number(b_instr);
+    // print_number(b_instr);
+    instructions[acc_index] = b_instr;
    }
    else
    {
@@ -166,6 +171,8 @@ public:
 
    acc_index++;
   }
+
+  return instructions;
  }
 
  auto print_number(uint16_t n) const -> void
@@ -176,6 +183,11 @@ public:
     if (((i+1)%4)==0) std::cout << " ";
    }
   std::cout << '\n';
+ }
+
+ auto instruction_count() const -> const uint16_t 
+ {
+  return a_instruction.size() + c_instruction.size();
  }
 
 private:
@@ -196,6 +208,26 @@ public:
  [[nodiscard]] explicit Assembler(const std::string& file_path)
      : BaseParser<AssemblerTokenType>(file_path)
      , next_var_index{16}
+ {
+  setup_mappings();
+ }
+
+ /**
+  * Constructor with file path of .asm file.
+  */
+ [[nodiscard]] explicit Assembler()
+     : BaseParser<AssemblerTokenType>()
+     , next_var_index{16}
+ {
+  setup_mappings();
+ }
+
+ auto set_source(const std::string& source) noexcept -> void
+ {
+  this->scanner.set_source(source);
+ }
+
+ auto setup_mappings() noexcept -> void
  {
   // Add register names (R0, R1, ...)
   for (std::size_t index {0}; index < 16; index++)
@@ -222,11 +254,6 @@ public:
   this->index_mapping["THAT"] = 4;
   this->index_mapping_inverse[4] = "THAT";
  }
-
- /**
-  * Default Ctor prohibted.
-  */
- constexpr Assembler() = delete;
 
  /**
   * Parse the source code and excute the instructions.
@@ -402,9 +429,21 @@ public:
   builder.add_a_instruction(loc, varname);
  }
 
+ [[nodiscard]] auto to_instructions() const -> const std::array<uint16_t, 32768>
+ {
+  return this->builder.to_instructions(index_mapping);
+ }
+
  auto print_code() const -> void
  {
-  this->builder.print(index_mapping);
+  const auto instructions = to_instructions();
+
+  for (auto i {0}; i < this->builder.instruction_count(); i++)
+  {
+   auto instruction = instructions[i];
+   std::cout << std::setw(5) << std::right << instruction << " | ";
+   builder.print_number(instruction);
+  }
  }
 
  auto code() const -> const CodeBuilder& 
@@ -418,15 +457,16 @@ public:
  /**
   * Variable name and address mapping.
   */ 
- std::unordered_map<std::string, std::size_t> index_mapping{};
- std::unordered_map<std::size_t, std::string> index_mapping_inverse{};
- std::size_t                                  next_var_index {16};
- uint16_t                                     loc{0};
+ std::unordered_map<std::string, std::size_t> index_mapping         {};
+ std::unordered_map<std::size_t, std::string> index_mapping_inverse {};
+ std::size_t                                  next_var_index        {16};
+ uint16_t                                     loc                   {0};
 
  /**
   * Binary code generator.
   */
- CodeBuilder   builder{};
+ CodeBuilder builder{};
+
 };
 
 #endif

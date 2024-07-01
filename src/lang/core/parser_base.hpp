@@ -173,7 +173,7 @@ class BaseParser
   protected:
     Token<TokenType>   current;
     Token<TokenType>   previous;
-    TokenType::Scanner scanner;
+    typename TokenType::Scanner scanner;
 
     bool panic{false};
     bool has_error{false};
