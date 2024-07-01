@@ -167,6 +167,24 @@ public:
               .write_assignment("A", "D-A")
               .write_assignment("M", "D-A");
  }
+ 
+ auto write_push_segment(std::string_view segment) -> void
+ {
+     advance();
+     consume(TokenType::Number, "Expected index after 'constant'");
+     const std::string index = previous.lexeme;
+     m_builder.write_A(segment)
+              .write_assignment("D", "M")
+              .write_A(index)
+              .write_assignment("A", "D+A")
+              .write_assignment("D", "M")
+              .write_A("SP")
+              .write_assignment("A", "M")
+              .write_assignment("M", "D")
+              .write_A("SP")
+              .write_assignment("M", "M+1")
+     ;
+ }
 
  auto handle_push() -> void 
  {
@@ -186,6 +204,10 @@ public:
               .write_A("SP")
               .write_assignment("M", "M+1");
     }
+    break; case TokenType::Local:    write_push_segment("LCL");
+    break; case TokenType::Argument: write_push_segment("ARG");
+    break; case TokenType::This:     write_push_segment("THIS");
+    break; case TokenType::That:     write_push_segment("THAT");
     break; default: { report_error("Unexpected segment found in push statement"); }
   }
  }
