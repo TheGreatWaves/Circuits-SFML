@@ -265,6 +265,24 @@ public:
               .write_assignment("M", "M+1")
               .newline();
     }
+    break; case TokenType::Pointer:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'pointer'");
+     const std::string index = previous.lexeme;
+
+     if (index != "1" && index != "0") report_error("Invalid pointer for push");
+
+     m_builder.write_comment("push pointer", index)
+              .write_A(index == "1" ? "THAT" : "THIS")
+              .write_assignment("D", "M")
+              .write_A("SP")
+              .write_assignment("A", "M")
+              .write_assignment("M", "D")
+              .write_A("SP")
+              .write_assignment("M", "M+1")
+              .newline();
+    }
     break; case TokenType::Local:    write_push_segment("LCL");
     break; case TokenType::Argument: write_push_segment("ARG");
     break; case TokenType::This:     write_push_segment("THIS");
@@ -307,6 +325,23 @@ public:
               .write_assignment("A", "M")
               .write_assignment("D", "M")
               .write_A(index + 5)
+              .write_assignment("M", "D")
+              .newline();
+    }
+    break; case TokenType::Pointer:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'pointer'");
+     const std::string index = previous.lexeme;
+
+     if (index != "1" && index != "0") report_error("Invalid pointer for pop");
+
+     m_builder.write_comment("pop pointer", index)
+              .write_A("SP")
+              .write_assignment("M", "M-1")
+              .write_assignment("A", "M")
+              .write_assignment("D", "M")
+              .write_A(index == "1" ? "THAT" : "THIS")
               .write_assignment("M", "D")
               .newline();
     }

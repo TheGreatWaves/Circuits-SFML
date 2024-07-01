@@ -9,6 +9,7 @@
 /**
  * Keywords.
  */
+KEYWORD_TOKEN(Pointer,  "pointer")
 KEYWORD_TOKEN(Push,     "push")
 KEYWORD_TOKEN(Pop,      "pop")
 KEYWORD_TOKEN(Constant, "constant")
@@ -18,5 +19,6 @@ KEYWORD_TOKEN(This,     "this")
 KEYWORD_TOKEN(That,     "that")
 KEYWORD_TOKEN(Static,   "static")
 KEYWORD_TOKEN(Temp,     "temp")
+
 
 #include "../core/token_end.def"

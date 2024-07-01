@@ -111,11 +111,10 @@ struct SCANNER(TOKEN_CLASS_NAME)
     {
         const auto word = source_code.substr(start, current-start);
         
-        return MATCH(word)
-            return TOKEN_CLASS_NAME::Identifier;
-        #define KEYWORD_TOKEN(name, symbol) CASE(symbol) return TOKEN_CLASS_NAME::name;
+        #define KEYWORD_TOKEN(name, symbol) if(symbol==word) return TOKEN_CLASS_NAME::name;
         #include TOKEN_DESCRIPTOR_FILE
-        ENDMATCH;
+
+        return TOKEN_CLASS_NAME::Identifier;
     }
 
     /**
