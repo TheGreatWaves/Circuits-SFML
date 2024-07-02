@@ -344,7 +344,14 @@ public:
   else if (match(TokenType::LeftParen))
   {
    consume(TokenType::Identifier, "Expected label name, found: " + std::string(this->current.lexeme));
-   const auto label_name = std::string(this->previous.lexeme);
+   auto label_name = std::string(this->previous.lexeme);
+
+   if (match(TokenType::Dot))
+   {
+    consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
+    auto specifier = "." + std::string(this->previous.lexeme);
+    label_name += specifier;
+   }
 
    if (index_mapping.contains(label_name))
    {
@@ -430,7 +437,7 @@ public:
 
   if (match(TokenType::Dot))
   {
-   consume(TokenType::Number, "Expected number after '.', variable unspecified");
+   consume(TokenType::Identifier, "Expected identifier after '.', variable unspecified");
    varname += ("." + previous.lexeme);
   }
 
