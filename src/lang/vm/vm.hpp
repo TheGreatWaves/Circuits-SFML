@@ -197,6 +197,12 @@ public:
    handle_gt();
   else if (match(TokenType::Lt))
    handle_lt();
+  else if (match(TokenType::Label))
+   handle_label();
+  else if (match(TokenType::Goto))
+   handle_goto();
+  else if (match(TokenType::If))
+   handle_if_goto();
   else
   {
    const std::string current = this->current.lexeme;
@@ -504,7 +510,7 @@ public:
 
  auto handle_gt() -> void
  {
-  m_builder.write_comment("GT")
+  m_builder.write_comment("gt")
            .write_A("SP")
            .write_assignment("AM", "M-1")
            .write_assignment("D", "M")
@@ -523,7 +529,7 @@ public:
 
  auto handle_lt() -> void
  {
-  m_builder.write_comment("LT")
+  m_builder.write_comment("lt")
            .write_A("SP")
            .write_assignment("AM", "M-1")
            .write_assignment("D", "M")
@@ -538,6 +544,34 @@ public:
            .write_label("LT_label", m_count)
            .newline();
   m_count++;
+ }
+
+ auto handle_label() -> void
+ {
+  consume(TokenType::Identifier, "Expected label name");
+  const std::string label_name = previous.lexeme;
+  m_builder.write_label(label_name);
+ }
+ 
+ auto handle_goto() -> void
+ {
+  consume(TokenType::Identifier, "Expected label name");
+  const std::string label_name = previous.lexeme;
+  m_builder.write_A(label_name)
+           .write_jump("0", "JMP");
+ }
+
+ auto handle_if_goto() -> void
+ {
+  consume(TokenType::Dash, "Expected '-' after if");
+  consume(TokenType::Goto, "Expected 'goto' after '-'");
+  consume(TokenType::Identifier, "Expected label name");
+  const std::string label_name = previous.lexeme;
+  m_builder.write_A("SP")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_A(label_name)
+           .write_jump("D", "JGT");
  }
 
 private:

@@ -30,4 +30,10 @@ KEYWORD_TOKEN(And, "and")
 KEYWORD_TOKEN(Or,  "or")
 KEYWORD_TOKEN(Not, "not")
 
+KEYWORD_TOKEN(Label, "label")
+KEYWORD_TOKEN(If,    "if")
+KEYWORD_TOKEN(Goto,  "goto")
+
+SYMBOL_TOKEN(Dash, "-")
+
 #include "../core/token_end.def"

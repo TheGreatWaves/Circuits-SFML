@@ -213,9 +213,9 @@ public:
    std::cout << "Ram[" << std::setw(3) << std::right << i << "] " << m_ram[i] << '\n';
   }
 
-  for (std::size_t i{0}; i < 5; i++)
+  for (std::size_t i{0}; i < 10; i++)
   {
-   std::cout << "Stack[" << std::setw(3) << std::right << i << "] " << m_ram[i + 256] << '\n';
+   std::cout << "Stack[" << std::setw(3) << std::right << i << "] " << static_cast<int16_t>(m_ram[i + 256]) << '\n';
   }
 
   for (std::size_t i{0}; i < 5; i++)
