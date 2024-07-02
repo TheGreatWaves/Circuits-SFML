@@ -181,6 +181,10 @@ public:
    handle_pop();
   else if (match(TokenType::Add))
    handle_add();
+  else if (match(TokenType::And))
+   handle_and();
+  else if (match(TokenType::Or))
+   handle_or();
   else if (match(TokenType::Sub))
    handle_sub();
   else if (match(TokenType::Neg))
@@ -399,6 +403,42 @@ public:
            .write_assignment("D", "M")
            .write_assignment("A", "A+1")
            .write_assignment("D", "D+M") // This changes for different function
+           .write_A("SP")
+           .write_assignment("M", "M-1")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("M", "D")
+           .newline();
+ }
+
+ auto handle_and() -> void 
+ {
+  m_builder.write_comment("and")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A+1")
+           .write_assignment("D", "D&M") // This changes for different function
+           .write_A("SP")
+           .write_assignment("M", "M-1")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("M", "D")
+           .newline();
+ }
+
+ auto handle_or() -> void 
+ {
+  m_builder.write_comment("or")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A+1")
+           .write_assignment("D", "D|M") // This changes for different function
            .write_A("SP")
            .write_assignment("M", "M-1")
            .write_assignment("A", "M")
