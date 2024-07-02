@@ -185,6 +185,8 @@ public:
    handle_sub();
   else if (match(TokenType::Neg))
    handle_neg();
+  else if (match(TokenType::Not))
+   handle_not();
   else if (match(TokenType::Eq))
    handle_eq();
   else if (match(TokenType::Gt))
@@ -427,9 +429,17 @@ public:
  {
   m_builder.write_comment("neg")
            .write_A("SP")
-           .write_assignment("A", "M")
-           .write_assignment("A", "A-1")
+           .write_assignment("A", "M-1")
            .write_assignment("M", "-M")
+           .newline();
+ }
+
+ auto handle_not() -> void
+ {
+  m_builder.write_comment("not")
+           .write_A("SP")
+           .write_assignment("A", "M-1")
+           .write_assignment("M", "!M")
            .newline();
  }
 
