@@ -159,6 +159,10 @@ public:
    handle_pop();
   else if (match(TokenType::Add))
    handle_add();
+  else if (match(TokenType::Sub))
+   handle_sub();
+  else if (match(TokenType::Neg))
+   handle_neg();
   else
   {
    const std::string current = this->current.lexeme;
@@ -370,6 +374,34 @@ public:
            .write_assignment("A", "M")
            .write_assignment("A", "A-1")
            .write_assignment("M", "D")
+           .newline();
+ }
+
+ auto handle_sub() -> void 
+ {
+  m_builder.write_comment("sub")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A+1")
+           .write_assignment("D", "D-M") // This changes for different function
+           .write_A("SP")
+           .write_assignment("M", "M-1")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("M", "D")
+           .newline();
+ }
+
+ auto handle_neg() -> void
+ {
+  m_builder.write_comment("neg")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("M", "-M")
            .newline();
  }
 
