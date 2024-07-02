@@ -153,6 +153,7 @@ public:
  inline auto process() -> void
  {
   const auto instruction = fetch();
+  // std::cout << "instruction: " << instruction.raw << '\n';
 
   // Handle A instruction.
   if (instruction.A_instruction)
@@ -170,13 +171,21 @@ public:
    const auto result = alu::compute(std::move(args));
 
    // Handle write
+   if (instruction.write_memory) write_M(result.out);
    if (instruction.write_A) write_A(result.out);
    if (instruction.write_D) write_D(result.out);
-   if (instruction.write_memory) write_M(result.out);
 
    // Handle jump
    const auto positive = !result.ng;
    const auto jez = instruction.jez && result.zr;
+
+   // std::cout << "\tx: " << x << '\n';
+   // std::cout << "\ty: " << y << '\n';
+   // std::cout << "\tresult: " << result.out << '\n';
+   // std::cout << "\tjez: " << instruction.jez << '\n';
+   // std::cout << "\tjlz: " << instruction.jlz << '\n';
+   // std::cout << "\tjgz: " << instruction.jgz << '\n';
+   
    const auto jgz = instruction.jgz && positive;
    const auto jlz = instruction.jlz && result.ng;
    const auto jlez = jez || jlz;
@@ -249,11 +258,13 @@ private:
 
  inline auto write_A(uint16_t value) -> void
  {
+  // std::cout << "\t\t\tWrite A: " << value << '\n';
   m_A = value;
  }
 
  inline auto write_D(uint16_t value) -> void
  {
+  // std::cout << "\t\t\tWrite D: " << value << '\n';
   m_D = value;
  }
 
@@ -264,6 +275,7 @@ private:
 
  inline auto write_M(uint16_t value) -> void
  {
+  // std::cout << "\t\t\tWrite RAM[" << m_A << "]: " << value << '\n';
   m_ram[m_A] = value;
  }
 

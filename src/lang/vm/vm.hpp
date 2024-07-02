@@ -56,21 +56,22 @@ public:
 
  auto write_A(uint16_t value) -> CodeStringBuilder&
  {
-  m_code << "@" << value << '\n';
+  m_code << '\t' << "@" << value << '\n';
   increment();
   return *this;
  }
 
  auto write_A(std::string_view label) -> CodeStringBuilder&
  {
-  m_code << "@" << label << '\n';
+  m_code << '\t' << "@" << label << '\n';
   increment();
   return *this;
  }
 
- auto write_A(std::string_view file_name, std::string_view variable_name) -> CodeStringBuilder&
+ template <typename T>
+ auto write_A(std::string_view file_name, T variable_name, std::string_view separator = ".") -> CodeStringBuilder&
  {
-  m_code << "@" << file_name << '.' << variable_name << '\n';
+  m_code << '\t' << "@" << file_name << separator << variable_name << '\n';
   increment();
   return *this;
  }
@@ -94,7 +95,28 @@ public:
 
  auto write_assignment(std::string_view dest, std::string_view source) -> CodeStringBuilder&
  {
-  m_code << dest << "=" << source << '\n';
+  m_code << '\t' << dest << "=" << source << '\n';
+  increment();
+  return *this;
+ }
+
+ auto write_jump(std::string_view value, std::string_view condition) -> CodeStringBuilder&
+ {
+  m_code << '\t' << value << ";" << condition << '\n';
+  increment();
+  return *this;
+ }
+
+ auto write_label(std::string_view name) -> CodeStringBuilder&
+ {
+  m_code << '(' << name << ')' << '\n';
+  increment();
+  return *this;
+ }
+
+ auto write_label(std::string_view name, std::uint16_t count) -> CodeStringBuilder&
+ {
+  m_code << '(' << name << '_' << count << ')' << '\n';
   increment();
   return *this;
  }
@@ -163,6 +185,8 @@ public:
    handle_sub();
   else if (match(TokenType::Neg))
    handle_neg();
+  else if (match(TokenType::Eq))
+   handle_eq();
   else
   {
    const std::string current = this->current.lexeme;
@@ -405,10 +429,30 @@ public:
            .newline();
  }
 
+ auto handle_eq() -> void
+ {
+  m_builder.write_comment("eq")
+           .write_A("SP")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "D-M")
+           .write_assignment("M", "-1")
+           .write_A("EQ_label", m_count, "_")
+           .write_jump("D", "JEQ")
+           .write_A("SP")
+           .write_assignment("A", "M-1")
+           .write_assignment("M", "0")
+           .write_label("EQ_label", m_count)
+           .newline();
+  m_count++;
+ }
+
 private:
  Assembler         m_assembler {};
- CodeStringBuilder m_builder {};
- const std::string m_filename {};
+ CodeStringBuilder m_builder   {};
+ const std::string m_filename  {};
+ std::uint16_t     m_count     {};
 };
 
 #endif // VM_H
