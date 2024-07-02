@@ -114,9 +114,10 @@ public:
   return *this;
  }
 
- auto write_label(std::string_view name, std::uint16_t count) -> CodeStringBuilder&
+ template <typename T>
+ auto write_label(std::string_view name, T count, std::string_view separator = "_") -> CodeStringBuilder&
  {
-  m_code << '(' << name << '_' << count << ')' << '\n';
+  m_code << '(' << name << separator << count << ')' << '\n';
   increment();
   return *this;
  }
@@ -203,6 +204,10 @@ public:
    handle_goto();
   else if (match(TokenType::If))
    handle_if_goto();
+  else if (match(TokenType::Call))
+   handle_call();
+  else if (match(TokenType::Function))
+   handle_function();
   else
   {
    const std::string current = this->current.lexeme;
@@ -256,6 +261,25 @@ public:
               .newline();
  }
 
+ auto push_constant(std::string_view index) -> void
+ {
+   m_builder.write_comment("push constant", index)
+            .write_A(index)
+            .write_assignment("D", "A")
+            .write_A("SP")
+            .write_assignment("A", "M")
+            .write_assignment("M", "D")
+            .write_A("SP")
+            .write_assignment("M", "M+1")
+            .newline();
+ }
+
+ auto push_constant(uint16_t index) -> void
+ {
+  std::string index_str = std::to_string(index);
+  push_constant(index_str);
+ }
+
  auto handle_push() -> void 
  {
   switch (this->current.type)
@@ -266,15 +290,7 @@ public:
      consume(TokenType::Number, "Expected index after 'constant'");
      const std::string index = previous.lexeme;
 
-     m_builder.write_comment("push constant", index)
-              .write_A(index)
-              .write_assignment("D", "A")
-              .write_A("SP")
-              .write_assignment("A", "M")
-              .write_assignment("M", "D")
-              .write_A("SP")
-              .write_assignment("M", "M+1")
-              .newline();
+     push_constant(index);
     }
     break; case TokenType::Static:
     {
@@ -335,6 +351,53 @@ public:
     break; case TokenType::That:     write_push_segment("THAT");
     break; default: { report_error("Unexpected segment found in push statement"); }
   }
+ }
+
+ auto write_push_segment_generic(std::string_view segment_name, std::string_view segment, uint16_t index) -> void
+ {
+  std::string index_str = std::to_string(index);
+  m_builder.write_comment("push", segment_name, index_str)
+           .write_A(segment)
+           .write_assignment("D", "M")
+           .write_A(index)
+           .write_assignment("A", "D+A")
+           .write_assignment("D", "M")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("M", "D")
+           .write_A("SP")
+           .write_assignment("M", "M+1")
+           .newline();
+ }
+
+ auto write_pop_segment_generic(std::string_view segment_name, std::string_view segment, uint16_t index) -> void
+ {
+  std::string index_str = std::to_string(index);
+  m_builder.write_comment("pop", segment_name, index_str)
+           .write_A("SP")
+           .write_assignment("M", "M-1")
+           .write_assignment("A", "M")
+           .write_assignment("D", "M")
+           .write_A(segment)
+           .write_assignment("D", "D+M")
+           .write_A(index)
+           .write_assignment("D", "D+A")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("A", "M")
+           .write_assignment("A", "D-A")
+           .write_assignment("M", "D-A")
+           .newline();
+ }
+
+ auto push_local(std::uint16_t index) -> void
+ { 
+  write_push_segment_generic("local", "LCL", index);
+ }
+
+ auto pop_local(std::uint16_t index) -> void
+ { 
+  write_push_segment_generic("local", "LCL", index);
  }
  
  auto handle_pop() -> void 
@@ -572,6 +635,37 @@ public:
            .write_assignment("D", "M")
            .write_A(label_name)
            .write_jump("D", "JGT");
+ }
+
+ auto handle_call() -> void
+ {
+  consume(TokenType::Identifier, "Expected function name");
+  const std::string function_name = previous.lexeme;
+  consume(TokenType::Number, "Expected function name");
+  const std::string n_args = previous.lexeme;
+  // m_builder.write_A("SP")
+  //          .write_assignment("AM", "M-1")
+  //          .write_assignment("D", "M")
+  //          .write_A(label_name)
+  //          .write_jump("D", "JGT");
+ }
+
+ auto handle_function() -> void
+ {
+  consume(TokenType::Identifier, "Expected file name");
+  const std::string file_name = previous.lexeme;
+  consume(TokenType::Dot, "Expected function name");
+  consume(TokenType::Identifier, "Expected function name");
+  const std::string function_name = previous.lexeme;
+  consume(TokenType::Number, "Expected function name");
+  const std::string n_args_str = previous.lexeme;
+  const uint16_t n_args = std::stoi(n_args_str);
+
+  m_builder.write_comment("function", file_name+'.'+function_name, n_args_str)
+           .write_label(file_name, function_name, ".");
+
+  for (uint16_t i {0}; i < n_args; i++)
+   push_constant(0);
  }
 
 private:
