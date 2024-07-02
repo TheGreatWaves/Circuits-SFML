@@ -130,7 +130,7 @@ inline auto compute(ALUArgs&& args) -> ALUResult {
  return ALUResult{
   .out = result,
   .zr  = result == 0,
-  .ng  = result < 0
+  .ng  = static_cast<uint32_t>((result >> 15))
  };
 }
  
@@ -182,15 +182,18 @@ public:
    // std::cout << "\tx: " << x << '\n';
    // std::cout << "\ty: " << y << '\n';
    // std::cout << "\tresult: " << result.out << '\n';
+   // std::cout << "\tng: " << result.ng << '\n';
+   // std::cout << "\tzr: " << result.zr << '\n';
    // std::cout << "\tjez: " << instruction.jez << '\n';
    // std::cout << "\tjlz: " << instruction.jlz << '\n';
    // std::cout << "\tjgz: " << instruction.jgz << '\n';
    
-   const auto jgz = instruction.jgz && positive;
-   const auto jlz = instruction.jlz && result.ng;
+   const auto jgz = instruction.jgz && positive && !result.zr;
+   const auto jlz = instruction.jlz && result.ng && !result.zr;
    const auto jlez = jez || jlz;
    const auto jgez = jez || jgz;
    const auto jump = jlez || jgez;
+   // std::cout << "\tjump: " << jump << '\n';
 
    if (jump)
     write_pc(m_A);

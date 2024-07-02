@@ -1,9 +1,5 @@
-push constant 2
-push constant 2
-eq
-neg
-push constant 1
-eq
-push constant 0
 push constant 5
 push constant 6
+neg
+lt
+push constant 0

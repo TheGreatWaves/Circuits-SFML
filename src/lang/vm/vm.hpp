@@ -187,6 +187,10 @@ public:
    handle_neg();
   else if (match(TokenType::Eq))
    handle_eq();
+  else if (match(TokenType::Gt))
+   handle_gt();
+  else if (match(TokenType::Lt))
+   handle_lt();
   else
   {
    const std::string current = this->current.lexeme;
@@ -444,6 +448,44 @@ public:
            .write_assignment("A", "M-1")
            .write_assignment("M", "0")
            .write_label("EQ_label", m_count)
+           .newline();
+  m_count++;
+ }
+
+ auto handle_gt() -> void
+ {
+  m_builder.write_comment("GT")
+           .write_A("SP")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "D-M")
+           .write_assignment("M", "-1")
+           .write_A("GT_label", m_count, "_")
+           .write_jump("D", "JLT")
+           .write_A("SP")
+           .write_assignment("A", "M-1")
+           .write_assignment("M", "0")
+           .write_label("GT_label", m_count)
+           .newline();
+  m_count++;
+ }
+
+ auto handle_lt() -> void
+ {
+  m_builder.write_comment("LT")
+           .write_A("SP")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_assignment("A", "A-1")
+           .write_assignment("D", "D-M")
+           .write_assignment("M", "-1")
+           .write_A("LT_label", m_count, "_")
+           .write_jump("D", "JGT")
+           .write_A("SP")
+           .write_assignment("A", "M-1")
+           .write_assignment("M", "0")
+           .write_label("LT_label", m_count)
            .newline();
   m_count++;
  }
