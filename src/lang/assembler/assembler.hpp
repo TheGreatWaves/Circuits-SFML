@@ -344,14 +344,26 @@ public:
   else if (match(TokenType::LeftParen))
   {
    consume(TokenType::Identifier, "Expected label name, found: " + std::string(this->current.lexeme));
-   auto label_name = std::string(this->previous.lexeme);
+   std::stringstream label_name_ss {};
+   label_name_ss << this->previous.lexeme;
 
    if (match(TokenType::Dot))
    {
     consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
-    auto specifier = "." + std::string(this->previous.lexeme);
-    label_name += specifier;
+    label_name_ss << "." <<  this->previous.lexeme;
+
+    if (match(TokenType::Dollar))
+    {
+     label_name_ss << "$";
+     consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
+     label_name_ss << this->previous.lexeme;
+     consume(TokenType::Dot, "Expected '.' after return specifier");
+     consume(TokenType::Number, "Expected identifier, found: " + std::string(this->current.lexeme));
+     label_name_ss << "." << this->previous.lexeme;
+    }
    }
+
+   const auto label_name = label_name_ss.str();
 
    if (index_mapping.contains(label_name))
    {
@@ -433,13 +445,26 @@ public:
 
  auto handle_variable() -> void
  {
-  auto varname = this->previous.lexeme;
+   std::stringstream varname_ss {};
+   varname_ss << this->previous.lexeme;
 
-  if (match(TokenType::Dot))
-  {
-   consume(TokenType::Identifier, "Expected identifier after '.', variable unspecified");
-   varname += ("." + previous.lexeme);
-  }
+   if (match(TokenType::Dot))
+   {
+    consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
+    varname_ss << "." <<  this->previous.lexeme;
+
+    if (match(TokenType::Dollar))
+    {
+     varname_ss << "$";
+     consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
+     varname_ss << this->previous.lexeme;
+     consume(TokenType::Dot, "Expected '.' after return specifier");
+     consume(TokenType::Number, "Expected identifier, found: " + std::string(this->current.lexeme));
+     varname_ss << "." << this->previous.lexeme;
+    }
+   }
+
+  const auto varname = varname_ss.str();
 
   resolve_variable(varname);
   builder.add_a_instruction(loc, varname);

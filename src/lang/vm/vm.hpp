@@ -637,17 +637,70 @@ public:
            .write_jump("D", "JGT");
  }
 
+ auto goto_label(std::string_view label) -> void
+ {
+  m_builder.write_A(label)
+           .write_jump("0", "JMP");
+ }
+
+ auto push_label(std::string_view label) -> void
+ {
+  m_builder.write_A(label)
+           .write_assignment("D", "A")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("M", "D")
+           .write_A("SP")
+           .write_assignment("M", "M+1")
+           .newline();
+ }
+
  auto handle_call() -> void
  {
+  consume(TokenType::Identifier, "Expected file name");
+  const std::string file_name = previous.lexeme;
+  consume(TokenType::Dot, "Expected function name");
   consume(TokenType::Identifier, "Expected function name");
   const std::string function_name = previous.lexeme;
-  consume(TokenType::Number, "Expected function name");
+
+  const std::string function_full_name = file_name+"."+function_name;
+
+  consume(TokenType::Number, "Expected function args count");
   const std::string n_args = previous.lexeme;
-  // m_builder.write_A("SP")
-  //          .write_assignment("AM", "M-1")
-  //          .write_assignment("D", "M")
-  //          .write_A(label_name)
-  //          .write_jump("D", "JGT");
+
+  // Generate return value
+  const std::string return_value = file_name+"."+function_name+"$ret."+std::to_string(m_count);
+
+  m_builder.write_comment("call", file_name+"."+function_name, n_args);
+
+  push_label(return_value);
+  push_label("LCL");
+  push_label("ARG");
+  push_label("THIS");
+  push_label("THAT");
+
+  // ARG = SP - 5 - n_args
+  m_builder.write_A("SP")
+           .write_assignment("D", "M")
+           .write_A("5")
+           .write_assignment("D", "D-A")
+           .write_A(n_args)
+           .write_assignment("D", "D-A")
+           .write_A("ARG")
+           .write_assignment("M", "D")
+           .newline();
+
+  // LCL = SP
+  m_builder.write_A("SP")
+           .write_assignment("D", "M")
+           .write_A("LCL")
+           .write_assignment("M", "D")
+           .newline();
+
+  goto_label(function_full_name);
+
+  m_builder.write_label(return_value)
+           .newline();
  }
 
  auto handle_function() -> void
@@ -657,7 +710,7 @@ public:
   consume(TokenType::Dot, "Expected function name");
   consume(TokenType::Identifier, "Expected function name");
   const std::string function_name = previous.lexeme;
-  consume(TokenType::Number, "Expected function name");
+  consume(TokenType::Number, "Expected variable count");
   const std::string n_args_str = previous.lexeme;
   const uint16_t n_args = std::stoi(n_args_str);
 
