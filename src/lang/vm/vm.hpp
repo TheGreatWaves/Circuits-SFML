@@ -570,7 +570,7 @@ public:
            .write_assignment("M", "0")
            .write_label("EQ_label", m_count)
            .newline();
-  m_count++;
+  count();
  }
 
  auto handle_gt() -> void
@@ -589,7 +589,7 @@ public:
            .write_assignment("M", "0")
            .write_label("GT_label", m_count)
            .newline();
-  m_count++;
+  count();
  }
 
  auto handle_lt() -> void
@@ -608,7 +608,7 @@ public:
            .write_assignment("M", "0")
            .write_label("LT_label", m_count)
            .newline();
-  m_count++;
+  count();
  }
 
  auto handle_label() -> void
@@ -669,6 +669,47 @@ public:
            .newline();
  }
 
+ auto count() -> uint16_t
+ {
+  return m_count++;
+ }
+
+ auto call(const std::string& file_name, const std::string& function_name, std::string_view n_args) -> void
+ {
+   const std::string return_value = file_name+"."+function_name+"$ret."+std::to_string(count());
+   const std::string function_full_name = file_name+"."+function_name;
+
+   m_builder.write_comment("call", function_full_name, n_args);
+   push_label(return_value);
+   push_memory("LCL");
+   push_memory("ARG");
+   push_memory("THIS");
+   push_memory("THAT");
+
+   // ARG = SP - 5 - n_args
+   m_builder.write_A("SP")
+            .write_assignment("D", "M")
+            .write_A("5")
+            .write_assignment("D", "D-A")
+            .write_A(n_args)
+            .write_assignment("D", "D-A")
+            .write_A("ARG")
+            .write_assignment("M", "D")
+            .newline();
+
+   // LCL = SP
+   m_builder.write_A("SP")
+            .write_assignment("D", "M")
+            .write_A("LCL")
+            .write_assignment("M", "D")
+            .newline();
+
+   goto_label(function_full_name);
+
+   m_builder.write_label(return_value)
+            .newline();
+ }
+
  auto handle_call() -> void
  {
   consume(TokenType::Identifier, "Expected file name");
@@ -676,45 +717,10 @@ public:
   consume(TokenType::Dot, "Expected function name");
   advance();
   const std::string function_name = previous.lexeme;
-
-  const std::string function_full_name = file_name+"."+function_name;
-
   consume(TokenType::Number, "Expected function args count");
   const std::string n_args = previous.lexeme;
 
-  // Generate return value
-  const std::string return_value = file_name+"."+function_name+"$ret."+std::to_string(m_count);
-
-  m_builder.write_comment("call", file_name+"."+function_name, n_args);
-
-  push_label(return_value);
-  push_memory("LCL");
-  push_memory("ARG");
-  push_memory("THIS");
-  push_memory("THAT");
-
-  // ARG = SP - 5 - n_args
-  m_builder.write_A("SP")
-           .write_assignment("D", "M")
-           .write_A("5")
-           .write_assignment("D", "D-A")
-           .write_A(n_args)
-           .write_assignment("D", "D-A")
-           .write_A("ARG")
-           .write_assignment("M", "D")
-           .newline();
-
-  // LCL = SP
-  m_builder.write_A("SP")
-           .write_assignment("D", "M")
-           .write_A("LCL")
-           .write_assignment("M", "D")
-           .newline();
-
-  goto_label(function_full_name);
-
-  m_builder.write_label(return_value)
-           .newline();
+  call(file_name, function_name, n_args);
  }
 
  auto handle_function() -> void
@@ -792,6 +798,18 @@ public:
            .write_assignment("A", "M")
            .write_jump("0", "JMP")
            .newline();
+ }
+
+ auto boostrap() -> void
+ {
+  // Set SP = 256
+  m_builder.write_A("256")
+           .write_assignment("D", "A")
+           .write_A("SP")
+           .write_assignment("M", "D");
+
+  // Call Sys.init entry point
+
  }
 
 private:

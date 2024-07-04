@@ -437,6 +437,7 @@ public:
  {
   if (!index_mapping.contains(varname))
   {
+   std::cout << "Index Map: " << varname << " " << (next_var_index + 1) << '\n';
    this->add_index_mapping(varname, next_var_index++);
   }
 

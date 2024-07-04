@@ -20,7 +20,9 @@ auto main() -> int
  emulator::Computer computer {};
 
  computer.load_instructions(instructions);
- computer.process(translator.loc());
+ const auto loc = translator.loc();
+ std::cout << "#instructions: " << loc << '\n';
+ computer.process(5000);
 
 
  std::cout << "\n=== State ===\n";

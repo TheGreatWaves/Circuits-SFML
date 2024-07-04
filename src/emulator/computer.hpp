@@ -196,7 +196,9 @@ public:
    // std::cout << "\tjump: " << jump << '\n';
 
    if (jump)
+   {
     write_pc(m_A);
+   }
    else
     m_pc++;
   }
@@ -208,7 +210,7 @@ public:
   std::cout << "A " << m_A << '\n';
   std::cout << "PC " << m_pc << '\n';
 
-  for (std::size_t i{0}; i < 8; i++)
+  for (std::size_t i{0}; i < 16; i++)
   {
    std::cout << "Ram[" << std::setw(3) << std::right << i << "] " << m_ram[i] << '\n';
   }
@@ -278,7 +280,6 @@ private:
 
  inline auto write_M(uint16_t value) -> void
  {
-  // std::cout << "\t\t\tWrite RAM[" << m_A << "]: " << value << '\n';
   m_ram[m_A] = value;
  }
 
