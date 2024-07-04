@@ -1,1 +1,16 @@
-call Foo.test 0
+call Foo.main 0
+
+function Foo.add 2
+	push argument 0
+	push argument 1
+	pop local 0
+	pop local 1
+	add
+	return
+
+function Foo.main 2
+	push constant 18
+	push constant 3
+	call Foo.add 2
+	return
+

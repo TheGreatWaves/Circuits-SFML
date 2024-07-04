@@ -208,6 +208,8 @@ public:
    handle_call();
   else if (match(TokenType::Function))
    handle_function();
+  else if (match(TokenType::Return))
+   handle_return();
   else
   {
    const std::string current = this->current.lexeme;
@@ -655,12 +657,24 @@ public:
            .newline();
  }
 
+ auto push_memory(std::string_view location) -> void
+ {
+  m_builder.write_A(location)
+           .write_assignment("D", "M")
+           .write_A("SP")
+           .write_assignment("A", "M")
+           .write_assignment("M", "D")
+           .write_A("SP")
+           .write_assignment("M", "M+1")
+           .newline();
+ }
+
  auto handle_call() -> void
  {
   consume(TokenType::Identifier, "Expected file name");
   const std::string file_name = previous.lexeme;
   consume(TokenType::Dot, "Expected function name");
-  consume(TokenType::Identifier, "Expected function name");
+  advance();
   const std::string function_name = previous.lexeme;
 
   const std::string function_full_name = file_name+"."+function_name;
@@ -674,10 +688,10 @@ public:
   m_builder.write_comment("call", file_name+"."+function_name, n_args);
 
   push_label(return_value);
-  push_label("LCL");
-  push_label("ARG");
-  push_label("THIS");
-  push_label("THAT");
+  push_memory("LCL");
+  push_memory("ARG");
+  push_memory("THIS");
+  push_memory("THAT");
 
   // ARG = SP - 5 - n_args
   m_builder.write_A("SP")
@@ -708,7 +722,7 @@ public:
   consume(TokenType::Identifier, "Expected file name");
   const std::string file_name = previous.lexeme;
   consume(TokenType::Dot, "Expected function name");
-  consume(TokenType::Identifier, "Expected function name");
+  advance();
   const std::string function_name = previous.lexeme;
   consume(TokenType::Number, "Expected variable count");
   const std::string n_args_str = previous.lexeme;
@@ -719,6 +733,65 @@ public:
 
   for (uint16_t i {0}; i < n_args; i++)
    push_constant(0);
+ }
+
+ auto handle_return() -> void
+ {
+  m_builder.write_comment("return")
+           // endFrame = LCL
+           .write_A("LCL")
+           .write_assignment("D", "M")
+           .write_A("R13")
+           .write_assignment("M", "D")
+           // retAddr = *(endFrame - 5)
+           .write_A("R13")
+           .write_assignment("D", "M")
+           .write_A("5")
+           .write_assignment("A", "D-A")
+           .write_assignment("D", "M")
+           .write_A("R14")
+           .write_assignment("M", "D")
+           // *ARG = pop()
+           .write_A("SP")
+           .write_assignment("A", "M-1")
+           .write_assignment("D", "M")
+           .write_A("ARG")
+           .write_assignment("A", "M")
+           .write_assignment("M", "D")
+           // SP = ARG + 1
+           .write_A("ARG")
+           .write_assignment("D", "M+1")
+           .write_A("SP")
+           .write_assignment("M", "D")
+           // THAT = *(--endFrame)
+           .write_A("R13")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_A("THAT")
+           .write_assignment("M", "D")
+           // THIS = *(--endFrame)
+           .write_A("R13")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_A("THIS")
+           .write_assignment("M", "D")
+           // ARG = *(--endFrame)
+           .write_A("R13")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_A("ARG")
+           .write_assignment("M", "D")
+           // LCL = *(--endFrame)
+           .write_A("R13")
+           .write_assignment("AM", "M-1")
+           .write_assignment("D", "M")
+           .write_A("LCL")
+           .write_assignment("M", "D")
+           // goto retAddr
+           .write_A("R14")
+           .write_assignment("A", "M")
+           .write_jump("0", "JMP")
+           .newline();
  }
 
 private:

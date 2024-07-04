@@ -36,6 +36,7 @@ KEYWORD_TOKEN(Goto,  "goto")
 
 KEYWORD_TOKEN(Call,     "call")
 KEYWORD_TOKEN(Function, "function")
+KEYWORD_TOKEN(Return, "return")
 
 SYMBOL_TOKEN(Dash, "-")
 SYMBOL_TOKEN(Dot,  ".")
