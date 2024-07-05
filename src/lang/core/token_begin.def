@@ -21,3 +21,7 @@ TOKEN(EndOfFile)
  */
 TOKEN(Number)
 TOKEN(Identifier)
+
+
+// NOTE DO THIS
+TOKEN(String)

@@ -117,6 +117,32 @@ struct SCANNER(TOKEN_CLASS_NAME)
         return TOKEN_CLASS_NAME::Identifier;
     }
 
+    auto scan_string() -> Token<TOKEN_CLASS_NAME>
+    {
+        start = current;
+        while (peek() != '"' && !is_at_end()) 
+        {
+            if (peek() == '\n') 
+            {
+                line += 1;
+            }
+            advance();
+        }
+
+        if (peek() != '"') 
+        {
+            return error_token("Unterminated string");
+        } 
+        else 
+        {
+            advance();
+            current--;
+            auto token =  make_token(TOKEN_CLASS_NAME::String);
+            current++;
+            return token;
+        }
+    }
+
     /**
      * Return the next token.
      */
@@ -140,6 +166,11 @@ struct SCANNER(TOKEN_CLASS_NAME)
         {
             return scan_identifier();
         }
+        else if (c=='"')
+        {
+            return scan_string();
+        }
+
 
         #define CCASE(character, token) break; case character: return make_token(token)
         switch (c)

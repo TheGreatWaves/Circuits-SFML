@@ -88,27 +88,61 @@ public:
  {
   const auto scope = write_scope_newline("term");
 
-  if (match(TokenType::Number))
+  // Prefix
+  if (check(TokenType::Minus, TokenType::Tilda))
   {
-   // Number
+   advance();
+   write_previous();
+   compile_term();
+  }
+  // Number
+  else if (match(TokenType::Number))
+  {
    write_previous();
   }
-  else if (match(TokenType::DoubleQuote))
+  // String
+  else if (match(TokenType::String))
   {
-   // TODO: Logic for parsing quote here.
-   while (!check(TokenType::DoubleQuote))
-   {
-    write_previous();
-    advance();
-   }
-
-   consume(TokenType::DoubleQuote, "String not terminated, missing '\"'");
-
+   write_previous();
   }
+  // Variable/Array/Subroutine Call
   else if (match(TokenType::Identifier))
   {
    // Variable name
    write_previous();
+
+   if (match(TokenType::LSqaure))
+   {
+    write_previous();
+    compile_expression();
+    
+    consume(TokenType::RSquare, "Expected ']', array subscript not terminated");
+    write_previous();
+   }
+   else if (match(TokenType::LParen))
+   {
+    write_previous();
+    compile_expression_list();
+    
+    consume(TokenType::RParen, "Expected ')' at the end of subroutine parameters");
+    write_previous();
+   }
+   else if (match(TokenType::Dot))
+   {
+    write_previous();
+
+    // Subroutine name
+    read_identifier();
+    write_previous();
+
+    consume(TokenType::LParen, "Expected '(' to mark the beginning of parameter list");
+    write_previous();
+
+    compile_expression_list();
+
+    consume(TokenType::RParen, "Expected ')' to mark the end of parameter list");
+    write_previous();
+   }
   }
   else if (check(TokenType::True, TokenType::False, TokenType::Null, TokenType::This))
   {
@@ -218,6 +252,10 @@ public:
   else if (token.type == TokenType::Identifier)
   {
    write_single("identifier", token.lexeme);
+  }
+  else if (token.type == TokenType::String)
+  {
+   write_single("stringConstant", token.lexeme);
   }
  }
 
@@ -348,7 +386,7 @@ public:
 
   compile_expression();
 
-  consume(TokenType::Semicolon, "Expected ';' at the end of let statement");
+  consume(TokenType::Semicolon, "Expected ';' at the end of let statement, found: " + current.lexeme);
   write_previous();
  }
 
@@ -473,6 +511,9 @@ public:
 
  auto compile_while() -> void
  {
+  const auto scope = write_scope_newline("whileStatement");
+  write_previous();
+
   consume(TokenType::LParen, "Expected '(' after while");
   write_previous();
 
