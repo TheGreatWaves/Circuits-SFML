@@ -1,0 +1,55 @@
+#include "../core/token_begin.def"
+
+/*================================*/
+/*                                */
+/*        TOKENS DEFINITION.      */
+/*                                */
+/*================================*/
+
+/**
+ * Keywords.
+ */
+KEYWORD_TOKEN(Class,       "class")
+KEYWORD_TOKEN(Constructor, "constructor")
+KEYWORD_TOKEN(Function,    "function")
+KEYWORD_TOKEN(Method,      "method")
+KEYWORD_TOKEN(Field,       "field")
+KEYWORD_TOKEN(Static,      "static")
+KEYWORD_TOKEN(Var,         "var")
+KEYWORD_TOKEN(Int,         "int")
+KEYWORD_TOKEN(Char,        "char")
+KEYWORD_TOKEN(Boolean,     "boolean")
+KEYWORD_TOKEN(Void,        "void")
+KEYWORD_TOKEN(True,        "true")
+KEYWORD_TOKEN(False,       "false")
+KEYWORD_TOKEN(Null,        "null")
+KEYWORD_TOKEN(This,        "this")
+KEYWORD_TOKEN(Let,         "let")
+KEYWORD_TOKEN(Do,          "do")
+KEYWORD_TOKEN(If,          "if")
+KEYWORD_TOKEN(Else,        "else")
+KEYWORD_TOKEN(While,       "while")
+KEYWORD_TOKEN(Return,      "return")
+
+SYMBOL_TOKEN(LBrace,      "{")
+SYMBOL_TOKEN(RBrace,      "}")
+SYMBOL_TOKEN(LParen,      "(")
+SYMBOL_TOKEN(RParen,      ")")
+SYMBOL_TOKEN(LSqaure,     "[")
+SYMBOL_TOKEN(RSquare,     "]")
+SYMBOL_TOKEN(Dot,         ".")
+SYMBOL_TOKEN(Comma,       ",")
+SYMBOL_TOKEN(Semicolon,   ";")
+SYMBOL_TOKEN(Plus,        "+")
+SYMBOL_TOKEN(Minus,       "-")
+SYMBOL_TOKEN(Asterisk,    "*")
+SYMBOL_TOKEN(Slash,       "/")
+SYMBOL_TOKEN(Ampersand,   "&")
+SYMBOL_TOKEN(Bar,         "|")
+SYMBOL_TOKEN(LessThan,    "<")
+SYMBOL_TOKEN(GreaterThan, ">")
+SYMBOL_TOKEN(Assignment,  "=")
+SYMBOL_TOKEN(Tilda,       "~")
+SYMBOL_TOKEN(DoubleQuote, "\"")
+
+#include "../core/token_end.def"

@@ -809,7 +809,7 @@ public:
            .write_assignment("M", "D");
 
   // Call Sys.init entry point
-
+  call("Sys", "init", "0");
  }
 
 private:
