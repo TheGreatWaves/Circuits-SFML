@@ -96,9 +96,14 @@ public:
   else if (match(TokenType::DoubleQuote))
   {
    // TODO: Logic for parsing quote here.
+   while (!check(TokenType::DoubleQuote))
+   {
+    write_previous();
+    advance();
+   }
 
-   // Raw String Constant
-   write_previous();
+   consume(TokenType::DoubleQuote, "String not terminated, missing '\"'");
+
   }
   else if (match(TokenType::Identifier))
   {
@@ -469,11 +474,20 @@ public:
  auto compile_while() -> void
  {
   consume(TokenType::LParen, "Expected '(' after while");
+  write_previous();
+
   compile_expression();
+
   consume(TokenType::RParen, "Expected ')' after while condition");
+  write_previous();
+
   consume(TokenType::LBrace, "Expected '{' at the beginning of while body");
+  write_previous();
+
   compile_statements();
+
   consume(TokenType::RBrace, "Expected '}', while body not terminated");
+  write_previous();
  }
 
  auto write_head(std::string_view element) -> void
