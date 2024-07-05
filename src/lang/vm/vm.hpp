@@ -23,6 +23,7 @@
  */
 
 #pragma once
+#include <iterator>
 #ifndef VM_H
 #define VM_H
 
@@ -127,7 +128,7 @@ private:
  std::size_t       m_size {};
 };
 
-class VMTranslator : BaseParser<VMTokenType>
+class VMTranslator : public BaseParser<VMTokenType>
 {
 private:
  using TokenType = VMTokenType;
@@ -138,6 +139,17 @@ public:
      , m_assembler{}
      , m_filename{fs::path(file_path).stem()}
  {}
+
+ [[nodiscard]] explicit VMTranslator()
+     : BaseParser<VMTokenType>()
+     , m_assembler{}
+     , m_filename{"Temp"}
+ {}
+
+ auto set_source(const std::string& input) -> void
+ {
+  scanner.set_source(input);
+ }
 
  auto print() noexcept -> void
  {

@@ -1,0 +1,11 @@
+class Main {
+    function void main() {
+        do Math.foo(5, 3);
+    }
+}
+
+class Math {
+    function int foo(int x, int y) {
+        return x + y - 2;
+    }
+}

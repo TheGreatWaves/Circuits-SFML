@@ -27,9 +27,119 @@
 #define JACK_HPP
 
 #include <functional>
+#include <optional>
+#include <unordered_map>
 
 #include "token_jack.hpp"
 #include "../core/parser_base.hpp"
+#include "vm_writer.hpp"
+
+enum class SymbolKind
+{
+ THIS = 0,
+ STATIC,
+ ARGUMENT,
+ LOCAL,
+};
+
+inline auto symbol_kind_string(SymbolKind kind) -> std::string 
+{
+ switch (kind) 
+ {
+  case SymbolKind::THIS:     return "this";
+  case SymbolKind::STATIC:   return "static";
+  case SymbolKind::ARGUMENT: return "argument";
+  case SymbolKind::LOCAL:    return "local";
+  break; default:            return "";
+ }
+}
+
+
+struct TableEntry
+{
+ std::string   type;
+ SymbolKind    kind;
+ std::uint16_t index;
+};
+
+using SymbolTable = std::unordered_map<std::string, TableEntry>;
+
+struct CompilerContext
+{
+ std::string class_name;
+ SymbolTable class_table;
+ SymbolTable method_table;
+ uint16_t kind_count[4] {0};
+
+ auto count(SymbolKind kind) -> uint16_t
+ {
+  return kind_count[static_cast<std::size_t>(kind)]++;
+ }
+
+ auto set_name(const std::string& name) -> void
+ {
+  class_name = name;
+ }
+
+ auto add_class_variable(const std::string& name, const std::string& type, SymbolKind kind) -> void
+ {
+  class_table[name] = TableEntry{.type=type, .kind=kind, .index=count(kind)};
+ }
+
+ auto add_method_variable(const std::string& name, const std::string& type, SymbolKind kind) -> void
+ {
+  method_table[name] = TableEntry{.type=type, .kind=kind, .index=count(kind)};
+ }
+
+ auto clear_method_table() -> void
+ {
+  method_table.clear();
+
+  // Reset counts for local and argument
+  kind_count[static_cast<std::size_t>(SymbolKind::ARGUMENT)] = 0;
+  kind_count[static_cast<std::size_t>(SymbolKind::LOCAL)] = 0;
+ }
+
+ auto new_method() -> void
+ {
+  clear_method_table();
+  method_table["this"] = TableEntry{.type=class_name, .kind=SymbolKind::ARGUMENT, .index=count(SymbolKind::ARGUMENT)};
+ }
+
+ auto get_entry(const std::string& identifier) -> TableEntry*
+ {
+  if (method_table.contains(identifier)) return &method_table[identifier];
+  else if (class_table.contains(identifier)) return &class_table[identifier];
+  return nullptr;
+ }
+
+ auto kind_of(const std::string& identifier) -> std::optional<SymbolKind>
+ {
+  if (const auto entry = get_entry(identifier); entry != nullptr)
+   return entry->kind;
+
+  // Compile error.
+  return {};
+ }
+
+ auto type_of(const std::string& identifier) -> std::optional<std::string>
+ {
+  if (const auto entry = get_entry(identifier); entry != nullptr)
+   return entry->type;
+
+  // Compile error.
+  return {};
+ }
+
+ auto index_of(const std::string& identifier) -> std::optional<uint16_t>
+ {
+  if (const auto entry = get_entry(identifier); entry != nullptr)
+   return entry->index;
+
+  // Compile error.
+  return {};
+ }
+};
 
 struct ScopeCallback
 {
@@ -99,6 +209,7 @@ public:
   else if (match(TokenType::Number))
   {
    write_previous();
+   m_writer.write_push("constant", previous.lexeme);
   }
   // String
   else if (match(TokenType::String))
@@ -143,6 +254,14 @@ public:
     consume(TokenType::RParen, "Expected ')' to mark the end of parameter list");
     write_previous();
    }
+   else
+   {
+    const auto entry = m_context.get_entry(previous.lexeme);
+    const auto index = std::to_string(entry->index);
+    const auto segment = symbol_kind_string(entry->kind);
+
+    m_writer.write_push(segment, index);
+   }
   }
   else if (check(TokenType::True, TokenType::False, TokenType::Null, TokenType::This))
   {
@@ -176,6 +295,20 @@ public:
    );
  }
 
+ auto handle_op(TokenType type) -> void
+ {
+  switch (type)
+  {
+   break; case TokenType::Plus: m_writer.write_arithmethic("add");
+   break; case TokenType::Minus: m_writer.write_arithmethic("sub");
+   break; case TokenType::Ampersand: m_writer.write_arithmethic("and");
+   break; case TokenType::Bar: m_writer.write_arithmethic("or");
+   break; case TokenType::LessThan: m_writer.write_arithmethic("lt");
+   break; case TokenType::GreaterThan: m_writer.write_arithmethic("gt");
+   break; default: {report_error("Unhanlded OP case: " + std::string(current.type.name()));}
+  }
+ }
+
  auto compile_expression() -> void
  {
   const auto scope = write_scope_newline("expression");
@@ -184,9 +317,11 @@ public:
 
   while (is_op())
   {
+   const auto op_type = current.type;
    advance();
    write_previous();
    compile_term();
+   handle_op(op_type);
   }
  }
 
@@ -264,11 +399,17 @@ public:
   const auto scope = write_scope_newline("classVarDec");
   write_token(previous);
 
-  read_identifier();
+  const auto variable_kind = previous.type == TokenType::Static
+                           ? SymbolKind::STATIC
+                           : SymbolKind::THIS;
+  const auto variable_type = read_identifier();
 
   do {
    write_previous();
-   read_identifier();
+   const auto variable_name = read_identifier();
+
+   m_context.add_class_variable(variable_name, variable_type, variable_kind);
+
    write_previous();
   } while (match(TokenType::Comma));
 
@@ -278,48 +419,68 @@ public:
 
  auto compile_subroutine_dec() -> void
  {
-  const auto scope =write_scope_newline("subroutineDec");
+  m_context.clear_method_table();
+
+  if (previous.type == TokenType::Method)
+   m_context.new_method();
+
+  const auto scope  = write_scope_newline("subroutineDec");
   write_previous();
 
   // Return type name
-  read_identifier();
+  const auto return_type = read_identifier();
   write_previous();
 
   // Method name
-  read_identifier();
+  const auto method_name = read_identifier();
   write_previous();
 
   consume(TokenType::LParen, "Expected '(' to begin argument list after method name");
   write_previous();
 
-  compile_parameter_list();
+  const auto count = std::to_string(compile_parameter_list());
+  m_writer.write_function(m_context.class_name+"."+method_name, count);
 
   consume(TokenType::RParen, "Expected ')' at the end of parameter list");
   write_previous();
 
   compile_subroutine_body();
+
+  if (return_type == "void") 
+  {
+   m_writer.write_push("constant", "0");
+   m_writer.write_return();
+  }
  }
 
- auto compile_parameter_list() -> void
+ auto compile_parameter_list() -> std::size_t
  {
   const auto scope = write_scope_newline("parameterList");
 
-  if (check(TokenType::RParen)) return;
+  if (check(TokenType::RParen)) return 0;
+
+  auto count = 0;
 
   while (!match(TokenType::EndOfFile))
   {
+   count++;
+
    // Type
-   read_identifier();
+   const auto parameter_type = read_identifier();
    write_previous();
 
    // Name
-   read_identifier();
+   const auto parameter_name = read_identifier();
    write_previous();
+
+   m_context.add_method_variable(parameter_name, parameter_type, SymbolKind::ARGUMENT);
 
    if (!match(TokenType::Comma))
     break;
    write_previous();
   } 
+
+  return count;
  }
 
  auto compile_subroutine_body() -> void
@@ -351,12 +512,16 @@ public:
   write_previous();
 
   // Type
-  read_identifier();
+  const auto variable_type = read_identifier();
 
   // Variable names
   do {
    write_previous();
-   read_identifier();
+
+   const auto variable_name = read_identifier();
+
+   m_context.add_method_variable(variable_name, variable_type, SymbolKind::LOCAL);
+
    write_previous();
   } while (match(TokenType::Comma));
 
@@ -425,19 +590,24 @@ public:
   }
  }
 
- auto compile_expression_list() -> void
+ auto compile_expression_list() -> std::size_t
  {
   const auto scope = write_scope_newline("expressionList");
 
   // Argument list can be empty.
-  if (check(TokenType::RParen)) return;
+  if (check(TokenType::RParen)) return 0;
+
+  auto count {0};
 
   while (true) 
   {
    compile_expression();
+   count++;
    if (!match(TokenType::Comma)) break;
    write_previous();
   }
+
+  return count;
  }
 
  auto compile_do() -> void
@@ -446,26 +616,28 @@ public:
   write_previous();
 
   // Subroutine name
-  read_identifier();
+  auto name = read_identifier();
   write_previous();
 
   if (match(TokenType::Dot))
   {
    write_previous();
-   read_identifier();
+   name += "." + read_identifier();
    write_previous();
   }
 
   consume(TokenType::LParen, "Expected '(' after subroutine name");
   write_previous();
 
-  compile_expression_list();
+  const auto count = std::to_string(compile_expression_list());
 
   consume(TokenType::RParen, "Expected ')' after expression list");
   write_previous();
 
   consume(TokenType::Semicolon, "Expected ';' at the end of do statement");
   write_previous();
+
+  m_writer.write_call(name, count);
  }
 
  auto compile_return() -> void
@@ -476,6 +648,8 @@ public:
   if (!check(TokenType::Semicolon))
    compile_expression();
 
+  m_writer.write_return();
+
   consume(TokenType::Semicolon, "Expected ';' at the end of return statement");
   write_previous();
  }  
@@ -485,7 +659,9 @@ public:
   auto scope = write_scope_newline("class");
   write_previous();
 
-  read_identifier();
+  // Class name
+  const auto class_name = read_identifier();
+  m_context.set_name(class_name);
   write_previous();
 
   consume(TokenType::LBrace, "Expected '{' before class body");
@@ -534,38 +710,53 @@ public:
  auto write_head(std::string_view element) -> void
  {
   tabs();
-  buffer << "<" << element << ">";
+  m_buffer << "<" << element << ">";
  }
 
  auto write_newline() -> void
  {
-  buffer << '\n';
+  m_buffer << '\n';
  }
 
  auto tabs() -> void
  {
-  buffer << std::string(depth, ' ') << std::string(depth, ' ');
+  m_buffer << std::string(m_depth, ' ') << std::string(m_depth, ' ');
  }
 
  auto write_tail(std::string_view element) -> void
  {
   tabs();
-  buffer << "<" << "/" << element << ">\n";
+  m_buffer << "<" << "/" << element << ">\n";
+ }
+
+ auto build() -> std::string
+ {
+  return m_writer.build();
  }
 
  auto output() -> void
  {
-  buffer << '\n';
-  std::cout << buffer.str();
+  // // m_buffer << '\n';
+  // // std::cout << m_buffer.str();
+  // for (const auto& [k, v] : m_context.class_table)
+  // {
+  //  std::cout << "key: " << k << " " << v.type << ' ' << static_cast<uint16_t>(v.kind) << ' ' << v.index << '\n';
+  // }
+  // std::cout << '\n';
+  // for (const auto& [k, v] : m_context.method_table)
+  // {
+  //  std::cout << "key: " << k << " " << v.type << ' ' << static_cast<uint16_t>(v.kind) << ' ' << v.index << '\n';
+  // }
+  m_writer.out();
  }
 
  auto write_scope_newline(std::string_view element) -> ScopeCallback
  {
   write_head(element);
   write_newline();
-  this->depth += 1;
+  this->m_depth += 1;
   return ScopeCallback([=, this] {
-   this->depth -= 1;
+   this->m_depth -= 1;
    write_tail(element);
   });
  }
@@ -573,12 +764,15 @@ public:
  auto write_single(std::string_view element, std::string_view item) -> void
  {
   tabs();
-  buffer << '<' << element << "> " << item << " </" << element << ">\n";
+  m_buffer << '<' << element << "> " << item << " </" << element << ">\n";
  }
 
  private:
-  std::uint16_t     depth {0};
-  std::stringstream buffer {};
+  std::uint16_t     m_depth   {0};
+  std::stringstream m_buffer  {};
+  CompilerContext   m_context {};
+  VMWriter          m_writer  {};
+
 };
 
 #endif /* JACK_HPP */
