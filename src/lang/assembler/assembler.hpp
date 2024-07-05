@@ -269,6 +269,14 @@ public:
    instruction();
   }
 
+  for (auto i {0}; i < 400; i++)
+  {
+   if (index_mapping_inverse.contains(i))
+   {
+    const auto& key = index_mapping_inverse.at(i);
+   }
+  }
+
   return !this->has_error;
  }
 
@@ -349,7 +357,11 @@ public:
 
    if (match(TokenType::Dot))
    {
-    consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
+    if (!check(TokenType::Identifier, TokenType::Number))
+    {
+     report_error("Expected identifier, found: " + std::string(this->current.lexeme));
+    }
+    advance();
     label_name_ss << "." <<  this->previous.lexeme;
 
     if (match(TokenType::Dollar))
@@ -379,6 +391,8 @@ public:
     }
 
     add_index_mapping(label_name, loc);
+
+    next_var_index--;
    }
 
    this->add_index_mapping(label_name, loc);
@@ -437,7 +451,6 @@ public:
  {
   if (!index_mapping.contains(varname))
   {
-   std::cout << "Index Map: " << varname << " " << (next_var_index + 1) << '\n';
    this->add_index_mapping(varname, next_var_index++);
   }
 
@@ -451,7 +464,11 @@ public:
 
    if (match(TokenType::Dot))
    {
-    consume(TokenType::Identifier, "Expected identifier, found: " + std::string(this->current.lexeme));
+    if (!check(TokenType::Identifier, TokenType::Number))
+    {
+     report_error("Expected identifier, found: " + std::string(this->current.lexeme));
+    }
+    advance();
     varname_ss << "." <<  this->previous.lexeme;
 
     if (match(TokenType::Dollar))

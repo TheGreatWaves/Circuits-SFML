@@ -8,6 +8,10 @@ auto main() -> int
 {
  JackParser parser("in.jack");
 
+ parser.m_writer.write_call("Main.main", "0");
+ parser.m_writer.write_label("END");
+ parser.m_writer.write_goto("END");
+
  if (!parser.parse())
  {
   return 1;
@@ -16,9 +20,9 @@ auto main() -> int
  auto vm_code = parser.build();
  std::cout << vm_code << '\n';
 
- VMTranslator translator("in.vm");
+ VMTranslator translator {};
 
- // translator.set_source(vm_code);
+ translator.set_source(vm_code);
 
  if (!translator.parse())
  {
@@ -26,7 +30,7 @@ auto main() -> int
   return 1;
  }
 
- translator.print();
+ // translator.print();
 
  const auto instructions = translator.to_instructions();
 
@@ -35,7 +39,7 @@ auto main() -> int
  computer.load_instructions(instructions);
  const auto loc = translator.loc();
  std::cout << "#instructions: " << loc << '\n';
- computer.process(5000);
+ computer.process(500);
 
 
  std::cout << "\n=== State ===\n";

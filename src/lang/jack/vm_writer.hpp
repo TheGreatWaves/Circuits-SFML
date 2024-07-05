@@ -65,7 +65,7 @@ public:
   buffer << '\t' << "push " << segment << ' ' << index << '\n';
  }
 
- auto write_pop(const std::string& segment, std::string& index) -> void
+ auto write_pop(const std::string& segment, const std::string& index) -> void
  {
   buffer << '\t' << "pop " << segment << ' ' << index << '\n';
  }

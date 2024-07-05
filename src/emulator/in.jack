@@ -1,11 +1,19 @@
 class Main {
-    function void main() {
-        do Math.foo(5, 3);
+    function int main() {
+		do Counter.increment();
+		do Counter.increment();
+		return Counter.value();
     }
 }
 
-class Math {
-    function int foo(int x, int y) {
-        return x + y - 2;
-    }
+class Counter {
+	static int counter;
+
+	function void increment() {
+		let counter = counter + 1;
+	}
+
+	function int value() {
+		return counter;
+	}
 }

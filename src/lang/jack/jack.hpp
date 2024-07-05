@@ -220,6 +220,7 @@ public:
   else if (match(TokenType::Identifier))
   {
    // Variable name
+   auto name = previous.lexeme;
    write_previous();
 
    if (match(TokenType::LSqaure))
@@ -243,16 +244,18 @@ public:
     write_previous();
 
     // Subroutine name
-    read_identifier();
+    name += "." + read_identifier();
     write_previous();
 
     consume(TokenType::LParen, "Expected '(' to mark the beginning of parameter list");
     write_previous();
 
-    compile_expression_list();
+    const auto count = std::to_string(compile_expression_list());
 
     consume(TokenType::RParen, "Expected ')' to mark the end of parameter list");
     write_previous();
+
+    m_writer.write_call(name, count);
    }
    else
    {
@@ -535,7 +538,7 @@ public:
   write_previous();
 
   // Varname
-  read_identifier();
+  const auto variable_name = read_identifier();
   write_previous();
 
   if (match(TokenType::LSqaure))
@@ -553,6 +556,12 @@ public:
 
   consume(TokenType::Semicolon, "Expected ';' at the end of let statement, found: " + current.lexeme);
   write_previous();
+
+  const auto entry = m_context.get_entry(variable_name);
+  const auto index = std::to_string(entry->index);
+  const auto segment = symbol_kind_string(entry->kind);
+
+  m_writer.write_pop(segment, index);
  }
 
  auto compile_if() -> void
@@ -771,6 +780,7 @@ public:
   std::uint16_t     m_depth   {0};
   std::stringstream m_buffer  {};
   CompilerContext   m_context {};
+ public:
   VMWriter          m_writer  {};
 
 };
