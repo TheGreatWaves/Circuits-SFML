@@ -260,6 +260,13 @@ public:
    else
    {
     const auto entry = m_context.get_entry(previous.lexeme);
+
+    if (entry == nullptr)
+    {
+     report_error("'" + previous.lexeme + "' undefined");
+     return;
+    }
+
     const auto index = std::to_string(entry->index);
     const auto segment = symbol_kind_string(entry->kind);
 
@@ -558,6 +565,13 @@ public:
   write_previous();
 
   const auto entry = m_context.get_entry(variable_name);
+
+  if (entry == nullptr)
+  {
+   report_error("'" + variable_name + "' undefined");
+   return;
+  }
+
   const auto index = std::to_string(entry->index);
   const auto segment = symbol_kind_string(entry->kind);
 
