@@ -1,25 +1,28 @@
 class Main {
     function int main() {
-		do Counter.set(-10);
-		do Counter.increment();
-		do Counter.increment();
-		do Counter.increment();
-		return Counter.value();
+		var int a;
+		let a = 5;
+
+		if (a < 10) {
+			let a = 666;
+		}
+
+		return a;
     }
 }
 
-class Counter {
-	static int counter;
+// class Counter {
+// 	static int counter;
 
-	function void increment() {
-		let counter = counter + 1;
-	}
+// 	function void increment() {
+// 		let counter = counter + 1;
+// 	}
 
-	function void set(int value) {
-		let counter = value;
-	}
+// 	function void set(int value) {
+// 		let counter = value;
+// 	}
 
-	function int value() {
-		return counter;
-	}
-}
+// 	function int value() {
+// 		return counter;
+// 	}
+// }

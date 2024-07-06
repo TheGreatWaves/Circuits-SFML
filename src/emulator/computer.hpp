@@ -153,6 +153,22 @@ public:
  inline auto process() -> void
  {
   const auto instruction = fetch();
+
+  if (instruction.A_instruction)
+  {
+   // std::cout << "Instruction: @" << instruction.raw << ", line: " << m_pc << '\n';
+  }
+  else
+  {
+   // std::cout << "Instruction: ";
+   // if (instruction.write_D) std::cout << "D";
+   // if (instruction.write_A) std::cout << "A";
+   // if (instruction.write_memory) std::cout << "M";
+
+   // std::cout << "=..., line: " << m_pc << "\n";
+
+  }
+
   // std::cout << "instruction: " << instruction.raw << '\n';
 
   // Handle A instruction.
@@ -166,6 +182,8 @@ public:
   {
    const auto x = fetch_operand_x(); 
    const auto y = fetch_operand_y(instruction.read_memory) ;
+
+   // std::cout << "\t\tx: " << x << ", y: " << y << '\n';
 
    auto args = alu::args_from_instruction(x, y, instruction);
    const auto result = alu::compute(std::move(args));
@@ -195,8 +213,28 @@ public:
    const auto jump = jlez || jgez;
    // std::cout << "\tjump: " << jump << '\n';
 
+   // std::cout << "[PC: " << m_pc << "]\n";
+
+   if (instruction.jlz && !instruction.jez && !instruction.jgz)
+   {
+    print_state();
+    if (jlz)
+    {
+     std::cout << "Jumped less than zero!";
+    }
+    else
+    {
+     std::cout << "Did not jump, "<< result.out << " not less than zero!";
+    }
+
+    std::cout << '\n';
+   }
+
    if (jump)
    {
+    std::cout << "Jumped from " << m_pc << " to " << m_A << '\n';
+    if (m_A != 49)
+     print_state();
     write_pc(m_A);
    }
    else
@@ -215,19 +253,25 @@ public:
    std::cout << "Ram[" << std::setw(3) << std::right << i << "] " << m_ram[i] << '\n';
   }
 
+  const auto stack = m_ram[0];
+  std::cout << "Stack[ ";
   for (std::size_t i{0}; i < 10; i++)
   {
-   std::cout << "Stack[" << std::setw(3) << std::right << i << "] " << static_cast<int16_t>(m_ram[i + 256]) << '\n';
+   const auto value = m_ram[stack + i - 10];
+   if (value == 0) continue;
+   std::cout << static_cast<int16_t>(value) << "[" << (stack+i-10) << "] ";
   }
+  std::cout << "]\n";
 
   for (std::size_t i{0}; i < 5; i++)
   {
    std::cout << "Static[" << std::setw(3) << std::right << i << "] " << m_ram[i + 16] << '\n';
   }
 
+  const auto local = m_ram[1];
   for (std::size_t i{0}; i < 10; i++)
   {
-   std::cout << "Local[" << std::setw(3) << std::right << i << "] " << m_ram[i + 300] << '\n';
+   std::cout << "Local[" << std::setw(3) << std::right << i << "] " << m_ram[i + local] << '\n';
   }
  }
 
@@ -269,7 +313,7 @@ private:
 
  inline auto write_D(uint16_t value) -> void
  {
-  // std::cout << "\t\t\tWrite D: " << value << '\n';
+  std::cout << "\t\t\tWrite D: " << value << '\n';
   m_D = value;
  }
 
@@ -280,6 +324,7 @@ private:
 
  inline auto write_M(uint16_t value) -> void
  {
+  std::cout << "\t\t\tWriting RAM[" << std::setw(3) << m_A << "] " << value << ", pc: " << m_pc << '\n';
   m_ram[m_A] = value;
  }
 

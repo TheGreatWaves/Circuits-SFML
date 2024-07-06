@@ -23,10 +23,10 @@
  */
 
 #pragma once
-#include <iterator>
 #ifndef VM_H
 #define VM_H
 
+#include <iterator>
 #include <string>
 #include <sstream>
 #include <string_view>
@@ -648,7 +648,7 @@ public:
            .write_assignment("AM", "M-1")
            .write_assignment("D", "M")
            .write_A(label_name)
-           .write_jump("D", "JGT");
+           .write_jump("D", "JLT");
  }
 
  auto goto_label(std::string_view label) -> void

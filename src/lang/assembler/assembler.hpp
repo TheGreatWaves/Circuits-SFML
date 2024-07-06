@@ -274,14 +274,25 @@ public:
    if (index_mapping_inverse.contains(i))
    {
     const auto& key = index_mapping_inverse.at(i);
+    std::cout << "Index map: " << key << " " << i << '\n';
+    
    }
   }
+
+  std::cout << '\n';
 
   return !this->has_error;
  }
 
  auto add_index_mapping(const std::string& varname, std::size_t index)
  {
+  // std::cout << "Adding " << varname << " as " << index << '\n';
+  if (index_mapping.contains(varname))
+  {
+   const auto index = index_mapping[varname];
+   this->index_mapping_inverse[index] = "";
+  }
+
   this->index_mapping[varname] = index;
   this->index_mapping_inverse[index] = varname;
  }

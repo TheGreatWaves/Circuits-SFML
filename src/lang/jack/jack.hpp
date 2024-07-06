@@ -454,13 +454,12 @@ public:
   consume(TokenType::LParen, "Expected '(' to begin argument list after method name");
   write_previous();
 
-  const auto count = std::to_string(compile_parameter_list());
-  m_writer.write_function(m_context.class_name+"."+method_name, count);
+  compile_parameter_list();
 
   consume(TokenType::RParen, "Expected ')' at the end of parameter list");
   write_previous();
 
-  compile_subroutine_body();
+  compile_subroutine_body(method_name);
 
   if (return_type == "void") 
   {
@@ -499,17 +498,28 @@ public:
   return count;
  }
 
- auto compile_subroutine_body() -> void
+ auto compile_subroutine_body(const std::string& method_name) -> void
  {
   const auto scope = write_scope_newline("subroutineBody");
 
   consume(TokenType::LBrace, "Expected '{' at the start of subroutine body");
   write_previous();
 
+  // TODO: Move this in later, the problem with that is that
+  //       the count of variable becomes annoying to deal with.
+
+  auto local_var_count {0};
+
+  while (match(TokenType::Var))
+  {
+   compile_var_dec();
+   local_var_count++;
+  }
+
+  m_writer.write_function(m_context.class_name+"."+method_name, std::to_string(local_var_count));
+
   while (!check(TokenType::RBrace, TokenType::EndOfFile))
   {
-   while (match(TokenType::Var))
-    compile_var_dec();
 
    compile_statements();
   }
@@ -594,6 +604,9 @@ public:
 
   compile_expression();
 
+  m_writer.write_arithmethic("not");
+  m_writer.write_if("L1");
+
   consume(TokenType::RParen, "Expected ')' after if condition");
   write_previous();
 
@@ -602,6 +615,10 @@ public:
   write_previous();
 
   compile_statements();
+
+  m_writer.write_goto("L2");
+
+  m_writer.write_label("L1");
 
   consume(TokenType::RBrace, "Expected '}' after if body");
   write_previous();
@@ -617,6 +634,8 @@ public:
    consume(TokenType::RBrace, "Expected '}' after else body");
    write_previous();
   }
+
+  m_writer.write_label("L2");
  }
 
  auto compile_expression_list() -> std::size_t
