@@ -253,12 +253,12 @@ public:
     name += "." + read_identifier();
     write_previous();
 
-    consume(TokenType::LParen, "Expected '(' to mark the beginning of parameter list");
+    consume(TokenType::LParen, "Expected '(' after subroutine name");
     write_previous();
 
     const auto count = std::to_string(compile_expression_list());
 
-    consume(TokenType::RParen, "Expected ')' to mark the end of parameter list");
+    consume(TokenType::RParen, "Expected ')' after expression list");
     write_previous();
 
     m_writer.write_call(name, count);
@@ -644,29 +644,12 @@ public:
   const auto scope = write_scope_newline("doStatement");
   write_previous();
 
-  // Subroutine name
-  auto name = read_identifier();
-  write_previous();
-
-  if (match(TokenType::Dot))
-  {
-   write_previous();
-   name += "." + read_identifier();
-   write_previous();
-  }
-
-  consume(TokenType::LParen, "Expected '(' after subroutine name");
-  write_previous();
-
-  const auto count = std::to_string(compile_expression_list());
-
-  consume(TokenType::RParen, "Expected ')' after expression list");
-  write_previous();
+  compile_expression();
 
   consume(TokenType::Semicolon, "Expected ';' at the end of do statement");
   write_previous();
 
-  m_writer.write_call(name, count);
+  m_writer.write_pop("temp", "0");
  }
 
  auto compile_return() -> void
@@ -674,8 +657,10 @@ public:
   const auto scope = write_scope_newline("returnStatement");
   write_previous();
 
-  if (!check(TokenType::Semicolon))
-   compile_expression();
+  if (check(TokenType::Semicolon))
+   m_writer.write_push("constant", "0"); // Push dummy value
+  else
+   compile_expression();                 // Push expression
 
   m_writer.write_return();
 

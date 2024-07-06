@@ -1,5 +1,7 @@
 class Main {
     function int main() {
+		do Counter.set(-10);
+		do Counter.increment();
 		do Counter.increment();
 		do Counter.increment();
 		return Counter.value();
@@ -11,6 +13,10 @@ class Counter {
 
 	function void increment() {
 		let counter = counter + 1;
+	}
+
+	function void set(int value) {
+		let counter = value;
 	}
 
 	function int value() {
