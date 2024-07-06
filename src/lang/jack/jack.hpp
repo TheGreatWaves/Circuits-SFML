@@ -201,9 +201,15 @@ public:
   // Prefix
   if (check(TokenType::Minus, TokenType::Tilda))
   {
+   const auto prefix_type = current.type;
    advance();
    write_previous();
    compile_term();
+
+   if (prefix_type == TokenType::Minus)
+    m_writer.write_arithmethic("neg");
+   else
+    m_writer.write_arithmethic("not");
   }
   // Number
   else if (match(TokenType::Number))
