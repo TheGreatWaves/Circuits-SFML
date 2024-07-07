@@ -606,7 +606,10 @@ public:
   compile_expression();
 
   m_writer.write_arithmethic("not");
-  m_writer.write_if("L1");
+
+  const auto l1 = create_label("L1");
+  const auto l2 = create_label("L2");
+  m_writer.write_if(l1);
 
   consume(TokenType::RParen, "Expected ')' after if condition");
   write_previous();
@@ -617,9 +620,8 @@ public:
 
   compile_statements();
 
-  m_writer.write_goto("L2");
-
-  m_writer.write_label("L1");
+  m_writer.write_goto(l2);
+  m_writer.write_label(l1);
 
   consume(TokenType::RBrace, "Expected '}' after if body");
   write_previous();
@@ -636,7 +638,7 @@ public:
    write_previous();
   }
 
-  m_writer.write_label("L2");
+  m_writer.write_label(l2);
  }
 
  auto compile_expression_list() -> std::size_t
@@ -801,10 +803,18 @@ public:
   m_buffer << '<' << element << "> " << item << " </" << element << ">\n";
  }
 
+ auto create_label(const std::string& label_name) -> std::string 
+ {
+  if (!m_label_count.try_emplace(label_name, 0).second)
+   m_label_count[label_name]++;
+  return label_name + '_' + std::to_string(m_label_count[label_name]);
+ }
+
  private:
   std::uint16_t     m_depth   {0};
   std::stringstream m_buffer  {};
   CompilerContext   m_context {};
+  std::unordered_map<std::string, uint16_t> m_label_count;
  public:
   VMWriter          m_writer  {};
 
