@@ -194,6 +194,33 @@ public:
   return !this->has_error;
  }
 
+ auto handle_array_term(const std::string& name) -> void
+ {
+    const auto entry = m_context.get_entry(name);
+
+    if (entry == nullptr)
+    {
+     report_error("'" + previous.lexeme + "' undefined");
+     return;
+    }
+
+    const auto index = std::to_string(entry->index);
+    const auto segment = symbol_kind_string(entry->kind);
+
+    m_writer.write_push(segment, index);
+
+    write_previous();
+    compile_expression();
+
+    m_writer.write_arithmethic("add");
+
+    m_writer.write_pop("pointer", "1");
+    m_writer.write_push("that", "0");
+    
+    consume(TokenType::RSquare, "Expected ']', array subscript not terminated");
+    write_previous();
+ }
+
  auto compile_term() -> void
  {
   const auto scope = write_scope_newline("term");
@@ -226,16 +253,12 @@ public:
   else if (match(TokenType::Identifier))
   {
    // Variable name
-   auto name = previous.lexeme;
+   const auto name = previous.lexeme;
    write_previous();
 
-   if (match(TokenType::LSqaure))
+   if (match(TokenType::LSquare))
    {
-    write_previous();
-    compile_expression();
-    
-    consume(TokenType::RSquare, "Expected ']', array subscript not terminated");
-    write_previous();
+    handle_array_term(name);
    }
    else if (match(TokenType::LParen))
    {
@@ -263,7 +286,7 @@ public:
     }
 
     // Subroutine name
-    name += "." + read_identifier();
+    const auto subroutine_full_name = name + "." + read_identifier();
     write_previous();
 
     consume(TokenType::LParen, "Expected '(' after subroutine name");
@@ -274,7 +297,7 @@ public:
     consume(TokenType::RParen, "Expected ')' after expression list");
     write_previous();
 
-    m_writer.write_call(name, function_arg_count);
+    m_writer.write_call(subroutine_full_name, function_arg_count);
    }
    else
    {
@@ -478,7 +501,7 @@ public:
   m_context.clear_method_table();
 
   const auto subroutine_type = previous.type;
-  if (previous.type == subroutine_type)
+  if (previous.type == TokenType::Method)
    m_context.new_method();
 
   const auto scope  = write_scope_newline("subroutineDec");
@@ -573,14 +596,11 @@ public:
 
   while (!check(TokenType::RBrace, TokenType::EndOfFile))
   {
-
    compile_statements();
   }
 
   consume(TokenType::RBrace, "Expected '}' at the end of subroutine body");
   write_previous();
-
-  
  }
 
  auto compile_var_dec() -> void
@@ -617,22 +637,6 @@ public:
   const auto variable_name = read_identifier();
   write_previous();
 
-  if (match(TokenType::LSqaure))
-  {
-   write_previous();
-   compile_expression();
-   consume(TokenType::RSquare, "Expected ']' after array subscript");
-   write_previous();
-  }
-
-  consume(TokenType::Assignment, "Expected '=' in let statement");
-  write_previous();
-
-  compile_expression();
-
-  consume(TokenType::Semicolon, "Expected ';' at the end of let statement, found: " + current.lexeme);
-  write_previous();
-
   const auto entry = m_context.get_entry(variable_name);
 
   if (entry == nullptr)
@@ -643,8 +647,39 @@ public:
 
   const auto index = std::to_string(entry->index);
   const auto segment = symbol_kind_string(entry->kind);
+  const auto is_arr_manip = current.type == TokenType::LSquare;
 
-  m_writer.write_pop(segment, index);
+  if (is_arr_manip)
+  {
+   advance();
+   write_previous();
+   m_writer.write_push(segment, index);
+   compile_expression();
+   consume(TokenType::RSquare, "Expected ']' after array subscript");
+   write_previous();
+
+   m_writer.write_arithmethic("add");
+  }
+
+  consume(TokenType::Assignment, "Expected '=' in let statement");
+  write_previous();
+
+  compile_expression();
+
+  if (is_arr_manip) 
+  {
+   m_writer.write_pop("temp", "0");
+   m_writer.write_pop("pointer", "1");
+   m_writer.write_push("temp", "0");
+   m_writer.write_pop("that", "0");
+  }
+  else
+  {
+   m_writer.write_pop(segment, index);
+  }
+
+  consume(TokenType::Semicolon, "Expected ';' at the end of let statement, found: " + current.lexeme);
+  write_previous();
  }
 
  auto compile_if() -> void

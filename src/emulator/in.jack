@@ -1,31 +1,12 @@
 class Main {
-    function int main() {
-		var int a;
+	function int main() {
+		var Array arr;
+		let arr = 2048;
 
-		while (true) {
-			if (a < 5) {
-				let a = a + 1;
-			} else {
-				return a;
-			}
-		}
+		let arr[0] = 5;
+		let arr[arr[0]] = 666;
+		let arr[arr[0] + 1] = arr[arr[0]] + 1;
 
-		return a;
-    }
+		return arr[arr[0] + 1];
+	}
 }
-
-// class Counter {
-// 	static int counter;
-
-// 	function void increment() {
-// 		let counter = counter + 1;
-// 	}
-
-// 	function void set(int value) {
-// 		let counter = value;
-// 	}
-
-// 	function int value() {
-// 		return counter;
-// 	}
-// }
