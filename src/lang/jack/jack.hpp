@@ -748,10 +748,24 @@ public:
   const auto scope = write_scope_newline("whileStatement");
   write_previous();
 
+  // while body label
+  const auto body_label = create_label("wbl");
+
+  // while exit label
+  const auto exit_label = create_label("wel");
+
+  m_writer.write_label(body_label);
+
   consume(TokenType::LParen, "Expected '(' after while");
   write_previous();
 
   compile_expression();
+
+  m_writer.write_arithmethic("not");
+
+
+  // If condition fails, jump to exit
+  m_writer.write_if(exit_label);
 
   consume(TokenType::RParen, "Expected ')' after while condition");
   write_previous();
@@ -760,6 +774,12 @@ public:
   write_previous();
 
   compile_statements();
+
+  // Loop
+  m_writer.write_goto(body_label);
+
+  // Exit label placement
+  m_writer.write_label(exit_label);
 
   consume(TokenType::RBrace, "Expected '}', while body not terminated");
   write_previous();

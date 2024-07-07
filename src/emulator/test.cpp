@@ -39,7 +39,7 @@ auto main() -> int
  computer.load_instructions(instructions);
  const auto loc = translator.loc();
  std::cout << "#instructions: " << loc << '\n';
- computer.process(300);
+ computer.process(1000);
 
 
  std::cout << "\n=== State ===\n";
