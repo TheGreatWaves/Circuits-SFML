@@ -249,6 +249,19 @@ public:
    {
     write_previous();
 
+    auto count = 0;
+
+    if (m_context.method_table.contains(name))
+    {
+     count = 1;
+
+     const auto entry = m_context.get_entry(name);
+     const auto index = std::to_string(entry->index);
+     const auto segment = symbol_kind_string(entry->kind);
+
+     m_writer.write_push(segment, index);
+    }
+
     // Subroutine name
     name += "." + read_identifier();
     write_previous();
@@ -256,12 +269,12 @@ public:
     consume(TokenType::LParen, "Expected '(' after subroutine name");
     write_previous();
 
-    const auto count = std::to_string(compile_expression_list());
+    const auto function_arg_count = std::to_string(count + compile_expression_list());
 
     consume(TokenType::RParen, "Expected ')' after expression list");
     write_previous();
 
-    m_writer.write_call(name, count);
+    m_writer.write_call(name, function_arg_count);
    }
    else
    {
@@ -311,10 +324,12 @@ public:
   {
    break; case TokenType::True: 
    {
-    m_writer.write_push("constant", "0");
-    m_writer.write_arithmethic("not");
+    m_writer.write_push("constant", "1");
+    m_writer.write_arithmethic("neg");
    }
    break; case TokenType::False: m_writer.write_push("constant", "0");
+   break; case TokenType::Null: m_writer.write_push("constant", "0");
+   break; case TokenType::This: m_writer.write_push("pointer", "0");
    break; default: {report_error("Unhanlded keyword constant case: " + std::string(current.type.name()));}
   }
  }
@@ -344,6 +359,8 @@ public:
    break; case TokenType::LessThan: m_writer.write_arithmethic("lt");
    break; case TokenType::GreaterThan: m_writer.write_arithmethic("gt");
    break; case TokenType::Assignment: m_writer.write_arithmethic("eq");
+   break; case TokenType::Asterisk: m_writer.write_call("Math.multiply", "2");
+   break; case TokenType::Slash: m_writer.write_call("Math.divide", "2");
    break; default: {report_error("Unhanlded OP case: " + std::string(current.type.name()));}
   }
  }
@@ -460,7 +477,8 @@ public:
  {
   m_context.clear_method_table();
 
-  if (previous.type == TokenType::Method)
+  const auto subroutine_type = previous.type;
+  if (previous.type == subroutine_type)
    m_context.new_method();
 
   const auto scope  = write_scope_newline("subroutineDec");
@@ -482,7 +500,7 @@ public:
   consume(TokenType::RParen, "Expected ')' at the end of parameter list");
   write_previous();
 
-  compile_subroutine_body(method_name);
+  compile_subroutine_body(subroutine_type, method_name);
 
   if (return_type == "void") 
   {
@@ -521,7 +539,7 @@ public:
   return count;
  }
 
- auto compile_subroutine_body(const std::string& method_name) -> void
+ auto compile_subroutine_body(TokenType subroutine_type, const std::string& method_name) -> void
  {
   const auto scope = write_scope_newline("subroutineBody");
 
@@ -540,6 +558,18 @@ public:
   }
 
   m_writer.write_function(m_context.class_name+"."+method_name, std::to_string(local_var_count));
+
+  if (subroutine_type == TokenType::Constructor)
+  {
+   m_writer.write_push("constant", std::to_string(m_context.count(SymbolKind::THIS)));
+   m_writer.write_call("Memory.alloc", "1");
+   m_writer.write_pop("pointer", "0");
+  }
+  else if (subroutine_type == TokenType::Method)
+  {
+   m_writer.write_push("argument", "0");
+   m_writer.write_pop("pointer", "0");
+  }
 
   while (!check(TokenType::RBrace, TokenType::EndOfFile))
   {
