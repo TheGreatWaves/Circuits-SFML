@@ -274,7 +274,7 @@ public:
    if (index_mapping_inverse.contains(i))
    {
     const auto& key = index_mapping_inverse.at(i);
-    // std::cout << "Index map: " << key << " " << i << '\n';
+    std::cout << "Index map: " << key << " " << i << '\n';
     
    }
   }
@@ -286,7 +286,6 @@ public:
 
  auto add_index_mapping(const std::string& varname, std::size_t index)
  {
-  // std::cout << "Adding " << varname << " as " << index << '\n';
   this->index_mapping[varname] = index;
   this->index_mapping_inverse[index] = varname;
  }
@@ -388,16 +387,17 @@ public:
     // whose index is greater than the label's initial index.
     // std::cout << "Label name: " << label_name << " already exists, removing...\n";
 
-    auto index = index_mapping.at(label_name) + 1;
-    index_mapping_inverse.erase(index - 1);
+    auto index = index_mapping.at(label_name);
+    index_mapping_inverse[index] = "~" + label_name + "--";
 
-    // std::cout << "Purging everything starting from index: " << index << '\n';
+    // // std::cout << "Purging everything starting from index: " << index << '\n';
 
-    while (index_mapping_inverse.contains(index))
+    while (index_mapping_inverse.contains(index+1))
     {
-     const auto varname = index_mapping_inverse.at(index);
-     index_mapping_inverse.erase(index);
-     add_index_mapping(varname, index-1);
+     const auto varname = index_mapping_inverse.at(index+1);
+     index_mapping_inverse.erase(index+1);
+     std::cout << "Moving " << varname << " from " << index+1 << " to " << index << '\n';
+     add_index_mapping(varname, index);
 
      index += 1;
     }
@@ -405,6 +405,7 @@ public:
     next_var_index--;
    }
 
+   std::cout << "Added label " << label_name << " at " << loc << "\n\n";
    add_index_mapping(label_name, loc);
    consume(TokenType::RightParen, "Expected enclosing parenthesis ')', found: " + std::string(this->current.lexeme));
   }

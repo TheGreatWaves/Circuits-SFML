@@ -79,6 +79,7 @@ struct CompilerContext
  auto set_name(const std::string& name) -> void
  {
   class_name = name;
+  clear();
  }
 
  auto add_class_variable(const std::string& name, const std::string& type, SymbolKind kind) -> void
@@ -89,6 +90,12 @@ struct CompilerContext
  auto add_method_variable(const std::string& name, const std::string& type, SymbolKind kind) -> void
  {
   method_table[name] = TableEntry{.type=type, .kind=kind, .index=count(kind)};
+ }
+
+ auto clear() -> void
+ {
+  clear_method_table();
+  kind_count[static_cast<std::size_t>(SymbolKind::THIS)] = 0;
  }
 
  auto clear_method_table() -> void
@@ -253,7 +260,7 @@ public:
   else if (match(TokenType::Identifier))
   {
    // Variable name
-   const auto name = previous.lexeme;
+   auto name = previous.lexeme;
    write_previous();
 
    if (match(TokenType::LSquare))
@@ -283,6 +290,8 @@ public:
      const auto segment = symbol_kind_string(entry->kind);
 
      m_writer.write_push(segment, index);
+
+     name = entry->type;
     }
 
     // Subroutine name
@@ -494,6 +503,7 @@ public:
 
   consume(TokenType::Semicolon, "Expected ';' at the end of variable declaration");
   write_token(previous);
+
  }
 
  auto compile_subroutine_dec() -> void
@@ -727,6 +737,11 @@ public:
    consume(TokenType::RBrace, "Expected '}' after else body");
    write_previous();
   }
+  else
+  {
+   m_writer.write_push("constant", "0");
+   m_writer.write_pop("temp", "0");
+  }
 
   m_writer.write_label(end_of_else);
  }
@@ -809,6 +824,8 @@ public:
 
   consume(TokenType::RBrace, "Expected '}' after class body");
   write_previous();
+
+  output();
  }
 
  auto compile_while() -> void
@@ -882,18 +899,20 @@ public:
 
  auto output() -> void
  {
-  // // m_buffer << '\n';
-  // // std::cout << m_buffer.str();
-  // for (const auto& [k, v] : m_context.class_table)
-  // {
-  //  std::cout << "key: " << k << " " << v.type << ' ' << static_cast<uint16_t>(v.kind) << ' ' << v.index << '\n';
-  // }
-  // std::cout << '\n';
-  // for (const auto& [k, v] : m_context.method_table)
-  // {
-  //  std::cout << "key: " << k << " " << v.type << ' ' << static_cast<uint16_t>(v.kind) << ' ' << v.index << '\n';
-  // }
-  m_writer.out();
+  // m_buffer << '\n';
+  // std::cout << m_buffer.str();
+  std::cout << " ========= " << m_context.class_name << " ========= \n";
+  std::cout << "[Class]\n";
+  for (const auto& [k, v] : m_context.class_table)
+  {
+   std::cout << "key: " << k << " " << v.type << ' ' << static_cast<uint16_t>(v.kind) << ' ' << v.index << '\n';
+  }
+  std::cout << "[Method]\n";
+  for (const auto& [k, v] : m_context.method_table)
+  {
+   std::cout << "key: " << k << " " << v.type << ' ' << static_cast<uint16_t>(v.kind) << ' ' << v.index << '\n';
+  }
+  // m_writer.out();
  }
 
  auto write_scope_newline(std::string_view element) -> ScopeCallback
@@ -917,7 +936,7 @@ public:
  {
   if (!m_label_count.try_emplace(label_name, 0).second)
    m_label_count[label_name]++;
-  return label_name + '_' + std::to_string(m_label_count[label_name]);
+  return m_context.class_name + '_' + label_name + '_' + std::to_string(m_label_count[label_name]);
  }
 
  private:

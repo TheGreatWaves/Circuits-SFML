@@ -55,6 +55,11 @@ auto main() -> int
   std::cout << "Failed to add source: os/memory.jack" << '\n'; 
  }
 
+ if (!context.add_source("os/array.jack"))
+ {
+  std::cout << "Failed to add source: os/array.jack" << '\n'; 
+ }
+
  if (!context.add_source("os/system.jack"))
  {
   std::cout << "Failed to add source: os/system.jack" << '\n'; 
