@@ -321,6 +321,7 @@ public:
    break; case TokenType::Bar: m_writer.write_arithmethic("or");
    break; case TokenType::LessThan: m_writer.write_arithmethic("lt");
    break; case TokenType::GreaterThan: m_writer.write_arithmethic("gt");
+   break; case TokenType::Assignment: m_writer.write_arithmethic("eq");
    break; default: {report_error("Unhanlded OP case: " + std::string(current.type.name()));}
   }
  }
