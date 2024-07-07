@@ -82,8 +82,6 @@ public:
   m_code << '\n';
   return *this;
  }
-
-
  
  auto write_comment(std::convertible_to<std::string_view> auto&& ... comment) -> CodeStringBuilder&
  {
@@ -166,6 +164,11 @@ public:
   return m_assembler.to_instructions();
  }
 
+ [[nodiscard]] auto build() const -> const std::string 
+ {
+  return m_builder.build();
+ }
+
  /**
   * Parse the source code and excute the instructions.
   */
@@ -177,7 +180,7 @@ public:
    instruction();
 
   const auto source = m_builder.build();
-  std::cout << source << '\n';
+  // std::cout << source << '\n';
   m_assembler.set_source(source);
 
   if (!m_assembler.parse())
@@ -416,7 +419,8 @@ public:
  
  auto handle_pop() -> void 
  {
-  switch (this->current.type)
+  const auto segment_type = this->current.type;
+  switch (segment_type)
   {
     break; case TokenType::Static:
     {
@@ -472,7 +476,7 @@ public:
     break; case TokenType::Argument: write_pop_segment("ARG");
     break; case TokenType::This:     write_pop_segment("THIS");
     break; case TokenType::That:     write_pop_segment("THAT");
-    break; default: { report_error("Unexpected segment found in pop statement"); }
+    break; default: { report_error("Unexpected segment found in pop statement: " + std::string()); }
   }
  }
 
@@ -810,18 +814,6 @@ public:
            .write_assignment("A", "M")
            .write_jump("0", "JMP")
            .newline();
- }
-
- auto boostrap() -> void
- {
-  // Set SP = 256
-  m_builder.write_A("256")
-           .write_assignment("D", "A")
-           .write_A("SP")
-           .write_assignment("M", "D");
-
-  // Call Sys.init entry point
-  call("Sys", "init", "0");
  }
 
 private:

@@ -1,3 +1,26 @@
+/** 
+ * MIT License
+ * 
+ * Copyright (c) 2023 Ochawin A.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #ifndef COMPUTER_HPP
 #define COMPUTER_HPP
 
@@ -215,26 +238,24 @@ public:
 
    // std::cout << "[PC: " << m_pc << "]\n";
 
-   if (instruction.jlz && !instruction.jez && !instruction.jgz)
-   {
-    print_state();
-    if (jlz)
-    {
-     std::cout << "Jumped less than zero!";
-    }
-    else
-    {
-     std::cout << "Did not jump, "<< result.out << " not less than zero!";
-    }
+   // if (instruction.jlz && !instruction.jez && !instruction.jgz)
+   // {
+   //  print_state();
+   //  if (jlz)
+   //  {
+   //   std::cout << "Jumped, " << result.out << " less than zero!";
+   //  }
+   //  else
+   //  {
+   //   std::cout << "Did not jump, "<< result.out << " not less than zero!";
+   //  }
 
-    std::cout << '\n';
-   }
+   //  std::cout << '\n';
+   // }
 
    if (jump)
    {
-    std::cout << "Jumped from " << m_pc << " to " << m_A << '\n';
-    if (m_A != 49)
-     print_state();
+    // std::cout << "Jumped from " << m_pc << " to " << m_A << '\n';
     write_pc(m_A);
    }
    else
@@ -313,7 +334,7 @@ private:
 
  inline auto write_D(uint16_t value) -> void
  {
-  std::cout << "\t\t\tWrite D: " << value << '\n';
+  // std::cout << "\t\t\tWrite D: " << value << '\n';
   m_D = value;
  }
 
@@ -324,7 +345,7 @@ private:
 
  inline auto write_M(uint16_t value) -> void
  {
-  std::cout << "\t\t\tWriting RAM[" << std::setw(3) << m_A << "] " << value << ", pc: " << m_pc << '\n';
+  // std::cout << "\t\t\tWriting RAM[" << std::setw(3) << m_A << "] " << value << ", pc: " << m_pc << '\n';
   m_ram[m_A] = value;
  }
 

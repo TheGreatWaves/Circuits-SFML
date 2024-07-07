@@ -1,0 +1,72 @@
+class Memory {
+	static Array free_blocks;
+	static int heap_base;
+	static int next, length;
+
+	function void init() {
+		let heap_base = 2048;
+		let free_blocks = heap_base;
+		let length = 0;
+		let next = 1;
+
+		// Initialize one block, no next.
+		let free_blocks[length] = 14335;
+		let free_blocks[next] = null;
+	}
+
+	function int peek(int address) {
+		var Array mem;
+		let mem = address;
+		return mem[0];
+	}
+
+	function void poke(int address, int value) {
+		var Array mem;
+		let mem = address;
+		let mem[0] = value;
+	}
+
+	function Array alloc(int size) {
+		var Array prev_block, block, next_block;
+
+		let prev_block = null;
+		let block = free_blocks;
+
+		// Keep traversing to find a block we can use.
+		// We pick the first one, not necessarily the best one.
+		while (block[length] < size) {
+			let prev_block = block;
+			let block = block[next];
+
+			if (block = null) {
+				return -1;
+			}
+		}
+
+		// The 2 offset considers 'next' and 'length' values.
+		let next_block = block + 2 + size;
+		let next_block[length] = block[length] - size - 2;
+		let next_block[next] = block[next];
+
+		// Set the size of the current block accordingly and remove the pointer to next.
+		let block[length] = size;
+		let block[next] = null;
+
+		// Connect previous block to next if exists.
+		if (prev_block = null) {
+			let free_blocks = next_block;
+		} else {
+			let prev_block[next] = next_block;
+		}
+
+		// Return the free memory (exclude 'next' and 'length')
+		return block + 2;
+	}
+
+	function void dealloc(Array object) {
+		var Array block;
+		let block = object - 2;
+		let block[next] = free_blocks;
+		let free_blocks = block;
+	}
+}

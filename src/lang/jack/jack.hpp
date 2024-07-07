@@ -576,8 +576,7 @@ public:
 
   while (match(TokenType::Var))
   {
-   compile_var_dec();
-   local_var_count++;
+   local_var_count += compile_var_dec();
   }
 
   m_writer.write_function(m_context.class_name+"."+method_name, std::to_string(local_var_count));
@@ -603,9 +602,10 @@ public:
   write_previous();
  }
 
- auto compile_var_dec() -> void
+ auto compile_var_dec() -> int
  {
   const auto scope = write_scope_newline("varDec");
+  auto count = 0;
 
   // Var
   write_previous();
@@ -615,6 +615,7 @@ public:
 
   // Variable names
   do {
+   count++;
    write_previous();
 
    const auto variable_name = read_identifier();
@@ -626,6 +627,8 @@ public:
 
   consume(TokenType::Semicolon, "Expected ';' at the end of variable declaration");
   write_token(previous);
+
+  return count;
  }
 
  auto compile_let() -> void
@@ -694,9 +697,9 @@ public:
 
   m_writer.write_arithmethic("not");
 
-  const auto l1 = create_label("L1");
-  const auto l2 = create_label("L2");
-  m_writer.write_if(l1);
+  const auto end_of_if = create_label("EOI");
+  const auto end_of_else = create_label("EOE");
+  m_writer.write_if(end_of_if);
 
   consume(TokenType::RParen, "Expected ')' after if condition");
   write_previous();
@@ -707,8 +710,8 @@ public:
 
   compile_statements();
 
-  m_writer.write_goto(l2);
-  m_writer.write_label(l1);
+  m_writer.write_goto(end_of_else);
+  m_writer.write_label(end_of_if);
 
   consume(TokenType::RBrace, "Expected '}' after if body");
   write_previous();
@@ -725,7 +728,7 @@ public:
    write_previous();
   }
 
-  m_writer.write_label(l2);
+  m_writer.write_label(end_of_else);
  }
 
  auto compile_expression_list() -> std::size_t

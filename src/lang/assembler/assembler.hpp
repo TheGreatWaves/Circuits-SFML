@@ -269,12 +269,12 @@ public:
    instruction();
   }
 
-  for (auto i {0}; i < 400; i++)
+  for (auto i {0}; i < 10000; i++)
   {
    if (index_mapping_inverse.contains(i))
    {
     const auto& key = index_mapping_inverse.at(i);
-    std::cout << "Index map: " << key << " " << i << '\n';
+    // std::cout << "Index map: " << key << " " << i << '\n';
     
    }
   }
@@ -287,12 +287,6 @@ public:
  auto add_index_mapping(const std::string& varname, std::size_t index)
  {
   // std::cout << "Adding " << varname << " as " << index << '\n';
-  if (index_mapping.contains(varname))
-  {
-   const auto index = index_mapping[varname];
-   this->index_mapping_inverse[index] = "";
-  }
-
   this->index_mapping[varname] = index;
   this->index_mapping_inverse[index] = varname;
  }
@@ -392,21 +386,26 @@ public:
    {
     // We previously declared it as a variable, so now we have to actually remove it and decrement the index of all variables 
     // whose index is greater than the label's initial index.
+    // std::cout << "Label name: " << label_name << " already exists, removing...\n";
 
-    auto index = index_mapping.at(label_name);
+    auto index = index_mapping.at(label_name) + 1;
+    index_mapping_inverse.erase(index - 1);
 
-    while (index_mapping_inverse.contains(++index))
+    // std::cout << "Purging everything starting from index: " << index << '\n';
+
+    while (index_mapping_inverse.contains(index))
     {
-     auto varname = index_mapping_inverse.at(index);
+     const auto varname = index_mapping_inverse.at(index);
+     index_mapping_inverse.erase(index);
      add_index_mapping(varname, index-1);
-    }
 
-    add_index_mapping(label_name, loc);
+     index += 1;
+    }
 
     next_var_index--;
    }
 
-   this->add_index_mapping(label_name, loc);
+   add_index_mapping(label_name, loc);
    consume(TokenType::RightParen, "Expected enclosing parenthesis ')', found: " + std::string(this->current.lexeme));
   }
   else

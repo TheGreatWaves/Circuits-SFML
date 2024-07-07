@@ -1,0 +1,6 @@
+class Main {
+	function void main() {
+		do Memory.poke(6, 555);
+		do Memory.poke(7, 555);
+	}
+}

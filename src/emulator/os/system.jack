@@ -1,0 +1,16 @@
+class Sys {
+	function void init() {
+		// Initialize OS;
+		do Memory.init();
+
+		// Main program entry point.
+		do Main.main();
+
+		// Stop execution.
+		do Sys.halt();
+	}
+
+	function void halt() {
+		while (true) {}
+	}
+}
