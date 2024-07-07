@@ -279,10 +279,11 @@ public:
     m_writer.write_push(segment, index);
    }
   }
-  else if (check(TokenType::True, TokenType::False, TokenType::Null, TokenType::This))
+  else if (is_keyword_constant())
   {
    // Keyword constant
    advance();
+   handle_keyword_constant(previous.type);
    write_previous();
   }
   else if (match(TokenType::LParen))
@@ -296,10 +297,31 @@ public:
   }
  }
 
+ auto is_keyword_constant() -> bool
+ {
+  return check(TokenType::True, 
+               TokenType::False, 
+               TokenType::Null, 
+               TokenType::This);
+ }
+
+ auto handle_keyword_constant(TokenType type) -> void
+ {
+  switch (type)
+  {
+   break; case TokenType::True: 
+   {
+    m_writer.write_push("constant", "0");
+    m_writer.write_arithmethic("not");
+   }
+   break; case TokenType::False: m_writer.write_push("constant", "0");
+   break; default: {report_error("Unhanlded keyword constant case: " + std::string(current.type.name()));}
+  }
+ }
+
  auto is_op() -> bool 
  {
-  return check(
-               TokenType::Plus, 
+  return check(TokenType::Plus, 
                TokenType::Minus, 
                TokenType::Asterisk, 
                TokenType::Slash, 
