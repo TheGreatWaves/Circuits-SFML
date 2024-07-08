@@ -3,6 +3,7 @@ class Sys {
 		// Initialize OS;
 		do Memory.init();
 		do Math.init();
+		do Screen.init();
 
 		// Main program entry point.
 		do Main.main();

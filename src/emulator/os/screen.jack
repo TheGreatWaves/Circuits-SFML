@@ -1,0 +1,47 @@
+class Screen {
+	static Array screen;
+	static boolean color;
+
+	function void init() {
+		let screen = 16384;
+		let color = false;
+	}
+
+	function void clear_screen() {
+		var int i;
+		let i = 0;
+
+		while (i < 8192) {
+			let screen[i] = false;
+			let i = i + 1;
+		}
+	}
+
+	function void set_color(boolean b) {
+		let color = b;
+	}
+
+	function void draw_pixel(int x, int y) {
+		var int address, mask, x_chunk;
+
+		let x_chunk = (x / 16);
+		let mask = Math.two_to_the(x - (x_chunk * 16));
+		let address = (32 * y) + x_chunk;
+
+		if (color) {
+			let screen[address] = screen[address] | mask;
+		}
+		 else {
+			let screen[address] = screen[address] & (~mask);
+		}
+	}
+
+	function void draw_line(int x1, int y1, int x2, int y2) {
+	}
+
+	function void draw_rectangle(int x1, int y1, int x2, int y2) {
+	}
+
+	function void draw_circle(int x, int y, int r) {
+	}
+}

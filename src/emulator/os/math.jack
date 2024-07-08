@@ -20,6 +20,10 @@ class Math {
 		return (x & two_to_the[i]) > 0;
 	}
 
+	function int two_to_the(int x) {
+		return two_to_the[x];
+	}
+
 	function int multiply(int x, int y) {
 		var int shifted_x, sum, i;
 
