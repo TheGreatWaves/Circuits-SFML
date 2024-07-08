@@ -1,0 +1,100 @@
+class Math {
+	static Array two_to_the;
+
+	function void init() {
+		var int value, i;
+
+		let two_to_the = Array.new(16);
+		let value = 1;
+		let i = 0;
+
+		while (i < 16) {
+			let two_to_the[i] = value;
+			let value = value + value;
+			let i = i + 1;
+		}
+	}
+
+	// Returns true if the i-th bit of x is 1, false otherwise
+	function boolean bit(int x, int i) {
+		return (x & two_to_the[i]) > 0;
+	}
+
+	function int multiply(int x, int y) {
+		var int shifted_x, sum, i;
+
+		let shifted_x = x;
+		let i = 0;
+
+		while (i < 16) {
+			if (Math.bit(y, i)) {
+				let sum = sum + shifted_x;
+			}
+
+			let shifted_x = shifted_x + shifted_x;
+			let i = i + 1;
+		}
+
+		return sum;
+	}
+
+	function int divide(int x, int y) {
+		var int q;
+
+		if (y > x) {
+			return 0;
+		}
+
+		let q = Math.divide(x, 2*y);
+
+		if ((x - (2 * q * y)) < y) {
+			return 2 * q;
+		} else {
+			return (2 * q) + 1;
+		}
+	}
+
+	function int sqrt(int x) {
+		var int y, j, temp;
+		let y = 0;
+		let j = 7;
+
+		while (j > -1) {
+			let temp = (y + two_to_the[j]);
+			let temp = temp * temp;
+
+	
+			if ((temp < (x+1)) & (temp > 0)) {
+				let y = y + two_to_the[j];
+			}
+
+			let j = j - 1;
+		}
+
+		return y;
+	}
+
+	function int abs(int x) {
+		if (x < 0) {
+			let x = -x;
+		}
+
+		return x;
+	}
+
+	function int min(int x, int y) {
+		if (x > y) {
+			return y;
+		} else {
+			return x;
+		}
+	}
+
+	function int max(int x, int y) {
+		if (x > y) {
+			return x;
+		} else {
+			return y;
+		}
+	}
+}

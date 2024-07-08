@@ -2,6 +2,7 @@ class Sys {
 	function void init() {
 		// Initialize OS;
 		do Memory.init();
+		do Math.init();
 
 		// Main program entry point.
 		do Main.main();

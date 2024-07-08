@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 #pragma once
-#include "computer.hpp"
 #ifndef COMPILATION_CONTEXT_HPP
 #define COMPILATION_CONTEXT_HPP
 
 #include <sstream>
 
+#include "computer.hpp"
 #include "../lang/jack/jack.hpp"
 #include "../lang/vm/vm.hpp"
 

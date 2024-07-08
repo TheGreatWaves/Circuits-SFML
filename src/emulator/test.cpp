@@ -65,6 +65,11 @@ auto main() -> int
   std::cout << "Failed to add source: os/system.jack" << '\n'; 
  }
 
+ if (!context.add_source("os/math.jack"))
+ {
+  std::cout << "Failed to add source: os/math.jack" << '\n'; 
+ }
+
  if (!context.add_source("main.jack"))
  {
   std::cout << "Failed to add source: main.jack" << '\n'; 
