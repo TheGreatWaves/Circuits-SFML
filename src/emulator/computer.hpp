@@ -294,6 +294,18 @@ public:
   {
    std::cout << "Local[" << std::setw(3) << std::right << i << "] " << m_ram[i + local] << '\n';
   }
+
+
+  const auto screen_base {16384};
+  std::cout << "Screen[ ";
+  for (std::size_t i{0}; i < 10; i++)
+  {
+   const auto index = screen_base + i;
+   const auto value = m_ram[index];
+   std::cout << static_cast<int16_t>(value) << "[" << (index) << "] ";
+  }
+  std::cout << "]\n";
+
  }
 
 
@@ -395,7 +407,7 @@ private:
  uint16_t m_pc                             {0}; // Program counter
  uint16_t m_D                              {0}; // D Register
  uint16_t m_A                              {0}; // A Register
- std::array<uint16_t, 16384> m_ram         {0}; // Memory
+ std::array<uint16_t, 24577> m_ram         {0}; // Memory
  std::array<uint16_t, 32768> m_instruction {0}; // Instruction memory
 };
  

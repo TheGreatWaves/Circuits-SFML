@@ -1,5 +1,7 @@
 class Main {
 	function void main() {
-		do Memory.poke(8, Math.abs(2));
+		do Screen.set_color(true);
+		do Screen.draw_pixel(0, 0);
+		do Screen.draw_pixel(1, 0);
 	}
 }

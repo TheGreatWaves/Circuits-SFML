@@ -26,7 +26,9 @@ class Screen {
 
 		let x_chunk = (x / 16);
 		let mask = Math.two_to_the(x - (x_chunk * 16));
+
 		let address = (32 * y) + x_chunk;
+
 
 		if (color) {
 			let screen[address] = screen[address] | mask;

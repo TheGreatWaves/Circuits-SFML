@@ -939,6 +939,16 @@ public:
   return m_context.class_name + '_' + label_name + '_' + std::to_string(m_label_count[label_name]);
  }
 
+ auto get_static_count() -> uint16_t 
+ {
+  return m_context.count(SymbolKind::STATIC);
+ }
+
+ auto set_static_count(uint16_t count) -> void
+ {
+  m_context.kind_count[static_cast<std::size_t>(SymbolKind::STATIC)] = count;
+ }
+
  private:
   std::uint16_t     m_depth   {0};
   std::stringstream m_buffer  {};

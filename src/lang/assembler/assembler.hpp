@@ -269,17 +269,17 @@ public:
    instruction();
   }
 
-  for (auto i {0}; i < 10000; i++)
-  {
-   if (index_mapping_inverse.contains(i))
-   {
-    const auto& key = index_mapping_inverse.at(i);
-    std::cout << "Index map: " << key << " " << i << '\n';
+  // for (auto i {0}; i < 10000; i++)
+  // {
+  //  if (index_mapping_inverse.contains(i))
+  //  {
+  //   const auto& key = index_mapping_inverse.at(i);
+  //   std::cout << "Index map: " << key << " " << i << '\n';
     
-   }
-  }
+  //  }
+  // }
 
-  std::cout << '\n';
+  // std::cout << '\n';
 
   return !this->has_error;
  }
@@ -396,7 +396,7 @@ public:
     {
      const auto varname = index_mapping_inverse.at(index+1);
      index_mapping_inverse.erase(index+1);
-     std::cout << "Moving " << varname << " from " << index+1 << " to " << index << '\n';
+     // std::cout << "Moving " << varname << " from " << index+1 << " to " << index << '\n';
      add_index_mapping(varname, index);
 
      index += 1;
@@ -405,7 +405,7 @@ public:
     next_var_index--;
    }
 
-   std::cout << "Added label " << label_name << " at " << loc << "\n\n";
+   // std::cout << "Added label " << label_name << " at " << loc << "\n\n";
    add_index_mapping(label_name, loc);
    consume(TokenType::RightParen, "Expected enclosing parenthesis ')', found: " + std::string(this->current.lexeme));
   }

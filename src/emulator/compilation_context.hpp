@@ -59,9 +59,13 @@ public:
  {
   JackParser translator(path);
 
+  translator.set_static_count(m_static_count);
+
   if (!translator.parse()) return false;
 
   m_buffer << translator.build();
+
+  m_static_count = translator.get_static_count();
 
   return true;
  }
@@ -99,7 +103,8 @@ public:
 }
 
 private:
- std::stringstream m_buffer;
+ std::stringstream m_buffer {};
+ std::size_t m_static_count {};
 };
 
 #endif /* COMPILATION_CONTEXT_HPP */
