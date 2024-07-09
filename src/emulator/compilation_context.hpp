@@ -27,6 +27,7 @@
 
 #include <sstream>
 
+#include "devices/screen.hpp"
 #include "computer.hpp"
 #include "../lang/jack/jack.hpp"
 #include "../lang/vm/vm.hpp"
@@ -39,6 +40,7 @@ struct CompilationContext
 {
 public:
  explicit CompilationContext()
+ : m_window(sf::VideoMode(512, 256), "Hack Computer")
  {
   bootstrap();
  };
@@ -75,7 +77,7 @@ public:
   std::cout << m_buffer.str() << '\n';
  }
 
- auto compile_and_run() -> bool
+ auto compile() -> bool
  {
   VMTranslator translator {};
   translator.set_source(m_buffer.str());
@@ -88,21 +90,40 @@ public:
 
   const auto instructions = translator.to_instructions();
 
-  emulator::Computer computer {};
-
-  computer.load_instructions(instructions);
-  computer.process(100000);
+  m_computer.load_instructions(instructions);
 
 
-  const auto loc = translator.loc();
-  std::cout << "#instructions: " << loc << '\n';
-  std::cout << "\n=== State ===\n";
-  computer.print_state();
+  // const auto loc = translator.loc();
+  // std::cout << "#instructions: " << loc << '\n';
+  // std::cout << "\n=== State ===\n";
+  // computer.print_state();
 
   return true;
 }
 
+auto run() -> void
+{
+ while (m_window.isOpen())
+ {
+  m_computer.process(10000000);
+
+  sf::Event event;
+  while (m_window.pollEvent(event))
+  {
+   if (event.type == sf::Event::Closed)
+       m_window.close();
+  }
+
+  m_window.clear();
+  m_screen.draw(m_window, m_computer.m_ram);
+  m_window.display();  
+ }
+}
+
 private:
+ Screen m_screen{};
+ emulator::Computer m_computer {};
+ sf::RenderWindow m_window {};
  std::stringstream m_buffer {};
  std::size_t m_static_count {};
 };

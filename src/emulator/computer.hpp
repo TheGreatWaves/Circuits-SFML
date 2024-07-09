@@ -400,6 +400,8 @@ private:
  }
 
 
+public:
+ std::array<uint16_t, 24577> m_ram         {0}; // Memory
 private:
  /**
   *  Members
@@ -407,7 +409,6 @@ private:
  uint16_t m_pc                             {0}; // Program counter
  uint16_t m_D                              {0}; // D Register
  uint16_t m_A                              {0}; // A Register
- std::array<uint16_t, 24577> m_ram         {0}; // Memory
  std::array<uint16_t, 32768> m_instruction {0}; // Instruction memory
 };
  

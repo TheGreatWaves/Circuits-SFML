@@ -1,7 +1,18 @@
 class Main {
 	function void main() {
+		var int x, y;
 		do Screen.set_color(true);
-		do Screen.draw_pixel(0, 0);
-		do Screen.draw_pixel(1, 0);
+
+		while (true) {
+
+			if (x = 512) {
+				let x = 0;
+				let y = y + 1;
+			}
+
+			do Screen.draw_pixel(x, y);
+
+			let x = x + 1;
+		}
 	}
 }
