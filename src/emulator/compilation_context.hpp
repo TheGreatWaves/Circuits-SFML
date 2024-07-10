@@ -25,6 +25,9 @@
 #ifndef COMPILATION_CONTEXT_HPP
 #define COMPILATION_CONTEXT_HPP
 
+
+#include <chrono>
+#include <future>
 #include <sstream>
 
 #include "devices/screen.hpp"
@@ -103,10 +106,16 @@ public:
 
 auto run() -> void
 {
+ const auto cycle_count = 10000;
+ auto thread = std::async(std::launch::async, [this]{ while (true) { 
+   // const auto start = std::chrono::high_resolution_clock::now();
+   m_computer.process(cycle_count);
+   // const auto end = std::chrono::high_resolution_clock::now();
+   // const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+   // std::cout << "Cycle count: " << cycle_count << ", time: " << duration.count() << '\n';
+ }});
  while (m_window.isOpen())
  {
-  m_computer.process(10000000);
-
   sf::Event event;
   while (m_window.pollEvent(event))
   {
@@ -118,6 +127,7 @@ auto run() -> void
   m_screen.draw(m_window, m_computer.m_ram);
   m_window.display();  
  }
+ thread.get();
 }
 
 private:

@@ -177,23 +177,6 @@ public:
  {
   const auto instruction = fetch();
 
-  if (instruction.A_instruction)
-  {
-   // std::cout << "Instruction: @" << instruction.raw << ", line: " << m_pc << '\n';
-  }
-  else
-  {
-   // std::cout << "Instruction: ";
-   // if (instruction.write_D) std::cout << "D";
-   // if (instruction.write_A) std::cout << "A";
-   // if (instruction.write_memory) std::cout << "M";
-
-   // std::cout << "=..., line: " << m_pc << "\n";
-
-  }
-
-  // std::cout << "instruction: " << instruction.raw << '\n';
-
   // Handle A instruction.
   if (instruction.A_instruction)
   {
@@ -205,8 +188,6 @@ public:
   {
    const auto x = fetch_operand_x(); 
    const auto y = fetch_operand_y(instruction.read_memory) ;
-
-   // std::cout << "\t\tx: " << x << ", y: " << y << '\n';
 
    auto args = alu::args_from_instruction(x, y, instruction);
    const auto result = alu::compute(std::move(args));
@@ -220,42 +201,14 @@ public:
    const auto positive = !result.ng;
    const auto jez = instruction.jez && result.zr;
 
-   // std::cout << "\tx: " << x << '\n';
-   // std::cout << "\ty: " << y << '\n';
-   // std::cout << "\tresult: " << result.out << '\n';
-   // std::cout << "\tng: " << result.ng << '\n';
-   // std::cout << "\tzr: " << result.zr << '\n';
-   // std::cout << "\tjez: " << instruction.jez << '\n';
-   // std::cout << "\tjlz: " << instruction.jlz << '\n';
-   // std::cout << "\tjgz: " << instruction.jgz << '\n';
-   
    const auto jgz = instruction.jgz && positive && !result.zr;
    const auto jlz = instruction.jlz && result.ng && !result.zr;
    const auto jlez = jez || jlz;
    const auto jgez = jez || jgz;
    const auto jump = jlez || jgez;
-   // std::cout << "\tjump: " << jump << '\n';
-
-   // std::cout << "[PC: " << m_pc << "]\n";
-
-   // if (instruction.jlz && !instruction.jez && !instruction.jgz)
-   // {
-   //  print_state();
-   //  if (jlz)
-   //  {
-   //   std::cout << "Jumped, " << result.out << " less than zero!";
-   //  }
-   //  else
-   //  {
-   //   std::cout << "Did not jump, "<< result.out << " not less than zero!";
-   //  }
-
-   //  std::cout << '\n';
-   // }
 
    if (jump)
    {
-    // std::cout << "Jumped from " << m_pc << " to " << m_A << '\n';
     write_pc(m_A);
    }
    else
