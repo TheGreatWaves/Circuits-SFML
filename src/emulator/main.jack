@@ -7,10 +7,15 @@ class Main {
 
 			if (x = 512) {
 				let x = 0;
-				let y = y + 1;
+				let y = y + 5;
 			}
 
 			do Screen.draw_pixel(x, y);
+			do Screen.draw_pixel(x, y+1);
+			do Screen.draw_pixel(x, y+2);
+			do Screen.draw_pixel(x, y+3);
+			do Screen.draw_pixel(x, y+4);
+			do Screen.draw_pixel(x, y+5);
 
 			let x = x + 1;
 		}

@@ -7,6 +7,16 @@ class Screen {
 		let color = false;
 	}
 
+	function void fill_screen() {
+		var int i;
+		let i = 0;
+
+		while (i < 8192) {
+			let screen[i] = color;
+			let i = i + 1;
+		}
+	}
+
 	function void clear_screen() {
 		var int i;
 		let i = 0;

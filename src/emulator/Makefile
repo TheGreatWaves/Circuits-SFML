@@ -1,7 +1,7 @@
 .PHONY: clean cmake build run
 
 cmake:
-	cmake -B build
+	cmake -B build -DCMAKE_BUILD_TYPE=Release
 
 build:
 	cmake --build build
