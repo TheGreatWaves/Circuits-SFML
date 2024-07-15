@@ -106,9 +106,13 @@ public:
 
 auto run() -> void
 {
- const auto cycle_count = 10;
+ const auto cycle_count = 100000000;
  auto thread = std::async(std::launch::async, [this]{ while (true) { 
+   const auto start = std::chrono::high_resolution_clock::now();
    m_computer.process(cycle_count);
+   const auto end = std::chrono::high_resolution_clock::now();
+   const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+   std::cout << "#Cycles: " << cycle_count << ", " << duration.count() << " nacnoseconds" << '\n';
  }});
  while (m_window.isOpen())
  {

@@ -84,9 +84,9 @@ inline auto from_uint16_t(uint16_t instruction) -> Instruction
  {  
   .C_instruction = C_instruction,
   .A_instruction = A_instruction,
-  .write_A        = load_A,
-  .write_D        = load_D,
-  .read_memory        = memory,
+  .write_A       = load_A,
+  .write_D       = load_D,
+  .read_memory   = memory,
   .jlz           = jlz,
   .jez           = jez,
   .jgz           = jgz,
