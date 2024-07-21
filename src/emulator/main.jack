@@ -1,23 +1,13 @@
 class Main {
 	function void main() {
-		var int x, y;
+		var int y;
+		let y = 0;
+
 		do Screen.set_color(true);
 
-		while (true) {
-
-			if (x = 512) {
-				let x = 0;
-				let y = y + 5;
-			}
-
-			do Screen.draw_pixel(x, y);
-			do Screen.draw_pixel(x, y+1);
-			do Screen.draw_pixel(x, y+2);
-			do Screen.draw_pixel(x, y+3);
-			do Screen.draw_pixel(x, y+4);
-			do Screen.draw_pixel(x, y+5);
-
-			let x = x + 1;
+		while (y < 256) {
+			do Screen.draw_line(0, 0, 512, y);
+			let y = y + 20;
 		}
 	}
 }
