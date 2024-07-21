@@ -135,7 +135,7 @@ public:
  [[nodiscard]] explicit VMTranslator(const std::string& file_path)
      : BaseParser<VMTokenType>(file_path)
      , m_assembler{}
-     , m_filename{fs::path(file_path).stem()}
+     , m_filename{fs::path(file_path).stem().string()}
  {}
 
  [[nodiscard]] explicit VMTranslator()

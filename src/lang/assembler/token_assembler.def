@@ -19,5 +19,7 @@ SYMBOL_TOKEN(Semicolon,  ";")
 SYMBOL_TOKEN(LeftParen,  "(")
 SYMBOL_TOKEN(RightParen, ")")
 
+KEYWORD_TOKEN(_IGNORE, "_IGNORE")
+
 
 #include "../core/token_end.def"

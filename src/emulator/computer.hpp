@@ -165,7 +165,7 @@ public:
  /**
   * Default Ctor
   */
-  constexpr Computer() 
+  Computer() 
   {
    set_up_memory();
   }
