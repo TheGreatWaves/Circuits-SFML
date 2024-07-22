@@ -5,9 +5,6 @@ class Main {
 
 		do Screen.set_color(true);
 
-		while (y < 256) {
-			do Screen.draw_line(0, 0, 512, y);
-			let y = y + 20;
-		}
+		do Screen.draw_rectangle(20, 20, 80, 80);
 	}
 }

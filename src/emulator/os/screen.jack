@@ -89,6 +89,14 @@ class Screen {
 	}
 
 	function void draw_rectangle(int x1, int y1, int x2, int y2) {
+		var int y;
+		let y = y1;
+
+		while (~(y = y2)) {
+			do Screen.draw_line(x1, y, x2, y);
+			let y = y + 1;
+		}
+		do Screen.draw_line(x1, y, x2, y);
 	}
 
 	function void draw_circle(int x, int y, int r) {
