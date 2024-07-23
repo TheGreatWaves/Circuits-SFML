@@ -1,0 +1,25 @@
+class Output {
+	static Array char_maps;
+
+	function void init() {
+		let char_maps = Array.new(127);
+	}
+
+	function void move_cursor(int i, int j) {
+	}
+
+	function void print_char(char c) {
+	}
+
+	function void print_string(String s) {
+	}
+
+	function void print_int(int i) {
+	}
+
+	function void print_line() {
+	}
+
+	function void back_space() {
+	}
+}
