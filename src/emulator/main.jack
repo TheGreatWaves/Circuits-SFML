@@ -5,6 +5,6 @@ class Main {
 
 		do Screen.set_color(true);
 
-		do Screen.draw_rectangle(20, 20, 80, 80);
+		do Screen.draw_circle(100, 100, 50);
 	}
 }

@@ -100,5 +100,15 @@ class Screen {
 	}
 
 	function void draw_circle(int x, int y, int r) {
+		var int radius, temp, r_squared, cur_y;
+		let r_squared = r * r;
+
+		let radius = -r;
+		while (radius < (r+1)) {
+			let temp = Math.sqrt(r_squared - (radius*radius));
+			let cur_y = (y + radius);
+			do Screen.draw_line(x-temp, cur_y, x+temp, cur_y);
+			let radius = radius + 1;
+		}
 	}
 }
