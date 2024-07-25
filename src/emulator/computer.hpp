@@ -55,28 +55,28 @@ struct Instruction
 
 inline auto from_uint16_t(uint16_t instruction) -> Instruction 
 {
- const bool C_instruction = static_cast<uint16_t>(instruction >> 15) & 1;
- const bool A_instruction = (~C_instruction) & 1;
+ const bool C_instruction = (instruction & 32768) > 0; 
+ const bool A_instruction = !C_instruction;
 
- const bool dest_A = (instruction >> 5) & 1;
- const bool dest_D = (instruction >> 4) & 1;
- const bool dest_M = (instruction >> 3) & 1;
+ const bool dest_A = (instruction & 32) > 0;
+ const bool dest_D = (instruction & 16) > 0;
+ const bool dest_M = (instruction & 8) > 0;
 
  const bool load_A = A_instruction || (C_instruction && dest_A);
  const bool load_D = C_instruction && dest_D;
 
  const bool memory = (instruction >> 12) & 1;
 
- const bool jlz = (instruction >> 2) & 1;
- const bool jez = (instruction >> 1) & 1;
- const bool jgz = (instruction >> 0) & 1;
+ const bool jlz = (instruction & 4) > 0;
+ const bool jez = (instruction & 2) > 0;
+ const bool jgz = instruction & 1;
 
- const bool zx = (instruction >> 11) & 1; 
- const bool nx = (instruction >> 10) & 1; 
- const bool zy = (instruction >> 9) & 1; 
- const bool ny = (instruction >> 8) & 1; 
- const bool f  = (instruction >> 7) & 1; 
- const bool no = (instruction >> 6) & 1; 
+ const bool zx = (instruction & 2048) > 0; 
+ const bool nx = (instruction & 1024) > 0; 
+ const bool zy = (instruction & 512) > 0; 
+ const bool ny = (instruction & 256) > 0; 
+ const bool f  = (instruction & 128) > 0; 
+ const bool no = (instruction & 64) > 0; 
 
  const bool write_memory = C_instruction && dest_M;
 
@@ -316,7 +316,7 @@ private:
 
  inline auto fetch() -> instruction::Instruction 
  {
-  return instruction::from_uint16_t(m_instruction.at(m_pc)); 
+  return instruction::from_uint16_t(m_instruction[m_pc]); 
  }
 
  /**
