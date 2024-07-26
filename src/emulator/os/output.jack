@@ -3,12 +3,57 @@ class Output {
 
 	function void init() {
 		let char_maps = Array.new(127);
+
+		do Output.create(97, 0,0,0,14,24,30,27,27,54,0,0); // a
+	} 
+
+	function void create(int i,
+		int i0,
+		int i1,
+		int i2,
+		int i3,
+		int i4,
+		int i5,
+		int i6,
+		int i7,
+		int i8,
+		int i9,
+		int i10
+	) {
+		var Array map;
+		let map = Array.new(11);
+		let char_maps[i] = map;
+		let map[0] = i0;
+		let map[1] = i1;
+		let map[2] = i2;
+		let map[3] = i3;
+		let map[4] = i4;
+		let map[5] = i5;
+		let map[6] = i6;
+		let map[7] = i7;
+		let map[8] = i8;
+		let map[9] = i9;
+		let map[10] = i10;
 	}
 
 	function void move_cursor(int i, int j) {
 	}
 
 	function void print_char(char c) {
+		var Array bitmap;
+		let bitmap = char_maps[c];
+
+		do Memory.poke(16384, bitmap[0]);
+		do Memory.poke(16384 + 32, bitmap[1]);
+		do Memory.poke(16384 + 64, bitmap[2]);
+		do Memory.poke(16384 + 96, bitmap[3]);
+		do Memory.poke(16384 + 128, bitmap[4]);
+		do Memory.poke(16384 + 160, bitmap[5]);
+		do Memory.poke(16384 + 192, bitmap[6]);
+		do Memory.poke(16384 + 224, bitmap[7]);
+		do Memory.poke(16384 + 256, bitmap[8]);
+		do Memory.poke(16384 + 288, bitmap[9]);
+		do Memory.poke(16384 + 320, bitmap[10]);
 	}
 
 	function void print_string(String s) {

@@ -101,6 +101,11 @@ class Screen {
 
 	function void draw_circle(int x, int y, int r) {
 		var int radius, temp, r_squared, cur_y;
+
+		if (r > 181) {
+			let r = 181;
+		}
+
 		let r_squared = r * r;
 
 		let radius = -r;
