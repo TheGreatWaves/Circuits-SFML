@@ -278,7 +278,7 @@ public:
   m_pc = 0;
  }
 
-private:
+public:
  inline auto fetch_operand_x() -> uint16_t 
  {
   return m_D;
@@ -346,10 +346,22 @@ private:
   return m_ram[0];
  }
 
+ inline auto pop_stack() -> uint16_t
+ {
+  const auto sp = get_stack_pointer();
+  decrement_stack_pointer();
+  return m_ram[sp-1];
+ }
+
  inline auto stack_push_constant(uint16_t value) -> void
  {
   m_ram[get_stack_pointer()] = value;
   increment_stack_pointer();
+ }
+
+ inline auto at(const uint16_t address) -> uint16_t
+ {
+  return m_ram[address];
  }
 
 
