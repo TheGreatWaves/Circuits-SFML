@@ -359,6 +359,12 @@ public:
   increment_stack_pointer();
  }
 
+ inline auto stack_push_value_at(const uint16_t address) -> void
+ {
+  const uint16_t value = at(address);
+  stack_push_constant(value);
+ }
+
  inline auto at(const uint16_t address) -> uint16_t
  {
   return m_ram[address];
