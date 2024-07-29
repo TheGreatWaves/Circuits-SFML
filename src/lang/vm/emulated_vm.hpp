@@ -46,11 +46,15 @@ private:
 public:
  [[nodiscard]] explicit EmulatedVM(const std::string& file_path)
      : BaseParser<VMTokenType>(file_path)
- {}
+ {
+  setup_symbol_map();
+ }
 
  [[nodiscard]] explicit EmulatedVM()
      : BaseParser<VMTokenType>()
- {}
+ {
+  setup_symbol_map();
+ }
 
  auto set_source(const std::string& input) -> void
  {
@@ -129,7 +133,6 @@ public:
      advance();
      consume(TokenType::Number, "Expected index after 'constant'");
      const std::uint16_t index = std::stoi(previous.lexeme);
-
      this->computer.stack_push_constant(index);
     }
     break; case TokenType::Static:
@@ -138,21 +141,56 @@ public:
      consume(TokenType::Number, "Expected index after 'static'");
      const std::string index = previous.lexeme;
      const uint16_t symbol_address = get_symbol("STATIC_" + index);
-     const uint16_t value = this->computer.at(symbol_address);
-     this->computer.stack_push_constant(value);
+     this->computer.stack_push_value_at(symbol_address);
     }
     break; case TokenType::Temp:
     {
      advance();
      consume(TokenType::Number, "Expected index after 'temp'");
      const std::string index_string = previous.lexeme;
-     const uint32_t index = std::stoi(index_string);
-     if (index > 7) report_error("Temp index out of range: " + index_string);
-     const uint16_t value = this->computer.at(index + 5);
-     this->computer.stack_push_constant(value);
+     const uint32_t offset = std::stoi(index_string);
+     if (offset > 7) report_error("Temp index out of range: " + index_string);
+     this->computer.stack_push_value_at(offset + 5);
     }
-    default: {/* Unhandled... */}
+    break; case TokenType::Pointer:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'pointer'");
+     const std::string index = previous.lexeme;
+
+     if (index != "1" && index != "0") report_error("Invalid pointer for push");
+
+     const uint16_t addr = (index == "1") 
+                               ? (symbol_map["THAT"]) 
+                               : (symbol_map["THIS"]);
+     this->computer.stack_push_value_at(addr);
+    }
+    break; case TokenType::Local:    write_push_segment("LCL");
+    break; case TokenType::Argument: write_push_segment("ARG");
+    break; case TokenType::This:     write_push_segment("THIS");
+    break; case TokenType::That:     write_push_segment("THAT");
+    break; default: { report_error("Unexpected segment found in push statement"); }
   }
+ }
+
+ auto write_push_segment(const std::string& segment) -> void
+ {
+  advance();
+  const std::string segment_name = previous.lexeme;
+  consume(TokenType::Number, "Expected index after '" + segment_name + "'");
+
+  // Offset index (from segment).
+  const uint16_t offset = std::stoi(previous.lexeme);
+
+  // Retrieve the value of the address stored inside the segment slot.
+  const uint16_t segment_slot_addr = symbol_map[segment];
+  const uint16_t segment_addr = this->computer.at(segment_slot_addr);
+
+  // Get the address + offset.
+  const uint16_t target_address = segment_addr + offset;
+
+  // Push the value onto the stack.
+  this->computer.stack_push_value_at(target_address);
  }
 
  auto handle_pop() -> void 
@@ -224,6 +262,22 @@ public:
   if (symbol_map.find(symbol) == symbol_map.end()) 
    symbol_map[symbol] = next_variable_index++;
   return symbol_map[symbol];
+ }
+private:
+ auto setup_symbol_map() -> void
+ {
+  symbol_map["SP"]   = 0;
+  symbol_map["LCL"]  = 1;
+  symbol_map["ARG"]  = 2;
+  symbol_map["THIS"] = 3;
+  symbol_map["THAT"] = 4;
+
+  for (std::size_t index {0}; index < 16; index++)
+  {
+   std::stringstream ss {};
+   ss << "R" << index;
+   symbol_map[ss.str()] = index;
+  }
  }
 
 private:
