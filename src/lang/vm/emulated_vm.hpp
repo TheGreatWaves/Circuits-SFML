@@ -199,38 +199,63 @@ public:
 
  auto handle_add() -> void 
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top(a + b);
  }
 
  auto handle_and() -> void 
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top(a & b);
  }
 
  auto handle_or() -> void 
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top(a | b);
  }
 
  auto handle_sub() -> void 
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top(a - b);
  }
 
  auto handle_neg() -> void
  {
+  const uint16_t value = this->computer.peek();
+  this->computer.replace_top(-value);
  }
 
  auto handle_not() -> void
  {
+  const uint16_t value = this->computer.peek();
+  this->computer.replace_top((value > 0) ? -1 : 0);
  }
 
  auto handle_eq() -> void
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top((a == b) ? -1 : 0);
  }
 
  auto handle_gt() -> void
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top((a > b) ? -1 : 0);
  }
 
  auto handle_lt() -> void
  {
+  const uint16_t b = this->computer.pop_stack();
+  const uint16_t a = this->computer.peek();
+  this->computer.replace_top((a < b) ? -1 : 0);
  }
 
  auto handle_label() -> void
