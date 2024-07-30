@@ -359,6 +359,16 @@ public:
   increment_stack_pointer();
  }
 
+ inline auto peek() -> uint16_t
+ {
+  return m_ram[get_stack_pointer()-1];
+ }
+
+ inline auto replace_top(const uint16_t value) -> void
+ {
+  m_ram[get_stack_pointer()-1] = value;
+ }
+
  inline auto stack_push_value_at(const uint16_t address) -> void
  {
   const uint16_t value = at(address);
