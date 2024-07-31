@@ -380,6 +380,17 @@ public:
   return m_ram[address];
  }
 
+ inline auto jump(const uint16_t address) -> void
+ {
+  m_pc = address;
+ }
+
+ inline auto jump_if(bool condition, uint16_t address) -> void
+ {
+  if (condition)
+   jump(address);
+ }
+
 
 public:
  std::array<uint16_t, 24577> m_ram         {0}; // Memory
