@@ -69,7 +69,10 @@ public:
   advance();
 
   while (!match(TokenType::EndOfFile))
+  {
    instruction();
+   loc++;
+  }
 
   return !this->has_error;
  }
@@ -260,14 +263,26 @@ public:
 
  auto handle_label() -> void
  {
+  consume(TokenType::Identifier, "Expected label name");
+  const std::string label_name = previous.lexeme;
+  this->label_map[label_name] = loc;
  }
  
  auto handle_goto() -> void
  {
+  consume(TokenType::Identifier, "Expected label name");
+  const std::string label_name = previous.lexeme;
+  this->computer.jump(label_map[label_name]);
  }
 
  auto handle_if_goto() -> void
  {
+  consume(TokenType::Dash, "Expected '-' after if");
+  consume(TokenType::Goto, "Expected 'goto' after '-'");
+  consume(TokenType::Identifier, "Expected label name");
+  const std::string label_name = previous.lexeme;
+  const bool cond = this->computer.pop_stack() > 0;
+  this->computer.jump_if(cond, label_map[label_name]);
  }
 
  auto handle_call() -> void
@@ -308,7 +323,9 @@ private:
 private:
  emulator::Computer computer                          {};
  std::unordered_map<std::string, uint16_t> symbol_map {};
+ std::unordered_map<std::string, uint16_t> label_map {};
  uint16_t next_variable_index                         {16};
+ uint16_t loc {0};
 };
 
 #endif // EMULATED_VM_HPP
