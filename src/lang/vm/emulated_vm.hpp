@@ -265,6 +265,9 @@ public:
  {
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
+
+ auto add_label(const std::string& label_name) -> void
+ {
   this->label_map[label_name] = loc;
  }
  
@@ -291,6 +294,7 @@ public:
 
  auto handle_function() -> void
  {
+  consume(TokenType::Identifier, "Expected file name");
  }
 
  auto handle_return() -> void
