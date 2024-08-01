@@ -265,6 +265,8 @@ public:
  {
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
+  add_label(label_name);
+ }
 
  auto add_label(const std::string& label_name) -> void
  {
@@ -295,6 +297,16 @@ public:
  auto handle_function() -> void
  {
   consume(TokenType::Identifier, "Expected file name");
+  const std::string file_name = previous.lexeme;
+  consume(TokenType::Dot, "Expected function name");
+  advance();
+  const std::string function_name = previous.lexeme;
+  consume(TokenType::Number, "Expected variable count");
+  const std::string n_args_str = previous.lexeme;
+  const uint16_t n_args = std::stoi(n_args_str);
+  add_label(file_name+"."+function_name);
+  for (uint16_t i {0}; i < n_args; i++)
+   this->computer.stack_push_constant(0);
  }
 
  auto handle_return() -> void
