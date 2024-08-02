@@ -38,19 +38,70 @@ namespace fs = std::filesystem;
 #include "../../emulator/computer.hpp"
 #include "../assembler/assembler.hpp"
 
-class EmulatedVM : public BaseParser<VMTokenType>
+/**
+ * NOTE: Main idea: parse the input (vm code) and translate the instructions
+ *       into a vector of opcodes and values. 
+ */
+
+// Opcodes for the VM.
+// NOTE: LABEL is not included.
+enum class Opcode : uint16_t
+{
+ // Push operations.
+ PUSH_CONSTANT,
+ PUSH_STATIC,
+ PUSH_TEMP,
+ PUSH_POINTER,
+ PUSH_LOCAL,
+ PUSH_ARGUMENT,
+ PUSH_THIS,
+ PUSH_THAT,
+
+ // Pop operations.
+ POP_STATIC,
+ POP_TEMP,
+ POP_POINTER,
+ POP_LOCAL,
+ POP_ARGUMENT,
+ POP_THIS,
+ POP_THAT,
+
+ ADD,
+ AND,
+ OR,
+ SUB,
+ NEG,
+ NOT,
+ EQ,
+ GT,
+ LT,
+ LABEL, // This needs to be here. Quite troublesome.
+ GOTO,  
+ IF,
+ CALL,
+ FUNCTION,
+ RETURN,
+};
+
+struct EmulatedVMChunk
+{
+ std::vector<uint16_t> code;
+};
+
+
+class EmulatedVMParser : public BaseParser<VMTokenType>
 {
 private:
  using TokenType = VMTokenType;
 
 public:
- [[nodiscard]] explicit EmulatedVM(const std::string& file_path)
+ [[nodiscard]] explicit EmulatedVMParser(const std::string& file_path)
      : BaseParser<VMTokenType>(file_path)
  {
   setup_symbol_map();
  }
 
- [[nodiscard]] explicit EmulatedVM()
+ [[nodiscard]] explicit EmulatedVMParser()
      : BaseParser<VMTokenType>()
  {
   setup_symbol_map();
