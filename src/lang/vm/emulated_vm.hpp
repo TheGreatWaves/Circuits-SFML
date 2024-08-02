@@ -268,9 +268,9 @@ public:
   add_label(label_name);
  }
 
- auto add_label(const std::string& label_name) -> void
+ auto add_label(const std::string& label_name, const uint16_t offset = 0) -> void
  {
-  this->label_map[label_name] = loc;
+  this->label_map[label_name] = (loc + offset);
  }
  
  auto handle_goto() -> void
@@ -292,6 +292,44 @@ public:
 
  auto handle_call() -> void
  {
+  consume(TokenType::Identifier, "Expected file name");
+  const std::string file_name = previous.lexeme;
+  consume(TokenType::Dot, "Expected function name");
+  advance();
+  const std::string function_name = previous.lexeme;
+  consume(TokenType::Number, "Expected function args count");
+  const std::string n_args = previous.lexeme;
+
+  call(file_name, function_name, n_args);
+ }
+
+ auto call(const std::string& file_name, const std::string& function_name, const std::string& n_args) -> void
+ {
+   const std::string return_value = file_name+"."+function_name+"$ret."+std::to_string(count());
+   const std::string function_full_name = file_name+"."+function_name;
+
+   // Add return label (below call)
+   add_label(return_value, 1);
+
+   // Push frame.
+   this->computer.stack_push_value_at(get_symbol(return_value));
+   this->computer.stack_push_value_at(get_symbol("LCL"));
+   this->computer.stack_push_value_at(get_symbol("ARG"));
+   this->computer.stack_push_value_at(get_symbol("THIS"));
+   this->computer.stack_push_value_at(get_symbol("THAT"));
+
+   const uint16_t stack_pointer_address = this->computer.get_stack_pointer();
+   const uint16_t arg_count = std::stoi(n_args);
+
+   // ARG = SP - 5 - n_args
+   this->computer.write_at(get_symbol("ARG"), stack_pointer_address - 5 - arg_count);
+
+
+   // LCL = SP
+   this->computer.write_at(get_symbol("LCL"), stack_pointer_address);
+
+   // Jump to the function.
+   this->computer.jump(label_map[function_full_name]);
  }
 
  auto handle_function() -> void
@@ -307,6 +345,10 @@ public:
   add_label(file_name+"."+function_name);
   for (uint16_t i {0}; i < n_args; i++)
    this->computer.stack_push_constant(0);
+ }
+
+ auto patch(const uint16_t offset, const uint16_t value) -> void
+ {
  }
 
  auto handle_return() -> void
@@ -366,12 +408,18 @@ private:
   }
  }
 
+ auto count() -> uint16_t
+ {
+  return m_count++;
+ }
+
 private:
  emulator::Computer computer                          {};
  std::unordered_map<std::string, uint16_t> symbol_map {};
  std::unordered_map<std::string, uint16_t> label_map {};
  uint16_t next_variable_index                         {16};
  uint16_t loc {0};
+ std::uint16_t     m_count     {};
 };
 
 #endif // EMULATED_VM_HPP
