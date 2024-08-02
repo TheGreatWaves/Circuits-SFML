@@ -380,6 +380,11 @@ public:
   return m_ram[address];
  }
 
+ inline auto write_at(const uint16_t address, const uint16_t value) -> void
+ {
+  m_ram[address] = value;
+ }
+
  inline auto jump(const uint16_t address) -> void
  {
   m_pc = address;
