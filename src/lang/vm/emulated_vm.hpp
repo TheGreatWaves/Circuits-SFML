@@ -311,6 +311,36 @@ public:
 
  auto handle_return() -> void
  {
+  const uint16_t SP = get_symbol("SP");
+  const uint16_t LCL = get_symbol("LCL");
+  const uint16_t ARG = get_symbol("ARG");
+  const uint16_t THIS = get_symbol("THIS");
+  const uint16_t THAT = get_symbol("THAT");
+
+  // Retrieve address of the frame's end.
+  const uint16_t end_frame_address = this->computer.at(LCL);
+
+  // Retrieve the return address.
+  const uint16_t return_address = this->computer.at(end_frame_address - 5);
+
+  // Replace the first argument passed into the function 
+  // with the return value from the function.
+  const uint16_t function_result_value = this->computer.pop_stack();
+  const uint16_t arg_address = this->computer.at(ARG);
+  this->computer.write_at(arg_address, function_result_value);
+
+  // Set the stack pointer to 1 below ARG pointer.
+  // Which we previously replaced with the return value.
+  this->computer.write_at(SP, arg_address + 1);
+
+  // Restore all pointers.
+  this->computer.write_at(THAT, end_frame_address - 1);
+  this->computer.write_at(THIS, end_frame_address - 2);
+  this->computer.write_at(ARG, end_frame_address - 3);
+  this->computer.write_at(LCL, end_frame_address - 4);
+
+  // Jump to the return address.
+  this->computer.jump(return_address);
  }
 
  auto get_symbol(const std::string& symbol) -> uint16_t
