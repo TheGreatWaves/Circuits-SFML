@@ -83,9 +83,25 @@ enum class Opcode : uint16_t
  RETURN,
 };
 
-struct EmulatedVMChunk
+struct Chunk
 {
  std::vector<uint16_t> code;
+
+ Chunk()
+ {
+  code.reserve(100000);
+ }
+
+
+ auto emit(uint16_t value) -> void
+ {
+  code.push_back(value);
+ }
+
+ auto emit_instruction(Opcode instruction) -> void
+ {
+  emit(static_cast<uint16_t>(instruction));
+ }
 };
 
 
@@ -465,12 +481,13 @@ private:
  }
 
 private:
- emulator::Computer computer                          {};
- std::unordered_map<std::string, uint16_t> symbol_map {};
- std::unordered_map<std::string, uint16_t> label_map {};
- uint16_t next_variable_index                         {16};
- uint16_t loc {0};
- std::uint16_t     m_count     {};
+ emulator::Computer                        computer            {};
+ Chunk                                     code                {};
+ std::unordered_map<std::string, uint16_t> symbol_map          {};
+ std::unordered_map<std::string, uint16_t> label_map           {};
+ uint16_t                                  next_variable_index {16};
+ uint16_t                                  loc                 {0};
+ std::uint16_t                             m_count             {};
 };
 
 #endif // EMULATED_VM_HPP
