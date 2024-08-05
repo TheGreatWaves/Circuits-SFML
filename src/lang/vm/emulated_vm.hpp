@@ -148,38 +148,38 @@ public:
  {
   if (match(TokenType::Push))
    handle_push();
-  else if (match(TokenType::Pop))
-   handle_pop();
-  else if (match(TokenType::Add))
-   handle_add();
-  else if (match(TokenType::And))
-   handle_and();
-  else if (match(TokenType::Or))
-   handle_or();
-  else if (match(TokenType::Sub))
-   handle_sub();
-  else if (match(TokenType::Neg))
-   handle_neg();
-  else if (match(TokenType::Not))
-   handle_not();
-  else if (match(TokenType::Eq))
-   handle_eq();
-  else if (match(TokenType::Gt))
-   handle_gt();
-  else if (match(TokenType::Lt))
-   handle_lt();
-  else if (match(TokenType::Label))
-   handle_label();
-  else if (match(TokenType::Goto))
-   handle_goto();
-  else if (match(TokenType::If))
-   handle_if_goto();
-  else if (match(TokenType::Call))
-   handle_call();
-  else if (match(TokenType::Function))
-   handle_function();
-  else if (match(TokenType::Return))
-   handle_return();
+  // else if (match(TokenType::Pop))
+  //  handle_pop();
+  // else if (match(TokenType::Add))
+  //  handle_add();
+  // else if (match(TokenType::And))
+  //  handle_and();
+  // else if (match(TokenType::Or))
+  //  handle_or();
+  // else if (match(TokenType::Sub))
+  //  handle_sub();
+  // else if (match(TokenType::Neg))
+  //  handle_neg();
+  // else if (match(TokenType::Not))
+  //  handle_not();
+  // else if (match(TokenType::Eq))
+  //  handle_eq();
+  // else if (match(TokenType::Gt))
+  //  handle_gt();
+  // else if (match(TokenType::Lt))
+  //  handle_lt();
+  // else if (match(TokenType::Label))
+  //  handle_label();
+  // else if (match(TokenType::Goto))
+  //  handle_goto();
+  // else if (match(TokenType::If))
+  //  handle_if_goto();
+  // else if (match(TokenType::Call))
+  //  handle_call();
+  // else if (match(TokenType::Function))
+  //  handle_function();
+  // else if (match(TokenType::Return))
+  //  handle_return();
   else
   {
    const std::string current = this->current.lexeme;
@@ -201,26 +201,33 @@ public:
     break; case TokenType::Constant: 
     {
      advance();
-     consume(TokenType::Number, "Expected index after 'constant'");
-     const std::uint16_t index = std::stoi(previous.lexeme);
-     this->computer.stack_push_constant(index);
+     consume(TokenType::Number, "Expected value after 'constant'");
+     const std::uint16_t value = std::stoi(previous.lexeme);
+
+     this->code.emit_instruction(Opcode::PUSH_CONSTANT);
+     this->code.emit(value);
     }
     break; case TokenType::Static:
     {
      advance();
      consume(TokenType::Number, "Expected index after 'static'");
      const std::string index = previous.lexeme;
-     const uint16_t symbol_address = get_symbol("STATIC_" + index);
-     this->computer.stack_push_value_at(symbol_address);
+     const uint16_t address = get_symbol("STATIC_" + index);
+
+     this->code.emit_instruction(Opcode::PUSH_STATIC);
+     this->code.emit(address);
     }
     break; case TokenType::Temp:
     {
      advance();
      consume(TokenType::Number, "Expected index after 'temp'");
+
      const std::string index_string = previous.lexeme;
      const uint32_t offset = std::stoi(index_string);
+
      if (offset > 7) report_error("Temp index out of range: " + index_string);
-     this->computer.stack_push_value_at(offset + 5);
+     this->code.emit_instruction(Opcode::PUSH_TEMP);
+     this->code.emit(offset + 5);
     }
     break; case TokenType::Pointer:
     {
@@ -233,12 +240,13 @@ public:
      const uint16_t addr = (index == "1") 
                                ? (symbol_map["THAT"]) 
                                : (symbol_map["THIS"]);
-     this->computer.stack_push_value_at(addr);
+     this->code.emit_instruction(Opcode::PUSH_POINTER);
+     this->code.emit(addr);
     }
-    break; case TokenType::Local:    write_push_segment("LCL");
-    break; case TokenType::Argument: write_push_segment("ARG");
-    break; case TokenType::This:     write_push_segment("THIS");
-    break; case TokenType::That:     write_push_segment("THAT");
+    break; case TokenType::Local:    { this->code.emit_instruction(Opcode::PUSH_LOCAL); write_push_segment("LCL"); }
+    break; case TokenType::Argument: { this->code.emit_instruction(Opcode::PUSH_ARGUMENT); write_push_segment("ARG"); }
+    break; case TokenType::This:     { this->code.emit_instruction(Opcode::PUSH_THIS); write_push_segment("THIS"); }
+    break; case TokenType::That:     { this->code.emit_instruction(Opcode::PUSH_THAT); write_push_segment("THAT"); }
     break; default: { report_error("Unexpected segment found in push statement"); }
   }
  }
@@ -260,7 +268,7 @@ public:
   const uint16_t target_address = segment_addr + offset;
 
   // Push the value onto the stack.
-  this->computer.stack_push_value_at(target_address);
+  this->code.emit(target_address);
  }
 
  auto handle_pop() -> void 
