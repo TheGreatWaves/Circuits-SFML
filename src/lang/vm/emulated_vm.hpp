@@ -150,8 +150,8 @@ public:
    handle_push();
   // else if (match(TokenType::Pop))
   //  handle_pop();
-  // else if (match(TokenType::Add))
-  //  handle_add();
+  else if (match(TokenType::Add))
+   handle_add();
   // else if (match(TokenType::And))
   //  handle_and();
   // else if (match(TokenType::Or))
@@ -227,7 +227,7 @@ public:
 
      if (offset > 7) report_error("Temp index out of range: " + index_string);
      this->code.emit_instruction(Opcode::PUSH_TEMP);
-     this->code.emit(offset + 5);
+     this->code.emit(offset);
     }
     break; case TokenType::Pointer:
     {
@@ -238,20 +238,20 @@ public:
      if (index != "1" && index != "0") report_error("Invalid pointer for push");
 
      const uint16_t addr = (index == "1") 
-                               ? (symbol_map["THAT"]) 
-                               : (symbol_map["THIS"]);
+                               ? (get_symbol("THAT")) 
+                               : (get_symbol("THIS"));
      this->code.emit_instruction(Opcode::PUSH_POINTER);
      this->code.emit(addr);
     }
-    break; case TokenType::Local:    { this->code.emit_instruction(Opcode::PUSH_LOCAL); write_push_segment("LCL"); }
-    break; case TokenType::Argument: { this->code.emit_instruction(Opcode::PUSH_ARGUMENT); write_push_segment("ARG"); }
-    break; case TokenType::This:     { this->code.emit_instruction(Opcode::PUSH_THIS); write_push_segment("THIS"); }
-    break; case TokenType::That:     { this->code.emit_instruction(Opcode::PUSH_THAT); write_push_segment("THAT"); }
+    break; case TokenType::Local:    { this->code.emit_instruction(Opcode::PUSH_LOCAL); write_push_segment(); }
+    break; case TokenType::Argument: { this->code.emit_instruction(Opcode::PUSH_ARGUMENT); write_push_segment(); }
+    break; case TokenType::This:     { this->code.emit_instruction(Opcode::PUSH_THIS); write_push_segment(); }
+    break; case TokenType::That:     { this->code.emit_instruction(Opcode::PUSH_THAT); write_push_segment(); }
     break; default: { report_error("Unexpected segment found in push statement"); }
   }
  }
 
- auto write_push_segment(const std::string& segment) -> void
+ auto write_push_segment() -> void
  {
   advance();
   const std::string segment_name = previous.lexeme;
@@ -259,16 +259,7 @@ public:
 
   // Offset index (from segment).
   const uint16_t offset = std::stoi(previous.lexeme);
-
-  // Retrieve the value of the address stored inside the segment slot.
-  const uint16_t segment_slot_addr = symbol_map[segment];
-  const uint16_t segment_addr = this->computer.at(segment_slot_addr);
-
-  // Get the address + offset.
-  const uint16_t target_address = segment_addr + offset;
-
-  // Push the value onto the stack.
-  this->code.emit(target_address);
+  this->code.emit(offset);
  }
 
  auto handle_pop() -> void 
@@ -277,82 +268,67 @@ public:
 
  auto handle_add() -> void 
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top(a + b);
+  this->code.emit_instruction(Opcode::ADD);
  }
 
  auto handle_and() -> void 
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top(a & b);
+  this->code.emit_instruction(Opcode::AND);
  }
 
  auto handle_or() -> void 
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top(a | b);
+  this->code.emit_instruction(Opcode::OR);
  }
 
  auto handle_sub() -> void 
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top(a - b);
+  this->code.emit_instruction(Opcode::SUB);
  }
 
  auto handle_neg() -> void
  {
-  const uint16_t value = this->computer.peek();
-  this->computer.replace_top(-value);
+  this->code.emit_instruction(Opcode::NEG);
  }
 
  auto handle_not() -> void
  {
-  const uint16_t value = this->computer.peek();
-  this->computer.replace_top((value > 0) ? -1 : 0);
+  this->code.emit_instruction(Opcode::NOT);
  }
 
  auto handle_eq() -> void
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top((a == b) ? -1 : 0);
+  this->code.emit_instruction(Opcode::EQ);
  }
 
  auto handle_gt() -> void
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top((a > b) ? -1 : 0);
+  this->code.emit_instruction(Opcode::GT);
  }
 
  auto handle_lt() -> void
  {
-  const uint16_t b = this->computer.pop_stack();
-  const uint16_t a = this->computer.peek();
-  this->computer.replace_top((a < b) ? -1 : 0);
+  this->code.emit_instruction(Opcode::LT);
  }
 
  auto handle_label() -> void
  {
+  this->code.emit_instruction(Opcode::LABEL);
+
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
-  add_label(label_name);
+  const uint16_t label_value = get_symbol(label_name);
+
+  this->code.emit(label_value);
  }
 
- auto add_label(const std::string& label_name, const uint16_t offset = 0) -> void
- {
-  this->label_map[label_name] = (loc + offset);
- }
  
  auto handle_goto() -> void
  {
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
-  this->computer.jump(label_map[label_name]);
+  this->code.emit_instruction(Opcode::GOTO);
+  this->code.emit(get_symbol(label_name));
  }
 
  auto handle_if_goto() -> void
@@ -361,8 +337,8 @@ public:
   consume(TokenType::Goto, "Expected 'goto' after '-'");
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
-  const bool cond = this->computer.pop_stack() > 0;
-  this->computer.jump_if(cond, label_map[label_name]);
+  this->code.emit_instruction(Opcode::IF);
+  this->code.emit(get_symbol(label_name));
  }
 
  auto handle_call() -> void
@@ -380,46 +356,10 @@ public:
 
  auto call(const std::string& file_name, const std::string& function_name, const std::string& n_args) -> void
  {
-   const std::string return_value = file_name+"."+function_name+"$ret."+std::to_string(count());
-   const std::string function_full_name = file_name+"."+function_name;
-
-   // Add return label (below call)
-   add_label(return_value, 1);
-
-   // Push frame.
-   this->computer.stack_push_value_at(get_symbol(return_value));
-   this->computer.stack_push_value_at(get_symbol("LCL"));
-   this->computer.stack_push_value_at(get_symbol("ARG"));
-   this->computer.stack_push_value_at(get_symbol("THIS"));
-   this->computer.stack_push_value_at(get_symbol("THAT"));
-
-   const uint16_t stack_pointer_address = this->computer.get_stack_pointer();
-   const uint16_t arg_count = std::stoi(n_args);
-
-   // ARG = SP - 5 - n_args
-   this->computer.write_at(get_symbol("ARG"), stack_pointer_address - 5 - arg_count);
-
-
-   // LCL = SP
-   this->computer.write_at(get_symbol("LCL"), stack_pointer_address);
-
-   // Jump to the function.
-   this->computer.jump(label_map[function_full_name]);
  }
 
  auto handle_function() -> void
  {
-  consume(TokenType::Identifier, "Expected file name");
-  const std::string file_name = previous.lexeme;
-  consume(TokenType::Dot, "Expected function name");
-  advance();
-  const std::string function_name = previous.lexeme;
-  consume(TokenType::Number, "Expected variable count");
-  const std::string n_args_str = previous.lexeme;
-  const uint16_t n_args = std::stoi(n_args_str);
-  add_label(file_name+"."+function_name);
-  for (uint16_t i {0}; i < n_args; i++)
-   this->computer.stack_push_constant(0);
  }
 
  auto patch(const uint16_t offset, const uint16_t value) -> void
@@ -460,26 +400,37 @@ public:
   this->computer.jump(return_address);
  }
 
+ /**
+  * Retrieves the ID of the given symbol.
+  * Assigns a new ID if not given and a corresponding entry in the value vector is generated.
+  */
  auto get_symbol(const std::string& symbol) -> uint16_t
  {
   if (symbol_map.find(symbol) == symbol_map.end()) 
-   symbol_map[symbol] = next_variable_index++;
+  {
+   // Index increases monotonically, values are packed.
+   symbol_map[symbol] = symbol_map.size();
+   value_vector.push_back(0);
+  }
   return symbol_map[symbol];
  }
 private:
  auto setup_symbol_map() -> void
  {
-  symbol_map["SP"]   = 0;
-  symbol_map["LCL"]  = 1;
-  symbol_map["ARG"]  = 2;
-  symbol_map["THIS"] = 3;
-  symbol_map["THAT"] = 4;
+  // TODO: Initialize the actual value of the symbols.
+  // eg. "SP" == SYMBOL(0) == VALUE(0)
+
+  get_symbol("SP");   // 0
+  get_symbol("LCL");  // 1
+  get_symbol("ARG");  // 2
+  get_symbol("THIS"); // 3
+  get_symbol("THAT"); // 4
 
   for (std::size_t index {0}; index < 16; index++)
   {
    std::stringstream ss {};
    ss << "R" << index;
-   symbol_map[ss.str()] = index;
+   get_symbol(ss.str());
   }
  }
 
@@ -491,9 +442,10 @@ private:
 private:
  emulator::Computer                        computer            {};
  Chunk                                     code                {};
+
+ // The symbol map is used to retrieve the numerical ID corressponding to a given symbol.
  std::unordered_map<std::string, uint16_t> symbol_map          {};
- std::unordered_map<std::string, uint16_t> label_map           {};
- uint16_t                                  next_variable_index {16};
+ std::vector<uint16_t>                     value_vector        {};
  uint16_t                                  loc                 {0};
  std::uint16_t                             m_count             {};
 };
