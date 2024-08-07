@@ -149,8 +149,8 @@ public:
  {
   if (match(TokenType::Push))
    handle_push();
-  // else if (match(TokenType::Pop))
-  //  handle_pop();
+  else if (match(TokenType::Pop))
+   handle_pop();
   else if (match(TokenType::Add))
    handle_add();
   else if (match(TokenType::And))
@@ -265,6 +265,60 @@ public:
 
  auto handle_pop() -> void 
  {
+  const auto segment_type = this->current.type;
+  switch (segment_type)
+  {
+    break; case TokenType::Static:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'static'");
+     const std::string index_str = previous.lexeme;
+     const uint16_t index = std::stoi(index_str);
+
+     this->code.emit_instruction(Opcode::POP_STATIC);
+     this->code.emit(index);
+    }
+    break; case TokenType::Temp:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'temp'");
+     const std::string index_str = previous.lexeme;
+     const uint32_t index = std::stoi(index_str);
+
+     if (index > 7) report_error("Temp index out of range: " + index_str);
+
+     this->code.emit_instruction(Opcode::POP_TEMP);
+     this->code.emit(index);
+    }
+    break; case TokenType::Pointer:
+    {
+     advance();
+     consume(TokenType::Number, "Expected index after 'pointer'");
+     const std::string index_str = previous.lexeme;
+     const uint16_t index = std::stoi(index_str);
+
+     if (index_str != "1" && index_str != "0") report_error("Invalid pointer for pop");
+
+     this->code.emit_instruction(Opcode::POP_POINTER);
+     this->code.emit(index);
+    }
+    break; case TokenType::Local:    { this->code.emit_instruction(Opcode::POP_LOCAL); write_pop_segment("LCL"); }
+    break; case TokenType::Argument: { this->code.emit_instruction(Opcode::POP_ARGUMENT); write_pop_segment("ARG"); }
+    break; case TokenType::This:     { this->code.emit_instruction(Opcode::POP_THIS); write_pop_segment("THIS"); }
+    break; case TokenType::That:     { this->code.emit_instruction(Opcode::POP_THAT); write_pop_segment("THAT"); }
+    break; default: { report_error("Unexpected segment found in pop statement: " + std::string()); }
+  } 
+ }
+
+ auto write_pop_segment(std::string_view segment) -> void
+ {
+     advance();
+     const std::string segment_name = previous.lexeme;
+     consume(TokenType::Number, "Expected index after '" + segment_name + "'");
+     const std::string index_str = previous.lexeme;
+     const uint16_t index = std::stoi(index_str);
+
+     this->code.emit(index);
  }
 
  auto handle_add() -> void 
