@@ -49,6 +49,7 @@ enum class Opcode : uint16_t
 {
  // Push operations.
  PUSH_CONSTANT,
+ PUSH_LABEL,
  PUSH_STATIC,
  PUSH_TEMP,
  PUSH_POINTER,
@@ -152,34 +153,34 @@ public:
   //  handle_pop();
   else if (match(TokenType::Add))
    handle_add();
-  // else if (match(TokenType::And))
-  //  handle_and();
-  // else if (match(TokenType::Or))
-  //  handle_or();
-  // else if (match(TokenType::Sub))
-  //  handle_sub();
-  // else if (match(TokenType::Neg))
-  //  handle_neg();
-  // else if (match(TokenType::Not))
-  //  handle_not();
-  // else if (match(TokenType::Eq))
-  //  handle_eq();
-  // else if (match(TokenType::Gt))
-  //  handle_gt();
-  // else if (match(TokenType::Lt))
-  //  handle_lt();
-  // else if (match(TokenType::Label))
-  //  handle_label();
-  // else if (match(TokenType::Goto))
-  //  handle_goto();
-  // else if (match(TokenType::If))
-  //  handle_if_goto();
-  // else if (match(TokenType::Call))
-  //  handle_call();
-  // else if (match(TokenType::Function))
-  //  handle_function();
-  // else if (match(TokenType::Return))
-  //  handle_return();
+  else if (match(TokenType::And))
+   handle_and();
+  else if (match(TokenType::Or))
+   handle_or();
+  else if (match(TokenType::Sub))
+   handle_sub();
+  else if (match(TokenType::Neg))
+   handle_neg();
+  else if (match(TokenType::Not))
+   handle_not();
+  else if (match(TokenType::Eq))
+   handle_eq();
+  else if (match(TokenType::Gt))
+   handle_gt();
+  else if (match(TokenType::Lt))
+   handle_lt();
+  else if (match(TokenType::Label))
+   handle_label();
+  else if (match(TokenType::Goto))
+   handle_goto();
+  else if (match(TokenType::If))
+   handle_if_goto();
+  else if (match(TokenType::Call))
+   handle_call();
+  else if (match(TokenType::Function))
+   handle_function();
+  else if (match(TokenType::Return))
+   handle_return();
   else
   {
    const std::string current = this->current.lexeme;
@@ -313,12 +314,11 @@ public:
 
  auto handle_label() -> void
  {
-  this->code.emit_instruction(Opcode::LABEL);
-
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
   const uint16_t label_value = get_symbol(label_name);
 
+  this->code.emit_instruction(Opcode::LABEL);
   this->code.emit(label_value);
  }
 
@@ -327,6 +327,7 @@ public:
  {
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
+
   this->code.emit_instruction(Opcode::GOTO);
   this->code.emit(get_symbol(label_name));
  }
@@ -337,6 +338,7 @@ public:
   consume(TokenType::Goto, "Expected 'goto' after '-'");
   consume(TokenType::Identifier, "Expected label name");
   const std::string label_name = previous.lexeme;
+
   this->code.emit_instruction(Opcode::IF);
   this->code.emit(get_symbol(label_name));
  }
@@ -349,55 +351,35 @@ public:
   advance();
   const std::string function_name = previous.lexeme;
   consume(TokenType::Number, "Expected function args count");
-  const std::string n_args = previous.lexeme;
+  const std::string n_args_str = previous.lexeme;
+  const uint16_t n_args = std::stoi(n_args_str);
+  const std::string function_path = file_name + "." + function_name;
 
-  call(file_name, function_name, n_args);
- }
-
- auto call(const std::string& file_name, const std::string& function_name, const std::string& n_args) -> void
- {
+  this->code.emit_instruction(Opcode::CALL);
+  this->code.emit(get_symbol(function_path));
+  this->code.emit(n_args);
  }
 
  auto handle_function() -> void
  {
- }
+  consume(TokenType::Identifier, "Expected file name");
+  const std::string file_name = previous.lexeme;
+  consume(TokenType::Dot, "Expected function name");
+  advance();
+  const std::string function_name = previous.lexeme;
+  consume(TokenType::Number, "Expected variable count");
+  const std::string n_args_str = previous.lexeme;
+  const uint16_t n_args = std::stoi(n_args_str);
+  const std::string function_path = file_name + "." + function_name;
 
- auto patch(const uint16_t offset, const uint16_t value) -> void
- {
+  this->code.emit_instruction(Opcode::FUNCTION);
+  this->code.emit(get_symbol(function_path));
+  this->code.emit(n_args);
  }
 
  auto handle_return() -> void
  {
-  const uint16_t SP = get_symbol("SP");
-  const uint16_t LCL = get_symbol("LCL");
-  const uint16_t ARG = get_symbol("ARG");
-  const uint16_t THIS = get_symbol("THIS");
-  const uint16_t THAT = get_symbol("THAT");
-
-  // Retrieve address of the frame's end.
-  const uint16_t end_frame_address = this->computer.at(LCL);
-
-  // Retrieve the return address.
-  const uint16_t return_address = this->computer.at(end_frame_address - 5);
-
-  // Replace the first argument passed into the function 
-  // with the return value from the function.
-  const uint16_t function_result_value = this->computer.pop_stack();
-  const uint16_t arg_address = this->computer.at(ARG);
-  this->computer.write_at(arg_address, function_result_value);
-
-  // Set the stack pointer to 1 below ARG pointer.
-  // Which we previously replaced with the return value.
-  this->computer.write_at(SP, arg_address + 1);
-
-  // Restore all pointers.
-  this->computer.write_at(THAT, end_frame_address - 1);
-  this->computer.write_at(THIS, end_frame_address - 2);
-  this->computer.write_at(ARG, end_frame_address - 3);
-  this->computer.write_at(LCL, end_frame_address - 4);
-
-  // Jump to the return address.
-  this->computer.jump(return_address);
+  this->code.emit_instruction(Opcode::RETURN);
  }
 
  /**
