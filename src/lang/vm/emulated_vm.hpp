@@ -31,7 +31,8 @@
 #include <sstream>
 #include <string_view>
 #include <filesystem>
-namespace fs = std::filesystem;
+#include <iomanip>
+
 
 #include "../core/parser_base.hpp"
 #include "token_vm.hpp"
@@ -102,6 +103,150 @@ struct Chunk
  auto emit_instruction(Opcode instruction) -> void
  {
   emit(static_cast<uint16_t>(instruction));
+ }
+
+ auto dump(std::ostream& os = std::cout) -> void
+ {
+  for (std::size_t i {0}; i < code.size(); i++)
+  {
+   std::cout << std::setw(4) << std::right << i << " | ";
+
+   const auto instruction = code[i];
+
+
+   std::cout << std::setw(15) << std::left;
+
+   switch (static_cast<Opcode>(instruction))
+   {
+       break; case Opcode::PUSH_CONSTANT:
+       {
+        std::cout << "PUSH_CONSTANT " << code[++i];
+       }
+       break; case Opcode::PUSH_LABEL:
+       {
+        std::cout << "PUSH_LABEL " << code[++i];
+       }
+       break; case Opcode::PUSH_STATIC:
+       {
+        std::cout << "PUSH_STATIC " << code[++i];
+       }
+       break; case Opcode::PUSH_TEMP:
+       {
+        std::cout << "PUSH_TEMP " << code[++i];
+       }
+       break; case Opcode::PUSH_POINTER:
+       {
+        std::cout << "PUSH_POINTER " << code[++i];
+       }
+       break; case Opcode::PUSH_LOCAL:
+       {
+        std::cout << "PUSH_LOCAL " << code[++i];
+       }
+       break; case Opcode::PUSH_ARGUMENT:
+       {
+        std::cout << "PUSH_ARGUMENT " << code[++i];
+       }
+       break; case Opcode::PUSH_THIS:
+       {
+        std::cout << "PUSH_THIS " << code[++i];
+       }
+       break; case Opcode::PUSH_THAT:
+       {
+        std::cout << "PUSH_THAT " << code[++i];
+       }
+       break; case Opcode::POP_STATIC:
+       {
+        std::cout << "POP_STATIC " << code[++i];
+       }
+       break; case Opcode::POP_TEMP:
+       {
+        std::cout << "POP_TEMP " << code[++i];
+       }
+       break; case Opcode::POP_POINTER:
+       {
+        std::cout << "POP_POINTER " << code[++i];
+       }
+       break; case Opcode::POP_LOCAL:
+       {
+        std::cout << "POP_LOCAL " << code[++i];
+       }
+       break; case Opcode::POP_ARGUMENT:
+       {
+        std::cout << "POP_ARGUMENT " << code[++i];
+       }
+       break; case Opcode::POP_THIS:
+       {
+        std::cout << "POP_THIS " << code[++i];
+       }
+       break; case Opcode::POP_THAT:
+       {
+        std::cout << "POP_THAT " << code[++i];
+       }
+       break; case Opcode::ADD:
+       {
+        std::cout << "ADD";
+       }
+       break; case Opcode::AND:
+       {
+        std::cout << "AND";
+       }
+       break; case Opcode::OR:
+       {
+        std::cout << "OR";
+       }
+       break; case Opcode::SUB:
+       {
+        std::cout << "SUB";
+       }
+       break; case Opcode::NEG:
+       {
+        std::cout << "NEG";
+       }
+       break; case Opcode::NOT:
+       {
+        std::cout << "NOT";
+       }
+       break; case Opcode::EQ:
+       {
+        std::cout << "EQ";
+       }
+       break; case Opcode::GT:
+       {
+        std::cout << "GT";
+       }
+       break; case Opcode::LT:
+       {
+        std::cout << "LT";
+       }
+       break; case Opcode::LABEL:
+       {
+        std::cout << "LABEL " << "[" << code[++i] << "]";
+       }
+       break; case Opcode::GOTO:
+       {
+        std::cout << "GOTO " << "[" << code[++i] << "]";
+       }
+       break; case Opcode::IF:
+       {
+        std::cout << "IF " << "[" << code[++i] << "]";
+       }
+       break; case Opcode::CALL:
+       {
+        std::cout << "CALL " << "[" << code[++i] << "] " << code[++i];
+       }
+       break; case Opcode::FUNCTION:
+       {
+        std::cout << "FUNCTION " << "[" << code[++i] << "] " << code[++i];
+       }
+       break; case Opcode::RETURN:
+       {
+        std::cout << "RETURN";
+       }
+       break; default: {}
+   }
+
+   std::cout << '\n';
+  }
  }
 };
 
@@ -475,9 +620,10 @@ private:
   return m_count++;
  }
 
+public:
+ Chunk                                     code                {};
 private:
  emulator::Computer                        computer            {};
- Chunk                                     code                {};
 
  // The symbol map is used to retrieve the numerical ID corressponding to a given symbol.
  std::unordered_map<std::string, uint16_t> symbol_map          {};

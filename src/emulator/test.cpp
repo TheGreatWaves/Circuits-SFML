@@ -3,6 +3,7 @@
 #include "computer.hpp"
 #include "../lang/jack/jack.hpp"
 #include "../lang/vm/vm.hpp"
+#include "../lang/vm/emulated_vm.hpp"
 #include "compilation_context.hpp"
 
 auto main() -> int
@@ -44,9 +45,9 @@ auto main() -> int
   std::cout << "Failed to add source: main.jack" << '\n'; 
  }
 
- context.out();
+ // context.out();
  context.compile();
- context.run();
+ // context.run();
 
  return 0;
 }

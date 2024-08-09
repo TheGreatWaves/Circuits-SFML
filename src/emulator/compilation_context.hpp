@@ -34,6 +34,7 @@
 #include "computer.hpp"
 #include "../lang/jack/jack.hpp"
 #include "../lang/vm/vm.hpp"
+#include "../lang/vm/emulated_vm.hpp"
 
 /**
  * Buffer for instructions. Allows for compilation of files which adds onto the buffer.
@@ -82,7 +83,7 @@ public:
 
  auto compile() -> bool
  {
-  VMTranslator translator {};
+  EmulatedVMParser translator {};
   translator.set_source(m_buffer.str());
 
   if (!translator.parse())
@@ -91,15 +92,7 @@ public:
    return false;
   }
 
-  const auto instructions = translator.to_instructions();
-
-  m_computer.load_instructions(instructions);
-
-
-  // const auto loc = translator.loc();
-  // std::cout << "#instructions: " << loc << '\n';
-  // std::cout << "\n=== State ===\n";
-  // computer.print_state();
+  translator.code.dump();
 
   return true;
 }
