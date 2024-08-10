@@ -248,6 +248,7 @@ struct Chunk
    std::cout << '\n';
   }
  }
+
 };
 
 
@@ -595,6 +596,76 @@ public:
   }
   return symbol_map[symbol];
  }
+
+ /**
+  * Assign labels with line number and symbols with an incrementing value from 16 onwards.
+  */
+ auto generate_symbols_and_labels() -> void
+ {
+  for (std::size_t line {0}; line < code.code.size(); line++)
+  {
+   const uint16_t instruction = code.code[line];
+   switch (static_cast<Opcode>(instruction))
+   {
+     break; case Opcode::LABEL:
+     {
+      // Fetch the next value.
+      const uint16_t symbol = code.code[line+1];
+
+      // Set the symbol to be the next instruction's line number.
+      // Offset 2: [LABEL], [SYMBOL], [NEXT INSTRUCTION]
+      value_vector[symbol] = line + 2;
+      line += 1;
+     }
+     break; case Opcode::CALL:
+            case Opcode::FUNCTION:
+     {
+      line += 2;
+     }
+     break; case Opcode::PUSH_CONSTANT:
+            case Opcode::PUSH_LABEL:
+            case Opcode::PUSH_STATIC:
+            case Opcode::PUSH_TEMP:
+            case Opcode::PUSH_POINTER:
+            case Opcode::PUSH_LOCAL:
+            case Opcode::PUSH_ARGUMENT:
+            case Opcode::PUSH_THIS:
+            case Opcode::PUSH_THAT:
+            case Opcode::POP_STATIC:
+            case Opcode::POP_TEMP:
+            case Opcode::POP_POINTER:
+            case Opcode::POP_LOCAL:
+            case Opcode::POP_ARGUMENT:
+            case Opcode::POP_THIS:
+            case Opcode::POP_THAT:
+            case Opcode::GOTO:
+            case Opcode::IF:
+     {
+      line += 1;
+     }
+     break; case Opcode::ADD:
+     break; case Opcode::AND:
+     break; case Opcode::OR:
+     break; case Opcode::SUB:
+     break; case Opcode::NEG:
+     break; case Opcode::NOT:
+     break; case Opcode::EQ:
+     break; case Opcode::GT:
+     break; case Opcode::LT:
+     break; case Opcode::RETURN:
+     break; default: {}
+   }
+  }
+ }
+
+ auto dump_value_map() -> void
+ {
+  for (const auto& [key, value] : symbol_map)
+  {
+   std::cout << "[" <<  std::setw(3) << std::right << value << "] " << std::setw(23) << std::left << key << value_vector[value] << '\n';
+  }
+ }
+
 private:
  auto setup_symbol_map() -> void
  {

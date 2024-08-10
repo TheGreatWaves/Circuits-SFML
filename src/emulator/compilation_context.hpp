@@ -93,6 +93,8 @@ public:
   }
 
   translator.code.dump();
+  translator.generate_symbols_and_labels();
+  translator.dump_value_map();
 
   return true;
 }
