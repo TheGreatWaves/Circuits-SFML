@@ -609,17 +609,20 @@ public:
    {
      break; case Opcode::LABEL:
      {
-      // Fetch the next value.
       const uint16_t symbol = code.code[line+1];
-
-      // Set the symbol to be the next instruction's line number.
       // Offset 2: [LABEL], [SYMBOL], [NEXT INSTRUCTION]
       value_vector[symbol] = line + 2;
       line += 1;
      }
      break; case Opcode::CALL:
-            case Opcode::FUNCTION:
      {
+      line += 2;
+     }
+     break; case Opcode::FUNCTION:
+     {
+      const uint16_t symbol = code.code[line+1];
+      // Offset 3: [FUNCTION], [SYMBOL], [ARG COUNT], [NEXT INSTRUCTION]
+      value_vector[symbol] = line + 3;
       line += 2;
      }
      break; case Opcode::PUSH_CONSTANT:
@@ -656,6 +659,13 @@ public:
      break; default: {}
    }
   }
+
+  std::size_t counter {16};
+  for (std::size_t i {15}; i < value_vector.size(); i++)
+  {
+   if (value_vector[i] == 0)
+    value_vector[i] = counter++;
+  }
  }
 
  auto dump_value_map() -> void
@@ -672,17 +682,17 @@ private:
   // TODO: Initialize the actual value of the symbols.
   // eg. "SP" == SYMBOL(0) == VALUE(0)
 
-  get_symbol("SP");   // 0
-  get_symbol("LCL");  // 1
-  get_symbol("ARG");  // 2
-  get_symbol("THIS"); // 3
-  get_symbol("THAT"); // 4
+  value_vector[get_symbol("SP")] = 0;   // 0
+  value_vector[get_symbol("LCL")] = 1;  // 1
+  value_vector[get_symbol("ARG")] = 2;  // 2
+  value_vector[get_symbol("THIS")] = 3; // 3
+  value_vector[get_symbol("THAT")] = 4; // 4
 
   for (std::size_t index {0}; index < 16; index++)
   {
    std::stringstream ss {};
    ss << "R" << index;
-   get_symbol(ss.str());
+   value_vector[get_symbol(ss.str())] = index;
   }
  }
 
