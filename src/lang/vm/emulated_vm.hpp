@@ -50,7 +50,6 @@ enum class Opcode : uint16_t
 {
  // Push operations.
  PUSH_CONSTANT,
- PUSH_LABEL,
  PUSH_STATIC,
  PUSH_TEMP,
  PUSH_POINTER,
@@ -121,10 +120,6 @@ struct Chunk
        break; case Opcode::PUSH_CONSTANT:
        {
         std::cout << "PUSH_CONSTANT " << code[++i];
-       }
-       break; case Opcode::PUSH_LABEL:
-       {
-        std::cout << "PUSH_LABEL " << code[++i];
        }
        break; case Opcode::PUSH_STATIC:
        {
@@ -626,7 +621,6 @@ public:
       line += 2;
      }
      break; case Opcode::PUSH_CONSTANT:
-            case Opcode::PUSH_LABEL:
             case Opcode::PUSH_STATIC:
             case Opcode::PUSH_TEMP:
             case Opcode::PUSH_POINTER:
