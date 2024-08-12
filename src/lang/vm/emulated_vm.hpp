@@ -244,6 +244,128 @@ struct Chunk
   }
  }
 
+ auto operator[](int i) -> uint16_t
+ {
+  return code[i];
+ }
+};
+
+struct VMEmulatedCPU
+{
+ auto run(int cycles = 0) -> void
+ {
+  const bool inf_loop = (cycles == 0);
+
+  while (inf_loop || ((cycles--) > 0))
+  {
+   const Opcode instruction = static_cast<Opcode>(m_code[m_pc]);
+
+   switch (instruction)
+   {
+    break; case Opcode::PUSH_CONSTANT:
+    {
+     m_stack.push_back(m_code[++m_pc]);
+    }
+    break; case Opcode::PUSH_STATIC:
+    {
+     const uint16_t symbol = m_code[++m_pc];
+     const uint16_t value = deref(symbol);
+     m_stack.push_back(value);
+    }
+    break; case Opcode::PUSH_TEMP:
+    {
+     const uint16_t offset = m_code[++m_pc];
+     const uint16_t value = deref(offset + 5);
+     m_stack.push_back(value);
+    }
+    break; case Opcode::PUSH_POINTER:
+    {
+     const uint16_t pointer = m_code[++m_pc];
+     const uint16_t value = ram((pointer == 1) ? 4 : 3);
+     m_stack.push_back(value);
+    }
+    break; case Opcode::PUSH_LOCAL:
+    {
+     const uint16_t offset = m_code[++m_pc];
+     const uint16_t base_address = ram(1); // Symbol: LCL
+     const uint16_t value = ram(base_address + offset);
+
+     m_stack.push_back(value);
+    }
+    break; case Opcode::PUSH_ARGUMENT:
+    {
+     const uint16_t offset = m_code[++m_pc];
+     const uint16_t base_address = ram(2); // Symbol: ARG
+     const uint16_t value = ram(base_address + offset);
+
+     m_stack.push_back(value);
+    }
+    break; case Opcode::PUSH_THIS:
+    {
+     const uint16_t offset = m_code[++m_pc];
+     const uint16_t base_address = ram(3); // Symbol: THIS
+     const uint16_t value = ram(base_address + offset);
+
+     m_stack.push_back(value);
+    }
+    break; case Opcode::PUSH_THAT:
+    {
+     const uint16_t offset = m_code[++m_pc];
+     const uint16_t base_address = ram(4); // Symbol: THAT
+     const uint16_t value = ram(base_address + offset);
+
+     m_stack.push_back(value);
+    }
+    break; case Opcode::POP_STATIC:
+    break; case Opcode::POP_TEMP:
+    break; case Opcode::POP_POINTER:
+    break; case Opcode::POP_LOCAL:
+    break; case Opcode::POP_ARGUMENT:
+    break; case Opcode::POP_THIS:
+    break; case Opcode::POP_THAT:
+    break; case Opcode::ADD:
+    break; case Opcode::AND:
+    break; case Opcode::OR:
+    break; case Opcode::SUB:
+    break; case Opcode::NEG:
+    break; case Opcode::NOT:
+    break; case Opcode::EQ:
+    break; case Opcode::GT:
+    break; case Opcode::LT:
+    break; case Opcode::LABEL:
+    break; case Opcode::GOTO:
+    break; case Opcode::IF:
+    break; case Opcode::CALL:
+    break; case Opcode::FUNCTION:
+    break; case Opcode::RETURN:
+    break; default: {}
+   }
+
+   m_pc += 1;
+  }
+ }
+
+ inline auto get_symbol_value(uint16_t symbol) -> uint16_t
+ {
+  return m_value_vector[symbol];
+ }
+
+ inline auto deref(uint16_t symbol) -> uint16_t
+ {
+  const uint16_t value = get_symbol_value(symbol);
+  return ram(value);
+ }
+
+ auto ram(uint16_t address) -> uint16_t
+ {
+  return m_ram[address];
+ }
+
+ uint16_t                    m_pc           {0}; // Program Counter
+ Chunk                       m_code         {};  // Code
+ std::array<uint16_t, 24577> m_ram          {0}; // Memory
+ std::vector<uint16_t>       m_stack        {};  // Stack
+ std::vector<uint16_t>       m_value_vector {};
 };
 
 
@@ -706,5 +828,7 @@ private:
  uint16_t                                  loc                 {0};
  std::uint16_t                             m_count             {};
 };
+
+
 
 #endif // EMULATED_VM_HPP
